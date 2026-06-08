@@ -12,19 +12,31 @@ exports.createBooking = (req, res) => {
             return res.status(500).json({ error: 'Database error' });
         }
 
-        if (roomResults.length === 0) {
-            return res.status(404).json({ error: 'Room not found' });
-        }
+        // Check for overlapping bookings using start_date/end_date columns
+        const conflictSql = 'SELECT * FROM bookings WHERE room_id = ? AND booking_status IN ("pending", "confirmed") AND (start_date < ? AND end_date > ?)';
+        db.query(conflictSql, [room_id, end_date, start_date], (err, conflictResults) => {
+            if (err) {
+                console.error('Error checking booking conflicts:', err);
+                return res.status(500).json({ error: 'Database error' });
+            }
+
+            if (conflictResults.length > 0) {
+                return res.status(400).json({ error: 'Room is already booked for the selected dates' });
+            }
+
+            if (roomResults.length === 0) {
+                return res.status(404).json({ error: 'Room not found' });
+            }
 
         const room = roomResults[0];
 
-        if (room.status !== 'available') {
-            return res.status(400).json({ error: 'Room is not available' });
-        }
-
         const start = new Date(start_date);
         const end = new Date(end_date);
-        
+
+        if (new Date(end_date) <= new Date(start_date)) {
+            return res.status(400).json({ error: 'Check-out date must be after check-in date' });
+        }
+
         const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
         const total_amount = days * room.price;
 
@@ -35,18 +47,10 @@ exports.createBooking = (req, res) => {
                 return res.status(500).json({ error: 'Database error' });
             }
 
-            db.query('UPDATE rooms SET status = reserved WHERE id = ?', [room_id], (err) => {
-                if (err) {
-                    console.error('Error updating room status:', err);
-                    return res.status(500).json({ error: 'Database error' });
-                }
-
                 res.status(201).json({ message: 'Booking created successfully', bookingId: bookingResults.insertId, total_amount});
             });
-        }
-        );
-    }
-    );
+        });
+    });
 };
 
 exports.getBookings = (req, res) => {
@@ -100,17 +104,20 @@ exports.cancelBooking = (req, res) => {
 
         const booking = bookingResults[0];
 
-        db.query('UPDATE rooms SET booking_status = 'cancelled' WHERE id = ?', [booking.room_id], (err) => {
+        db.query("UPDATE rooms SET status = 'available' WHERE id = ?", [booking.room_id], (err) => {
             if (err) {
                 console.error('Error updating room status:', err);
                 return res.status(500).json({ error: 'Database error' });
             }
-        db.query('UPDATE bookings SET status = 'cancelled' WHERE id = ?', [id], (err) => {
-            if (err) {
-                console.error('Error updating booking status:', err);
-                return res.status(500).json({ error: 'Database error' });
-            }
+            db.query("UPDATE bookings SET booking_status = 'cancelled' WHERE id = ?", [id], (err) => {
+                if (err) {
+                    console.error('Error updating booking status:', err);
+                    return res.status(500).json({ error: 'Database error' });
+                }
 
-            res.json({ message: 'Booking cancelled successfully' });
+                res.json({ message: 'Booking cancelled successfully' });
 
+            });
         });
+    });
+};
