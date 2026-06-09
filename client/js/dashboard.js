@@ -83,3 +83,34 @@ function loadProfile(){
         console.error('Error:', error);
     });
 };
+
+loadPayments();
+
+function loadPayments() {
+
+    fetch('http://localhost:3000/api/payments', {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const payments = document.getElementById('payments');
+        payments.innerHTML = '';
+        data.forEach(payment => {
+            payments.innerHTML += `
+                <div>
+                    <h3> Payment #${payment.id}</h3>
+                    <p> Booking ID: ${payment.booking_id}</p>
+                    <p> Amount: $${payment.amount.toFixed(2)}</p>
+                    <p> Status: ${payment.payment_status}</p>
+                    <p> Date: ${payment.date}</p>
+                    <hr>
+                </div>
+            `;
+        });
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+};
