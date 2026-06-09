@@ -1,22 +1,47 @@
+const token = localStorage.getItem('token');
+const params = new URLSearchParams(window.location.search);
+const bookingId = params.get('booking');    
+
+    fetch(`http://localhost:3000/api/bookings/${bookingId}`, {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        
+        document.getElementById('bookingInfo').innerHTML = `
+            <p>Booking ID: ${data.id}</p>
+            <p>Room: ${data.room_number}</p>
+            <p>Check-in: ${data.check_in}</p>
+            <p>Check-out: ${data.check_out}</p>
+            <p>Total Price: KES${data.total_price.toFixed(2)}</p>
+        `;
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+
 function payBooking() {
 
-    const token = localStorage.getItem('token');
-    const booking_id = document.getElementById('booking_id').value;
+    fetch(`http://localhost:3000/api/payments`, {
 
-    fetch('http://localhost:3000/api/payments', {
-        
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ booking_id })
+        body: JSON.stringify({
+            booking_id: bookingId
+        })
     })
     .then(response => response.json())
     .then(data => {
         console.log('Payment successful:', data);
     })
     .catch(error => {
-        console.error('Error occurred while processing payment:', error);
+        console.error('Error:', error);
+
+    window.location.href = 'dashboard.html';    
     });
 }

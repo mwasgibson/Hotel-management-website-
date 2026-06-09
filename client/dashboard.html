@@ -8,28 +8,42 @@
 <body>
     
     <nav>
+        <h2>Hotel Management</h2>
         <ul>
             <li><a href="index.html">Home</a></li>
             <li><a href="rooms.html">Rooms</a></li>
             <li><a href="bookings.html">Bookings</a></li>
         </ul>
+        <button onclick="Logout()">Logout</button>
     </nav>
 
     <hr>
 
     <h1>Dashboard</h1>
 
-    <button onclick="Logout()">Logout</button><br>
+    <div class="container">
 
-    <h2>Bookings</h2>
+        <div class="card">
+            <h2>Profile</h2>
+            <div id="profile"></div>
+        </div>
 
-    <div id="bookings"></div>
+        <div class="card">
+            <h2>Bookings</h2>
+            <div id="bookings"></div>
+        </div>
 
-    <h2>Profile</h2>
-    <div id="profile"></div>
-
-    <h2>Payment history</h2>
-    <div id="payment"></div>
+        <div class="card">    
+            <h2>Payment history</h2>
+            <div id="payment"></div>
+        </div>
+        
+        <div class="card">
+            <h2>Booking Summary</h2>
+            <p id="totalBookings"></p>
+            <p id="confirmedBookings"></p>
+            <p id="pendingBookings"></p>
+        </div>
 
     <script src="js/dashboard.js"></script>
 

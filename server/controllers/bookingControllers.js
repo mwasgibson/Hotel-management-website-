@@ -12,7 +12,6 @@ exports.createBooking = (req, res) => {
             return res.status(500).json({ error: 'Database error' });
         }
 
-        // Check for overlapping bookings using start_date/end_date columns
         const conflictSql = 'SELECT * FROM bookings WHERE room_id = ? AND booking_status IN ("pending", "confirmed") AND (start_date < ? AND end_date > ?)';
         db.query(conflictSql, [room_id, end_date, start_date], (err, conflictResults) => {
             if (err) {

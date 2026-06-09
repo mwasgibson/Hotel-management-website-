@@ -18,16 +18,21 @@ function loadBookings() {
     .then(data => {
         const bookingDiv = document.getElementById('booking-list');
         bookingDiv.innerHTML = '';
+        document.getElementById('totalBookings').innerHTML = `Total Bookings: ${data.length}`;
+        document.getElementById('confirmedBookings').innerHTML = `Confirmed Bookings: ${data.filter(booking => booking.booking_status === 'confirmed').length}`;
+        document.getElementById('pendingBookings').innerHTML = `Pending Bookings: ${data.filter(booking => booking.booking_status === 'pending').length}`;
         data.forEach(booking => {
             bookingDiv.innerHTML += `
                 <div>
                     <h3> Booking #${booking.id}</h3>
-                    <p> Room: ${booking.room_number}</p>
-                    <p> Type: ${booking.room_type}</p>
-                    <p> Check-in: ${booking.check_in}</p>
-                    <p> Check-out: ${booking.check_out}</p>
-                    <p> Status: ${booking.booking_status}</p>
+                    <p> Room: <span class="${booking.room_status}">${booking.room_number}</span></p>
+                    <p> Type: <span class="${booking.room_type}">${booking.room_type}</span></p>
+                    <p> Check-in: <span class="${booking.check_in}">${booking.check_in}</span></p>
+                    <p> Check-out: <span class="${booking.check_out}">${booking.check_out}</span></p>
+                    <p> Status: <span class="${booking.booking_status}">${booking.booking_number}</span></p>
+                    <p> Total Price: <span class="${booking.total_price}">KES${booking.total_price.toFixed(2)}</span></p>
 
+                    ${booking.booking_status === 'pending' ? `<button onclick="goToPayment(${booking.id})">Pay</button>` : ''}
                     <button onclick="cancelBooking(${booking.id})">Cancel</button>
 
                     <hr>
@@ -102,7 +107,7 @@ function loadPayments() {
                 <div>
                     <h3> Payment #${payment.id}</h3>
                     <p> Booking ID: ${payment.booking_id}</p>
-                    <p> Amount: $${payment.amount.toFixed(2)}</p>
+                    <p> Amount: KES${payment.amount.toFixed(2)}</p>
                     <p> Status: ${payment.payment_status}</p>
                     <p> Date: ${payment.date}</p>
                     <hr>
@@ -113,4 +118,8 @@ function loadPayments() {
     .catch(error => {
         console.error('Error:', error);
     });
+};
+
+function goToPayment(id) {
+    window.location.href = `payment.html?booking_id=${id}`;
 };
