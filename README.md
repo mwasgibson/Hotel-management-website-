@@ -1,10 +1,10 @@
 # 🏨 Hotel Management Website
 
-A modern, responsive hotel booking and management platform built with JavaScript, HTML, and CSS. This full-stack application provides both client-side and server-side functionality for managing hotel operations and guest bookings.
+A modern, responsive hotel booking and management platform built with JavaScript (82.5%) and HTML (17.5%). This full-stack application provides both client-side and server-side functionality for managing hotel reservations, payments, and guest information.
 
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-![JavaScript](https://img.shields.io/badge/JavaScript-95.2%25-yellow)
-![HTML](https://img.shields.io/badge/HTML-4.8%25-orange)
+![JavaScript](https://img.shields.io/badge/JavaScript-82.5%25-yellow)
+![HTML](https://img.shields.io/badge/HTML-17.5%25-orange)
 
 ## 📋 Table of Contents
 
@@ -17,6 +17,7 @@ A modern, responsive hotel booking and management platform built with JavaScript
   - [Running the Application](#running-the-application)
 - [Usage](#usage)
 - [API Endpoints](#api-endpoints)
+- [Environment Variables](#environment-variables)
 - [Project Status](#project-status)
 - [Future Enhancements](#future-enhancements)
 - [Contributing](#contributing)
@@ -29,29 +30,34 @@ A modern, responsive hotel booking and management platform built with JavaScript
 - 🏠 **Homepage** - Welcome page with hotel overview and highlights
 - 🛏️ **Room Browsing** - Browse available rooms and services
 - 📅 **Booking System** - User-friendly booking interface for reservations
-- 📝 **User Authentication** - Register and login functionality
+- 💳 **Payment Processing** - Secure payment handling with dedicated payment page
+- 📝 **User Authentication** - Register and login functionality with JWT
 - 💬 **Contact Form** - Get in touch with hotel management
 - 📱 **Responsive Design** - Fully mobile-friendly interface
 - 🎨 **Modern UI** - Clean and professional user interface
 
 ### Admin Features
-- 📊 **Management Dashboard** - View and manage bookings
-- 👥 **Guest Management** - Handle guest information
-- 🔐 **Authentication** - Secure access to admin features
+- 📊 **Management Dashboard** - View and manage all bookings
+- 👥 **Guest Management** - Handle guest information and requests
+- 💰 **Payment Management** - Track payment history
+- 🔐 **Authentication** - Secure access to admin features with session management
 
 ## 🛠️ Tech Stack
 
 ### Frontend
 - **HTML5** - Semantic markup and page structure
 - **CSS3** - Responsive styling and modern layouts
-- **JavaScript** - Interactive features and client-side logic
+- **JavaScript (Vanilla)** - Interactive features and client-side logic
 
 ### Backend
 - **Node.js** - Server runtime environment
 - **Express.js** - Web framework for API development
+- **dotenv** - Environment variable management
+- **CORS** - Cross-Origin Resource Sharing for API security
 
 ### Additional Tools
 - **npm** - Package management
+- **JWT** - JSON Web Tokens for authentication
 
 ## 📁 Project Structure
 
@@ -62,20 +68,26 @@ Hotel-management-website-/
 │   ├── booking.html                 # Booking page
 │   ├── login.html                   # Login page
 │   ├── register.html                # Registration page
-│   ├── rooms.html                   # Rooms listing
-│   ├── css/                         # Stylesheets
-│   │   └── [CSS files]
-│   └── js/                          # JavaScript files
-│       └── [JS scripts]
+│   ├── rooms.html                   # Rooms listing page
+│   ├── payment.html                 # Payment processing page
+│   ├── dashboard.html               # Admin dashboard
+│   ├── css/                         # Stylesheets directory
+│   └── js/                          # JavaScript files directory
 ├── server/                          # Backend code
 │   ├── server.js                    # Main server entry point
-│   ├── .env                         # Environment variables
+│   ├── .env                         # Environment variables (DO NOT COMMIT)
 │   ├── config/                      # Configuration files
 │   ├── controllers/                 # Business logic controllers
 │   ├── routes/                      # API route definitions
+│   │   ├── authRoutes.js           # Authentication endpoints
+│   │   ├── roomRoutes.js           # Room management endpoints
+│   │   ├── bookingRoutes.js        # Booking endpoints
+│   │   └── paymentRoutes.js        # Payment endpoints
 │   └── middleware/                  # Express middleware
 ├── package.json                     # Project dependencies
 ├── package-lock.json                # Dependency lock file
+├── .gitignore                       # Git ignore file
+├── LICENSE                          # MIT License
 └── README.md                        # This file
 ```
 
@@ -104,11 +116,12 @@ Before you begin, ensure you have the following installed:
 
 3. **Set up environment variables**
    
-   Create a `.env` file in the `server/` directory and configure the following:
+   Create a `.env` file in the `server/` directory with the following configuration:
    ```bash
-   PORT=3000
    NODE_ENV=development
-   DATABASE_URL=your_database_url
+   PORT=3000
+   JWT_SECRET=your_jwt_secret_key_here
+   SESSION_SECRET=your_session_secret_key_here
    ```
 
 ### Running the Application
@@ -117,6 +130,8 @@ Before you begin, ensure you have the following installed:
 ```bash
 # Open the client-side files directly in your browser
 open client/index.html
+# or on Windows
+start client/index.html
 ```
 
 #### Option 2: Run Full Stack (Frontend + Backend)
@@ -127,7 +142,11 @@ npm start
 node server/server.js
 ```
 
-The server will start on `http://localhost:3000` (or your configured PORT)
+The server will start on `http://localhost:3000`
+
+Access the application:
+- Frontend: `http://localhost:3000` (served through Express)
+- API Base URL: `http://localhost:3000/api`
 
 ## 📖 Usage
 
@@ -135,65 +154,100 @@ The server will start on `http://localhost:3000` (or your configured PORT)
 1. Navigate to the homepage (`index.html`)
 2. Browse available rooms in the **Rooms** section
 3. Use the **Booking** page to make a reservation
-4. Create an account via **Register** page
-5. Login with your credentials
-6. Submit inquiries via the **Contact Form**
+4. Proceed to **Payment** page to complete your booking
+5. Create an account via **Register** page
+6. Login with your credentials via **Login** page
+7. Access your **Dashboard** to view bookings
 
 ### For Administrators
-1. Login to access the management dashboard
+1. Login to access the management **Dashboard**
 2. View and manage all active bookings
-3. Handle guest information and requests
+3. Handle guest information and payment records
 4. Monitor room availability and services
+5. Track payment history
 
 ## 🔌 API Endpoints
 
 The backend provides the following RESTful API endpoints:
 
+### Authentication Endpoints
 ```
-GET    /api/rooms              - Get all rooms
-GET    /api/rooms/:id          - Get specific room
-POST   /api/bookings           - Create new booking
-GET    /api/bookings           - Get all bookings
-GET    /api/bookings/:id       - Get specific booking
-PUT    /api/bookings/:id       - Update booking
-DELETE /api/bookings/:id       - Cancel booking
 POST   /api/auth/register      - Register new user
 POST   /api/auth/login         - User login
-POST   /api/contact            - Submit contact form
 ```
 
-*Note: Complete API documentation will be added in future updates*
+### Room Endpoints
+```
+GET    /api/rooms              - Get all rooms
+GET    /api/rooms/:id          - Get specific room details
+```
+
+### Booking Endpoints
+```
+POST   /api/bookings           - Create new booking
+GET    /api/bookings           - Get all bookings
+GET    /api/bookings/:id       - Get specific booking details
+PUT    /api/bookings/:id       - Update booking
+DELETE /api/bookings/:id       - Cancel booking
+```
+
+### Payment Endpoints
+```
+POST   /api/payments           - Process payment
+GET    /api/payments/:id       - Get payment details
+```
+
+## 🔐 Environment Variables
+
+The application uses the following environment variables:
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `NODE_ENV` | Environment mode | `development` or `production` |
+| `PORT` | Server port | `3000` |
+| `JWT_SECRET` | Secret key for JWT tokens | `your_secret_key_here` |
+| `SESSION_SECRET` | Secret key for session management | `your_session_secret_here` |
+
+**Important:** Never commit the `.env` file to version control. Use `.env.example` for reference.
 
 ## 📊 Project Status
 
 - ✅ Frontend structure and UI/UX implemented
-- ✅ Backend server setup
+- ✅ Backend server setup with Express.js
 - ✅ Basic routing established
+- ✅ Multiple HTML pages (Homepage, Booking, Login, Register, Rooms, Payment, Dashboard)
+- ✅ API routes for authentication, rooms, bookings, and payments
+- ✅ CORS configuration
 - ⏳ Database integration (in progress)
-- ⏳ Full API implementation (in progress)
+- ⏳ Full API implementation and validation (in progress)
 - ⏳ Payment gateway integration (planned)
-- ⏳ Admin dashboard (planned)
+- ⏳ Admin dashboard functionality (planned)
+- ⏳ Email notifications (planned)
 
 ## 🎯 Future Enhancements
 
 ### Short-term
-- [x] Complete API endpoints for bookings
-- [ ] User authentication system
+- [ ] Database connectivity (MongoDB/MySQL)
+- [ ] User authentication system with password hashing (bcrypt)
 - [ ] Email notifications for bookings
-- [ ] Search and filter functionality
+- [ ] Search and filter functionality for rooms
+- [ ] Input validation and error handling
 
 ### Medium-term
 - [ ] Payment gateway integration (Stripe/PayPal)
-- [ ] Database connectivity (MongoDB/MySQL)
 - [ ] Admin dashboard with analytics
-- [ ] Real-time availability updates
+- [ ] Real-time availability updates using WebSockets
+- [ ] Review and rating system
+- [ ] Email confirmation system
 
 ### Long-term
 - [ ] Mobile app (iOS/Android)
-- [ ] Multi-language support
-- [ ] Advanced booking management
+- [ ] Multi-language support (i18n)
+- [ ] Advanced booking management with calendar
 - [ ] Integration with property management systems
 - [ ] Machine learning for pricing optimization
+- [ ] Analytics dashboard
+- [ ] Loyalty program
 
 ## 🤝 Contributing
 
@@ -205,11 +259,14 @@ Contributions are welcome! To contribute to this project:
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
+Please ensure your code follows the project's coding standards and includes appropriate comments.
+
 ## 👤 Author
 
 **Gibson Mwangi**
 - Software Engineering Student, Kisii University
 - GitHub: [@mwasgibson](https://github.com/mwasgibson)
+- Email: Contact through GitHub profile
 
 ## 📄 License
 
@@ -222,14 +279,17 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 If you encounter any issues or have questions:
 - Open an issue on GitHub
 - Check existing documentation
-- Contact the project maintainer
+- Contact the project maintainer via GitHub
 
 ## 🙏 Acknowledgments
 
 - Thanks to the Node.js and Express.js communities
-- Inspired by modern hotel booking platforms
-- Built with passion for learning and development
+- Inspired by modern hotel booking platforms like Booking.com and Airbnb
+- Built with passion for learning and web development
+- Special thanks to all contributors and users
 
 ---
 
 **Happy Coding!** 🎉
+
+Last Updated: June 9, 2026
