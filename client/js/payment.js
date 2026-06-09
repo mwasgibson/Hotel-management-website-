@@ -24,6 +24,8 @@ const bookingId = params.get('booking');
 
 function payBooking() {
 
+    const payment_method = document.getElementById('payment_method').value;
+
     fetch(`http://localhost:3000/api/payments`, {
 
         method: 'POST',
@@ -32,7 +34,7 @@ function payBooking() {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            booking_id: bookingId
+            booking_id: bookingId, payment_method
         })
     })
     .then(response => response.json())

@@ -8,7 +8,15 @@
 <body>
     
     <h1>Payment</h1>
-    <div id="bookingId"></div>
+    <div id="bookingId"></div><br>
+
+    <label>Select Payment Method:</label><br>
+    <select id="payment_method">
+        <option value="cash">Cash</option>
+        <option value="mpesa">M-Pesa</option>
+        <option value="paypal">PayPal</option>
+        <option value="card">Credit Card</option>
+    </select>
 
     <button onclick="payBooking()">Pay</button>
 

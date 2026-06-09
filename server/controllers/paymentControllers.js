@@ -2,7 +2,7 @@ const db = require('../config/db');
 
 exports.payBookings = (req, res) => {
 
-    const { booking_id } = req.body;
+    const { booking_id, payment_method } = req.body;
     const sql = 'SELECT bookings.* FROM bookings WHERE bookings.id = ? and bookings.user_id = ?';
 
     db.query(sql, [booking_id, req.user.id], (err, bookings) => {
@@ -26,7 +26,7 @@ exports.payBookings = (req, res) => {
         const booking = bookings[0];
         const paymentSql = 'INSERT INTO payments (booking_id, amount, payment_method, payment_status) VALUES (?,?,?,?)';
 
-        db.query(paymentSql, [booking_id, booking.total_price, 'Cash', 'Paid'], (err, result) => {
+        db.query(paymentSql, [booking_id, booking.total_price, payment_method, 'Paid'], (err, result) => {
             if (err) {
                 console.error('Error creating payment:', err);
                 return res.status(500).json({ error: 'Failed to create payment' });

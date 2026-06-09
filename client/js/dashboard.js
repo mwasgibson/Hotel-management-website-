@@ -108,6 +108,7 @@ function loadPayments() {
                     <h3> Payment #${payment.id}</h3>
                     <p> Booking ID: ${payment.booking_id}</p>
                     <p> Amount: KES${payment.amount.toFixed(2)}</p>
+                    <p> Method: ${payment.payment_method}</p>
                     <p> Status: ${payment.payment_status}</p>
                     <p> Date: ${payment.date}</p>
                     <hr>
