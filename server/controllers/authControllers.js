@@ -49,3 +49,21 @@ exports.login = (req, res) => {
         res.json({ token });
     });
 };
+
+exports.profile = (req, res) => {
+
+    const sql = 'SELECT id, fullname, email FROM users WHERE id =?';
+
+    db.query(sql, [req.user.id], (err, results) => {
+        if (err) {
+            console.error('Error occurred while fetching user profile:', err);
+            return res.status(500).json({ error: 'Internal server error' });
+        }
+
+        if (results.length === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        res.json(results[0]);
+    });
+};
