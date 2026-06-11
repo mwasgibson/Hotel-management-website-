@@ -1,6 +1,7 @@
 const token = localStorage.getItem('token');
 const params = new URLSearchParams(window.location.search);
-const bookingId = params.get('booking');    
+const bookingId = params.get('booking'); 
+let bookingAmount = 0;   
 
     fetch(`http://localhost:3000/api/bookings/${bookingId}`, {
         headers: {
@@ -9,7 +10,7 @@ const bookingId = params.get('booking');
     })
     .then(response => response.json())
     .then(data => {
-        
+        bookingAmount = data.total_price;
         document.getElementById('bookingInfo').innerHTML = `
             <p>Booking ID: ${data.id}</p>
             <p>Room: ${data.room_number}</p>
@@ -26,6 +27,31 @@ function payBooking() {
 
     const payment_method = document.getElementById('payment_method').value;
     let extraData = {};
+
+    if(payment_method === 'mpesa') {
+
+        const phone = document.getElementById('phone').value;
+        const amount = document.getElementById('amount').value;
+
+        fetch("http://localhost:3000/api/mpesa/stkpush", {
+
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                phoneNumber: phone,
+                amount: amount
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("STK Push Response:", data);
+        })
+        .catch(error => {
+            console.error("Error performing STK push:", error);
+        });
+    }
 
     if (payment_method === 'card') {
         extraData.card_number = {
