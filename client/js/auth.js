@@ -1,3 +1,5 @@
+const API_URL = "https://bookish-yodel-97gx7r7xqgxjcxrx4-3000.app.github.dev/api";
+
 function registerUser() {
 
     const fullname = document.getElementById("fullname").value;
@@ -5,7 +7,7 @@ function registerUser() {
     const password = document.getElementById("password").value;
 
     fetch(
-        "http://localhost:3000/api/register", {
+        `${API_URL}/auth/register`, {
             
             method: "POST",
             headers: {"Content-Type": "application/json"},
@@ -29,7 +31,7 @@ function loginUser() {
     const password = document.getElementById("password").value;
 
     fetch(
-        "http://localhost:3000/api/login", {
+        `${API_URL}/auth/login`, {
             
             method: "POST",
             headers: {"Content-Type": "application/json"},

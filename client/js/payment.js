@@ -1,9 +1,11 @@
+const { createOrder } = require("../../server/controllers/paypalControllers");
+
 const token = localStorage.getItem('token');
 const params = new URLSearchParams(window.location.search);
 const bookingId = params.get('booking'); 
 let bookingAmount = 0;   
 
-    fetch(`http://localhost:3000/api/bookings/${bookingId}`, {
+    fetch(`${API_URL}/bookings/${bookingId}`, {
         headers: {
             'Authorization': `Bearer ${token}`
         }
@@ -33,7 +35,7 @@ function payBooking() {
         const phone = document.getElementById('phone').value;
         const amount = document.getElementById('amount').value;
 
-        fetch("http://localhost:3000/api/mpesa/stkpush", {
+        fetch(`${API_URL}/mpesa/stkpush`, {
 
             method: "POST",
             headers: {
@@ -53,13 +55,7 @@ function payBooking() {
         });
     }
 
-    if (payment_method === 'card') {
-        extraData.card_number = {
-            card_number: document.getElementById('card_number').value,
-            expiry_date: document.getElementById('expiry_date').value,
-            cvv: document.getElementById('cvv').value
-        };
-    } else if (payment_method === 'mpesa') {
+    if (payment_method === 'mpesa') {
         extraData.phone = {
             phone: document.getElementById('phone').value
         };
@@ -69,7 +65,7 @@ function payBooking() {
         };
     }
 
-    fetch(`http://localhost:3000/api/payments`, {
+    fetch(`${API_URL}/payments`, {
 
         method: 'POST',
         headers: {
@@ -95,14 +91,10 @@ function showPaymentFields() {
 
     const method = document.getElementById('payment_method').value;
     const fields = document.getElementById('paymentFields');
+    document.getElementById('paypal_button_container').style.display = "none"; 
 
-    if (method === 'card') {
-        fields.innerHTML = `
-            <input type="text" id="card_number" placeholder="Card Number" required>
-            <input type="text" id="expiry_date" placeholder="MM/YY" required>
-            <input type="text" id="cvv" placeholder="CVV" required>
-        `;
-    } else if (method === 'mpesa') {
+    if (method === 'mpesa') {
+        document.getElementById('paypal_button_container').style.display = "block";
         fields.innerHTML = `
             <input type="text" id="phone" placeholder="Phone Number" required>
         `;
@@ -117,3 +109,40 @@ function showPaymentFields() {
     }
 }
 showPaymentFields();
+
+paypal.Buttons({
+
+    createOrder() {
+        
+        return fetch(`${API_URL}/paypal/create_order`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                booking_id: bookingId,
+                amount: bookingAmount
+            })
+        })
+        .then(res => res.json())
+        .then(order => order.id);
+    },
+    onApprove(data){
+
+        return fetch(`${API_URL}/paypal/capture-order`, {
+
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+                orderID: data.orderID 
+            })
+        })
+        .then(res=>res.json())
+        .then(details=>{
+            alert("Payment Successful");
+        });
+    }   
+}).render("#paypal-button-container");

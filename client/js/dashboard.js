@@ -9,7 +9,7 @@ if (!token) {
 loadBookings();
 
 function loadBookings() {
-    fetch('http://localhost:3000/api/bookings', {
+    fetch(`${API_URL}/bookings`, {
         headers: {
             'Authorization': `Bearer ${token}`
         }
@@ -44,7 +44,7 @@ function loadBookings() {
 
 function cancelBooking(id) {
 
-    fetch(`http://localhost:3000/api/bookings/cancel/${id}`, {
+    fetch(`${API_URL}/cancel/${id}`, {
         method: 'PUT',
         headers: {
             'Authorization': `Bearer ${token}`
@@ -70,7 +70,7 @@ loadProfile();
 
 function loadProfile(){
 
-    fetch('http://localhost:3000/api/profile', {
+    fetch(`${API_URL}/profile`, {
         headers: {
             'Authorization': `Bearer ${token}`
         }
@@ -93,7 +93,7 @@ loadPayments();
 
 function loadPayments() {
 
-    fetch('http://localhost:3000/api/payments', {
+    fetch(`${API_URL}/payments`, {
         headers: {
             'Authorization': `Bearer ${token}`
         }

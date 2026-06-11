@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/mwasgibson/Hotel-management-website-#readme",
   "dependencies": {
+    "@paypal/checkout-server-sdk": "^1.0.3",
     "axios": "^1.17.0",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",

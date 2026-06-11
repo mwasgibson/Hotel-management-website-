@@ -1,4 +1,4 @@
-fetch("http://localhost:3000/api/rooms")
+fetch(`${API_URL}/rooms`)
 .then(res => res.json())
 .then(data => {
 
