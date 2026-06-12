@@ -4,7 +4,7 @@ const router = express.Router();
 const { getRooms, getRoom, addRooms, updateRoom, deleteRoom} = require('../controllers/roomControllers');
 
 router.get('/', getRooms);
-router.get('//:id', getRoom);
+router.get('/:id', getRoom);
 router.post('/', addRooms);
 router.put('/:id', updateRoom);
 router.delete('/:id', deleteRoom);
