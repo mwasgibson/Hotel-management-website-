@@ -1,5 +1,3 @@
-const { response } = require('express');
-
 const token = localStorage.getItem('token');
 
 if (!token) {
