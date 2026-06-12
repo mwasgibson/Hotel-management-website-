@@ -22,7 +22,9 @@ fetch(`${"https://bookish-yodel-97gx7r7xqgxjcxrx4-3000.app.github.dev/api"}/room
                 <h3>${room.room_type}</h3>
                 <p>Room: ${room.room_number}</p>
                 <p>Price: KES ${room.price}</p>
+                <p>Capacity: ${room.capacity}</p>
                 <p>Status: ${room.status}</p>
+                <p>Description: ${room.description}</p>
             </div>
         `;
     });
