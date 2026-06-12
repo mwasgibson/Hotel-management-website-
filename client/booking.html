@@ -4,16 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book Room</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+    <link rel="stylesheet" href="css/nav.css">
 </head>
 <body>
 
     <nav>
         <ul>
-            <li><a href="index.html">Home</a></li>
-            <li><a href="rooms.html">Rooms</a></li>
-            <li><a href="dashboard.html">Dashboard</a></li>
+            <li><a href="index.html"><i class="ph ph-house"></i> Home</a></li>
+            <li><a href="rooms.html"><i class="ph ph-bed"></i> Rooms</a></li>
+            <li><a href="dashboard.html"><i class="ph ph-squares-four"></i> Dashboard</a></li>
         </ul>
+        <button class="nav-toggle" aria-label="Menu">
+        <span></span><span></span><span></span>
+        </button>
     </nav>
+    <div class="nav-overlay"></div>
+
 
     <hr>
 
@@ -24,5 +32,6 @@
     <button onclick="bookRoom()">Book Room</button>
 
     <script src="js/booking.js"></script>
+    <script src="js/nav.js"></script>
 </body>
 </html>

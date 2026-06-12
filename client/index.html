@@ -4,18 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hotel Management System</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+    <link rel="stylesheet" href="css/nav.css">
 </head>
-<body>
+<body style="--hero: url('https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1920&q=80')">
 
     <nav>
         <ul>
-            <li><a href="index.html">Home</a></li>
-            <li><a href="rooms.html">Rooms</a></li>
-            <li><a href="login.html">Login</a></li>
-            <li><a href="register.html">Register</a></li>
-            <li><a href="booking.html">Booking</a></li>
+            <li><a href="index.html"><i class="ph ph-house"></i> Home</a></li>
+            <li><a href="rooms.html"><i class="ph ph-bed"></i> Rooms</a></li>
+            <li><a href="dashboard.html"><i class="ph ph-squares-four"></i> Dashboard</a></li>
+            <li><a href="register.html"><i class="ph ph-sign-in"></i> Register</a></li>
+            <li><a href="login.html"><i class="ph ph-sign-in"></i> Login</a></li>
+            <li><a href="booking.html"><i class="ph ph-calendar-blank"></i> Booking</a></li>
         </ul>
+        <button class="nav-toggle" aria-label="Menu">
+        <span></span><span></span><span></span>
+        </button>
     </nav>
+    <div class="nav-overlay"></div>
 
     <hr>
 
@@ -28,18 +36,17 @@
     <h2>Services</h2>
 
     <ul>
-        <li>Luxury Rooms</li>
-        <li>Restaurant</li>
-        <li>Free Wi-Fi</li>
-        <li>Conference Rooms</li>
-        <li>Airport Pickup</li>
-    </ul>
+    <li><i class="ph ph-bed"></i> Luxury Rooms</li>
+    <li><i class="ph ph-fork-knife"></i> Restaurant</li>
+    <li><i class="ph ph-wifi-high"></i> Free Wi-Fi</li>
+    <li><i class="ph ph-presentation-chart"></i> Conference Rooms</li>
+    <li><i class="ph ph-airplane-takeoff"></i> Airport Pickup</li>
+</ul>
 
     <h2>Quick Links</h2>
 
-    <a href="rooms.html">
-        View Available Rooms
-    </a>
-
+    <li><a href="rooms.html"><i class="ph ph-bed"></i> View Available Rooms</a></li>
+    
+    <script src="js/nav.js"></script>
 </body>
 </html>
