@@ -7,7 +7,7 @@ if (!token) {
 loadBookings();
 
 function loadBookings() {
-    fetch(`${API_URL}/bookings`, {
+    fetch(`${"https://bookish-yodel-97gx7r7xqgxjcxrx4-3000.app.github.dev/api"}/bookings`, {
         headers: {
             'Authorization': `Bearer ${token}`
         }
@@ -42,7 +42,7 @@ function loadBookings() {
 
 function cancelBooking(id) {
 
-    fetch(`${API_URL}/cancel/${id}`, {
+    fetch(`${"https://bookish-yodel-97gx7r7xqgxjcxrx4-3000.app.github.dev/api"}/cancel/${id}`, {
         method: 'PUT',
         headers: {
             'Authorization': `Bearer ${token}`
@@ -68,7 +68,7 @@ loadProfile();
 
 function loadProfile(){
 
-    fetch(`${API_URL}/profile`, {
+    fetch(`${"https://bookish-yodel-97gx7r7xqgxjcxrx4-3000.app.github.dev/api"}/profile`, {
         headers: {
             'Authorization': `Bearer ${token}`
         }
@@ -91,7 +91,7 @@ loadPayments();
 
 function loadPayments() {
 
-    fetch(`${API_URL}/payments`, {
+    fetch(`${"https://bookish-yodel-97gx7r7xqgxjcxrx4-3000.app.github.dev/api"}/payments`, {
         headers: {
             'Authorization': `Bearer ${token}`
         }

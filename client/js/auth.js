@@ -7,7 +7,7 @@ function registerUser() {
     const password = document.getElementById("password").value;
 
     fetch(
-        `${API_URL}/auth/register`, {
+        `${"https://bookish-yodel-97gx7r7xqgxjcxrx4-3000.app.github.dev/api"}/auth/register`, {
             
             method: "POST",
             headers: {"Content-Type": "application/json"},
@@ -31,7 +31,7 @@ function loginUser() {
     const password = document.getElementById("password").value;
 
     fetch(
-        `${API_URL}/auth/login`, {
+        `${"https://bookish-yodel-97gx7r7xqgxjcxrx4-3000.app.github.dev/api"}/auth/login`, {
             
             method: "POST",
             headers: {"Content-Type": "application/json"},

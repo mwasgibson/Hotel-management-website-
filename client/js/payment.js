@@ -5,7 +5,7 @@ const params = new URLSearchParams(window.location.search);
 const bookingId = params.get('booking'); 
 let bookingAmount = 0;   
 
-    fetch(`${API_URL}/bookings/${bookingId}`, {
+    fetch(`${"https://bookish-yodel-97gx7r7xqgxjcxrx4-3000.app.github.dev/api"}/bookings/${bookingId}`, {
         headers: {
             'Authorization': `Bearer ${token}`
         }
@@ -35,7 +35,7 @@ function payBooking() {
         const phone = document.getElementById('phone').value;
         const amount = document.getElementById('amount').value;
 
-        fetch(`${API_URL}/mpesa/stkpush`, {
+        fetch(`${"https://bookish-yodel-97gx7r7xqgxjcxrx4-3000.app.github.dev/api"}/mpesa/stkpush`, {
 
             method: "POST",
             headers: {
@@ -65,7 +65,7 @@ function payBooking() {
         };
     }
 
-    fetch(`${API_URL}/payments`, {
+    fetch(`${"https://bookish-yodel-97gx7r7xqgxjcxrx4-3000.app.github.dev/api"}/payments`, {
 
         method: 'POST',
         headers: {
@@ -114,7 +114,7 @@ paypal.Buttons({
 
     createOrder() {
         
-        return fetch(`${API_URL}/paypal/create_order`, {
+        return fetch(`${"https://bookish-yodel-97gx7r7xqgxjcxrx4-3000.app.github.dev/api"}/paypal/create_order`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -129,7 +129,7 @@ paypal.Buttons({
     },
     onApprove(data){
 
-        return fetch(`${API_URL}/paypal/capture-order`, {
+        return fetch(`${"https://bookish-yodel-97gx7r7xqgxjcxrx4-3000.app.github.dev/api"}/paypal/capture-order`, {
 
             method: "POST",
             headers: {

@@ -1,4 +1,4 @@
-fetch(`${API_URL}/rooms`)
+fetch(`${"https://bookish-yodel-97gx7r7xqgxjcxrx4-3000.app.github.dev/api"}/rooms`)
 .then(res => res.json())
 .then(data => {
 
