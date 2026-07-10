@@ -5,13 +5,28 @@ const jwt = require('jsonwebtoken');
 exports.register = async (req, res) => {
     const { fullname, email, password } = req.body;
 
+    if (!fullname || !email || !password) {
+        return res.status(400).json({ error: 'Full name, email, and password are required' });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        return res.status(400).json({ error: 'Invalid email format' });
+    }
+
+    if (password.length < 8) {
+        return res.status(400).json({ error: 'Password must be at least 8 characters' });
+    }
+
     try {
         const hashedpassword = await bcrypt.hash(password, 10);
-
         const sql = 'INSERT INTO users (fullname, email, password) VALUES (?, ?, ?)';
 
         db.query(sql, [fullname, email, hashedpassword], (err, result) => {
             if (err) {
+                if (err.code === 'ER_DUP_ENTRY') {                          
+                    return res.status(409).json({ error: 'An account with this email already exists' });
+                }
                 console.error('Error occurred while registering user:', err);
                 return res.status(500).json({ error: 'Internal server error' });
             }
@@ -46,6 +61,14 @@ exports.login = (req, res) => {
         }
 
         const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production', // requires HTTPS in prod
+            sameSite: 'strict',
+            maxAge: 60 * 60 * 1000 // 1 hour
+        });
+
         res.json({ token, role: user.role });
     });
 };

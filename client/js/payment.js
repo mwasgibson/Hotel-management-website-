@@ -1,9 +1,15 @@
-const token = localStorage.getItem('token');
+function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str ?? '';
+    return div.innerHTML;
+}
+
 const params = new URLSearchParams(window.location.search);
 const bookingId = params.get('booking'); 
 let bookingAmount = 0;   
 
-    fetch(`${"https://bookish-yodel-97gx7r7xqgxjcxrx4-3000.app.github.dev/api"}/api/bookings/${bookingId}`, {
+    fetch(`${API_URL}/bookings/${bookingId}`, {
+        credentials: 'include',
         headers: {
             'Authorization': `Bearer ${token}`
         }
@@ -12,11 +18,11 @@ let bookingAmount = 0;
     .then(data => {
         bookingAmount = data.total_amount;
         document.getElementById('bookingInfo').innerHTML = `
-            <p>Booking ID: ${data.id}</p>
-            <p>Room: ${data.room_number}</p>
-            <p>Check-in: ${data.check_in}</p>
-            <p>Check-out: ${data.check_out}</p>
-            <p>Total Price: KES${data.total_amount.toFixed(2)}</p>
+            <p>Booking ID: ${escapeHtml(data.id)}</p>
+            <p>Room: ${escapeHtml(data.room_number)}</p>
+            <p>Check-in: ${escapeHtml(data.check_in)}</p>
+            <p>Check-out: ${escapeHtml(data.check_out)}</p>
+            <p>Total Price: KES${escapeHtml(data.total_amount.toFixed(2))}</p>
         `;
     })
     .catch(error => {
@@ -33,7 +39,8 @@ function payBooking() {
         const phone = document.getElementById('phone').value;
         const amount = document.getElementById('amount').value;
 
-        fetch(`${"https://bookish-yodel-97gx7r7xqgxjcxrx4-3000.app.github.dev/api"}/api/mpesa/stkpush`, {
+        fetch(`${API_URL}/mpesa/stkpush`, {
+            credentials: 'include',
 
             method: "POST",
             headers: {
@@ -63,7 +70,8 @@ function payBooking() {
         };
     }
 
-    fetch(`${"https://bookish-yodel-97gx7r7xqgxjcxrx4-3000.app.github.dev/api"}/api/payments/payments`, {
+    fetch(`${API_URL}/payments`, {
+        credentials: 'include',
 
         method: 'POST',
         headers: {
@@ -77,20 +85,19 @@ function payBooking() {
     .then(response => response.json())
     .then(data => {
         console.log('Payment successful:', data);
+        window.location.href = 'dashboard.html';
     })
-    .then(error => {
-        console.error('Error:', error);
-
-    window.location.href = 'dashboard.html';    
+    .catch(error => {
+        console.error('Error:', error);       
     });
 }
 
 function showPaymentFields() {
 
-    const method = document.getElementById('payment_method').value;
     const fields = document.getElementById('paymentFields');
     document.getElementById('mpesa_button_container').style.display = "none"; 
 
+    const method = document.getElementById('payment_method').value;
     if (method === 'mpesa') {
         document.getElementById('mpesa_button_container').style.display = "block";
         fields.innerHTML = `
@@ -112,11 +119,14 @@ paypal.Buttons({
 
     createOrder() {
         
-        return fetch(`${"https://bookish-yodel-97gx7r7xqgxjcxrx4-3000.app.github.dev/api"}/api/paypal/paypal/create-order`, {
+        return fetch(`${API_URL}/paypal/create-order`, {
+            
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
+            credentials: 'include',
+
             body: JSON.stringify({
                 booking_id: bookingId,
                 amount: bookingAmount
@@ -127,12 +137,13 @@ paypal.Buttons({
     },
     onApprove(data){
 
-        return fetch(`${"https://bookish-yodel-97gx7r7xqgxjcxrx4-3000.app.github.dev/api"}/api/paypal/paypal/capture-order`, {
+        return fetch(`${API_URL}/paypal/capture-order`, {
 
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
+            credentials: 'include',
 
             body: JSON.stringify({
                 orderID: data.orderID 
@@ -143,4 +154,4 @@ paypal.Buttons({
             alert("Payment Successful");
         });
     }   
-}).render("#paypal-button-container");
+}).render("#mpesa_button_container");

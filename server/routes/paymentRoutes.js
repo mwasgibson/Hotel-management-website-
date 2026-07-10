@@ -6,7 +6,7 @@ const {
     getPayments
 } = require('../controllers/paymentControllers');
 
-router.post('/payments', authMiddleware, payBookings);
-router.get('/payments', authMiddleware, getPayments);
+router.post('/', authMiddleware, payBookings);
+router.get('/', authMiddleware, getPayments);
 
 module.exports = router;

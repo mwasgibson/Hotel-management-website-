@@ -1,4 +1,12 @@
-fetch(`${"https://bookish-yodel-97gx7r7xqgxjcxrx4-3000.app.github.dev/api"}/api/rooms`)
+function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str ?? '';
+    return div.innerHTML;
+}
+
+fetch(`${API_URL}/rooms`, {
+    credentials: 'include'
+})
 .then(res => res.json())
 .then(data => {
 
@@ -20,13 +28,13 @@ fetch(`${"https://bookish-yodel-97gx7r7xqgxjcxrx4-3000.app.github.dev/api"}/api/
 
         roomContainer.innerHTML += `
             <div>
-                <img class="room-img" src="${img}" alt="${room.room_type} Room">
-                <h3>${room.room_type}</h3>
-                <p>Room: ${room.room_number}</p>
-                <p>Price: KES ${room.price}</p>
-                <p>Capacity: ${room.capacity}</p>
-                <p>Status: ${room.status}</p>
-                <p>Description: ${room.description}</p>
+                <img class="room-img" src="${img}" alt="${escapeHtml(room.room_type)} Room">
+                <h3>${escapeHtml(room.room_type)}</h3>
+                <p>Room: ${escapeHtml(room.room_number)}</p>
+                <p>Price: KES ${escapeHtml(room.price)}</p>
+                <p>Capacity: ${escapeHtml(room.capacity)}</p>
+                <p>Status: ${escapeHtml(room.status)}</p>
+                <p>Description: ${escapeHtml(room.description)}</p>
             </div>
         `;
     });

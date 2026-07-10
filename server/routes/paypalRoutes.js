@@ -5,7 +5,7 @@ const{
     captureOrder
 } = require("../controllers/paypalControllers");
 
-router.post('/paypal/create-order', createOrder);
-router.post('/paypal/capture_order', captureOrder);
+router.post('/create-order', createOrder);
+router.post('/capture_order', captureOrder);
 
 module.exports = router;

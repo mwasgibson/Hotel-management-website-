@@ -4,8 +4,8 @@ const authMiddleware = require('../middleware/authMiddleware');
 
 const { getRooms, getRoom, addRooms, updateRoom, deleteRoom} = require('../controllers/roomControllers');
 
-router.get('/', authMiddleware, getRooms);
-router.get('/:id', authMiddleware, getRoom);
+router.get('/', getRooms);
+router.get('/:id', getRoom);
 router.post('/', authMiddleware, addRooms);
 router.put('/:id', authMiddleware, updateRoom);
 router.delete('/:id', authMiddleware, deleteRoom);

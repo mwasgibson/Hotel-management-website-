@@ -6,6 +6,7 @@ function registerUser() {
     const password = document.getElementById("password").value;
 
     fetch(`${API_URL}/auth/register`, {
+        credentials: 'include',
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({fullname, email, password})
@@ -22,14 +23,13 @@ function loginUser() {
     const password = document.getElementById("password").value;
 
     fetch(`${API_URL}/auth/login`, {
+        credentials: 'include',
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({email, password})
     })
     .then(res => res.json())
     .then(data => {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("role", data.role);
 
         if (
             data.role === "admin" ||

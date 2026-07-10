@@ -8,9 +8,9 @@ function environment() {
 const client = new paypal.core.PayPalHttpClient(environment());
 
 exports.createOrder = async (req, res) => {
+    const { booking_id, amount } = req.body;
 
     const request = new paypal.orders.OrdersCreateRequest();
-    const { booking_id, amount } = req.body;
     request.prefer("return=representation");
     request.requestBody({
         intent: 'CAPTURE',

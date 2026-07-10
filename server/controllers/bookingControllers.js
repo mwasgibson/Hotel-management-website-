@@ -5,6 +5,25 @@ exports.createBooking = (req, res) => {
 
     const { room_number, check_in, check_out } = req.body;
 
+    if (!room_number || !check_in || !check_out) {
+        return res.status(400).json({ error: 'room_number, check_in, and check_out are required' });
+    }
+
+    const start = new Date(check_in);
+    const end = new Date(check_out);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (isNaN(start) || isNaN(end)) {
+        return res.status(400).json({ error: 'Invalid date format' });
+    }
+    if (start < today) {
+        return res.status(400).json({ error: 'Check-in date cannot be in the past' });
+    }
+    if (end <= start) {
+        return res.status(400).json({ error: 'Check-out date must be after check-in date' });
+    }
+
     const roomSql = 'SELECT * FROM rooms WHERE id = ?';
     db.query(roomSql, [room_number], (err, roomResults) => {
         if (err) {
@@ -27,14 +46,7 @@ exports.createBooking = (req, res) => {
                 return res.status(404).json({ error: 'Room not found' });
             }
 
-        const room = roomResults[0];
-
-        const start = new Date(check_in);
-        const end = new Date(check_out);
-
-        if (new Date(check_out) <= new Date(check_in)) {
-            return res.status(400).json({ error: 'Check-out date must be after check-in date' });
-        }
+        const room = roomResults[0];        
 
         const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
         const total_amount = days * room.price;
@@ -69,9 +81,9 @@ exports.getBookings = (req, res) => {
 
 exports.getBooking = (req, res) => {
 
-    const user_id = req.params.id;
+    const user_id = req.user.id;
 
-    const sql = 'SELECT * FROM users WHERE id = ? AND user_id = ?';
+    const sql = 'SELECT * FROM bookings WHERE id = ? AND user_id = ?';
     db.query(sql, [req.params.id, user_id], (err, results) => {
         if (err) {
             console.error('Error fetching booking:', err);
@@ -88,10 +100,11 @@ exports.getBooking = (req, res) => {
 
 exports.cancelBooking = (req, res) => {
 
+    const user_id = req.user.id;
     const { id } = req.params;
 
-    const bookingSql = 'SELECT * FROM bookings WHERE id = ?';
-    db.query(bookingSql, [id], (err, bookingResults) => {
+    const bookingSql = 'SELECT * FROM bookings WHERE id = ? AND user_id = ?';
+    db.query(bookingSql, [id, user_id], (err, bookingResults) => {
         if (err) {
             console.error('Error fetching booking:', err);
             return res.status(500).json({ error: 'Database error' });

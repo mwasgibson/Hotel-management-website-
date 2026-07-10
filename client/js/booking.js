@@ -1,10 +1,9 @@
 const API_URL ="https://bookish-yodel-97gx7r7xqgxjcxrx4-3000.app.github.dev/api";
 
 function bookRoom() {
-    
-    const token = localStorage.getItem('token');
 
-    fetch(`${"https://bookish-yodel-97gx7r7xqgxjcxrx4-3000.app.github.dev/api"}/api/bookings`, {
+    fetch(`${API_URL}/bookings`, {
+        credentials: 'include',
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
