@@ -3,9 +3,9 @@
 A modern, responsive hotel booking and management platform built with JavaScript (82.5%) and HTML (17.5%). This full-stack application provides both client-side and server-side functionality for managing hotel reservations, payments, and guest information.
 
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-![JavaScript](https://img.shields.io/badge/JavaScript-57.9%25-yellow)
-![HTML](https://img.shields.io/badge/HTML-17.1%25-orange)
-![CSS](https://img.shields.io/badge/CSS-25.0%25-blue)
+![JavaScript](https://img.shields.io/badge/JavaScript-58.1%25-yellow)
+![HTML](https://img.shields.io/badge/HTML-17.2%25-orange)
+![CSS](https://img.shields.io/badge/CSS-24.7%25-blue)
 
 ## 📋 Table of Contents
 
