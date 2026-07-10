@@ -265,13 +265,9 @@ Please ensure your code follows the project's coding standards and includes appr
 ## 👤 Author
 
 **Gibson Mwangi**
-- Software Engineering Student, Kisii University
+- Software Engineer
 - GitHub: [@mwasgibson](https://github.com/mwasgibson)
 - Email: Contact through GitHub profile
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
@@ -290,7 +286,6 @@ If you encounter any issues or have questions:
 - Special thanks to all contributors and users
 
 ---
+## 📄 License
 
-**Happy Coding!** 🎉
-
-Last Updated: June 9, 2026
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
