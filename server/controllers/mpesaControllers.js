@@ -7,7 +7,7 @@ exports.getAccessToken = async (req, res) => {
     const auth = Buffer.from(`${consumerKey}:${consumerSecret}`).toString('base64');
 
     try {
-        const response = await axios.get('https://sandbox.m-pesa.com/oauth/v1/generate?grant_type=client_credentials', {
+        const response = await axios.get('https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials', {
             headers: {
                 'Authorization': `Basic ${auth}`
             }

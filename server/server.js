@@ -13,7 +13,7 @@ const paymentRoutes = require('./routes/paymentRoutes');
 const mpesaRoutes = require('./routes/mpesaRoutes');
 const paypalRoutes = require('./routes/paypalRoutes');
 
-app.use(cors({ origin: "https://bookish-yodel-97gx7r7xqgxjcxrx4-5501.app.github.dev" }));
+app.use(cors());
 app.use (express.json ());
 
 app.use ('/api/auth', routes);
@@ -22,7 +22,6 @@ app.use ('/api/bookings', bookingRoutes);
 app.use ('/api/mpesa', mpesaRoutes);
 app.use('/api/paypal', paypalRoutes);
 app.use ('/api/payments', paymentRoutes);
-app.use ('/api/bookings', bookingRoutes);
 
 app.get ("/", (req, res) => {
     res.send ("Hotel Management System API");

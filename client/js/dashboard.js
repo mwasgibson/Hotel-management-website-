@@ -7,7 +7,7 @@ if (!token) {
 loadBookings();
 
 function loadBookings() {
-    fetch(`${"https://bookish-yodel-97gx7r7xqgxjcxrx4-3000.app.github.dev/api"}/bookings`, {
+    fetch(`${"https://bookish-yodel-97gx7r7xqgxjcxrx4-3000.app.github.dev/api"}/api/bookings`, {
         headers: {
             'Authorization': `Bearer ${token}`
         }
@@ -28,7 +28,7 @@ function loadBookings() {
                     <p> Check-in: <span class="${booking.check_in}">${booking.check_in}</span></p>
                     <p> Check-out: <span class="${booking.check_out}">${booking.check_out}</span></p>
                     <p> Status: <span class="${booking.booking_status}">${booking.booking_number}</span></p>
-                    <p> Total Price: <span class="${booking.total_price}">KES${booking.total_price.toFixed(2)}</span></p>
+                    <p> Total Price: <span class="${booking.total_amount}">KES${booking.total_amount.toFixed(2)}</span></p>
 
                     ${booking.booking_status === 'pending' ? `<button onclick="goToPayment(${booking.id})">Pay</button>` : ''}
                     <button onclick="cancelBooking(${booking.id})">Cancel</button>
@@ -42,7 +42,7 @@ function loadBookings() {
 
 function cancelBooking(id) {
 
-    fetch(`${"https://bookish-yodel-97gx7r7xqgxjcxrx4-3000.app.github.dev/api"}/cancel/${id}`, {
+    fetch(`${"https://bookish-yodel-97gx7r7xqgxjcxrx4-3000.app.github.dev/api"}/cancel/api/bookings:/id`, {
         method: 'PUT',
         headers: {
             'Authorization': `Bearer ${token}`
@@ -68,7 +68,7 @@ loadProfile();
 
 function loadProfile(){
 
-    fetch(`${"https://bookish-yodel-97gx7r7xqgxjcxrx4-3000.app.github.dev/api"}/profile`, {
+    fetch(`${"https://bookish-yodel-97gx7r7xqgxjcxrx4-3000.app.github.dev/api"}/api/auth/profile`, {
         headers: {
             'Authorization': `Bearer ${token}`
         }
@@ -91,7 +91,7 @@ loadPayments();
 
 function loadPayments() {
 
-    fetch(`${"https://bookish-yodel-97gx7r7xqgxjcxrx4-3000.app.github.dev/api"}/payments`, {
+    fetch(`${"https://bookish-yodel-97gx7r7xqgxjcxrx4-3000.app.github.dev/api"}/api/payments/payments`, {
         headers: {
             'Authorization': `Bearer ${token}`
         }

@@ -10,13 +10,14 @@ const client = new paypal.core.PayPalHttpClient(environment());
 exports.createOrder = async (req, res) => {
 
     const request = new paypal.orders.OrdersCreateRequest();
+    const { booking_id, amount } = req.body;
     request.prefer("return=representation");
     request.requestBody({
         intent: 'CAPTURE',
         purchase_units: [{
             reference_id: booking_id.toString(),
             amount:{
-                currency_code: 'KSH',
+                currency_code: 'KES',
                 value: amount.toString()
             }
         }]

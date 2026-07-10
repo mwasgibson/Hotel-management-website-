@@ -1,24 +1,22 @@
-const { createOrder } = require("../../server/controllers/paypalControllers");
-
 const token = localStorage.getItem('token');
 const params = new URLSearchParams(window.location.search);
 const bookingId = params.get('booking'); 
 let bookingAmount = 0;   
 
-    fetch(`${"https://bookish-yodel-97gx7r7xqgxjcxrx4-3000.app.github.dev/api"}/bookings/${bookingId}`, {
+    fetch(`${"https://bookish-yodel-97gx7r7xqgxjcxrx4-3000.app.github.dev/api"}/api/bookings/${bookingId}`, {
         headers: {
             'Authorization': `Bearer ${token}`
         }
     })
     .then(response => response.json())
     .then(data => {
-        bookingAmount = data.total_price;
+        bookingAmount = data.total_amount;
         document.getElementById('bookingInfo').innerHTML = `
             <p>Booking ID: ${data.id}</p>
             <p>Room: ${data.room_number}</p>
             <p>Check-in: ${data.check_in}</p>
             <p>Check-out: ${data.check_out}</p>
-            <p>Total Price: KES${data.total_price.toFixed(2)}</p>
+            <p>Total Price: KES${data.total_amount.toFixed(2)}</p>
         `;
     })
     .catch(error => {
@@ -35,7 +33,7 @@ function payBooking() {
         const phone = document.getElementById('phone').value;
         const amount = document.getElementById('amount').value;
 
-        fetch(`${"https://bookish-yodel-97gx7r7xqgxjcxrx4-3000.app.github.dev/api"}/mpesa/stkpush`, {
+        fetch(`${"https://bookish-yodel-97gx7r7xqgxjcxrx4-3000.app.github.dev/api"}/api/mpesa/stkpush`, {
 
             method: "POST",
             headers: {
@@ -65,7 +63,7 @@ function payBooking() {
         };
     }
 
-    fetch(`${"https://bookish-yodel-97gx7r7xqgxjcxrx4-3000.app.github.dev/api"}/payments`, {
+    fetch(`${"https://bookish-yodel-97gx7r7xqgxjcxrx4-3000.app.github.dev/api"}/api/payments/payments`, {
 
         method: 'POST',
         headers: {
@@ -80,7 +78,7 @@ function payBooking() {
     .then(data => {
         console.log('Payment successful:', data);
     })
-    .catch(error => {
+    .then(error => {
         console.error('Error:', error);
 
     window.location.href = 'dashboard.html';    
@@ -91,10 +89,10 @@ function showPaymentFields() {
 
     const method = document.getElementById('payment_method').value;
     const fields = document.getElementById('paymentFields');
-    document.getElementById('paypal_button_container').style.display = "none"; 
+    document.getElementById('mpesa_button_container').style.display = "none"; 
 
     if (method === 'mpesa') {
-        document.getElementById('paypal_button_container').style.display = "block";
+        document.getElementById('mpesa_button_container').style.display = "block";
         fields.innerHTML = `
             <input type="text" id="phone" placeholder="Phone Number" required>
         `;
@@ -114,7 +112,7 @@ paypal.Buttons({
 
     createOrder() {
         
-        return fetch(`${"https://bookish-yodel-97gx7r7xqgxjcxrx4-3000.app.github.dev/api"}/paypal/create_order`, {
+        return fetch(`${"https://bookish-yodel-97gx7r7xqgxjcxrx4-3000.app.github.dev/api"}/api/paypal/paypal/create-order`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -129,7 +127,7 @@ paypal.Buttons({
     },
     onApprove(data){
 
-        return fetch(`${"https://bookish-yodel-97gx7r7xqgxjcxrx4-3000.app.github.dev/api"}/paypal/capture-order`, {
+        return fetch(`${"https://bookish-yodel-97gx7r7xqgxjcxrx4-3000.app.github.dev/api"}/api/paypal/paypal/capture-order`, {
 
             method: "POST",
             headers: {
