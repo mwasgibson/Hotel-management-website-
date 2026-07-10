@@ -11,7 +11,7 @@ function bookRoom() {
             'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-            room_id: document.getElementById('room_id').value,
+            room_number: document.getElementById('room_number').value,
             check_in: document.getElementById('check_in').value,
             check_out: document.getElementById('check_out').value
         })

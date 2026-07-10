@@ -13,7 +13,7 @@ const paymentRoutes = require('./routes/paymentRoutes');
 const mpesaRoutes = require('./routes/mpesaRoutes');
 const paypalRoutes = require('./routes/paypalRoutes');
 
-app.use(cors({ origin: "https://bookish-yodel-97gx7r7xqgxjcxrx4-5501.app.github.dev/" }));
+app.use(cors({ origin: "https://bookish-yodel-97gx7r7xqgxjcxrx4-5501.app.github.dev" }));
 app.use (express.json ());
 
 app.use ('/api/auth', routes);

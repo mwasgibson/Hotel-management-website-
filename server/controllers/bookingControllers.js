@@ -3,17 +3,17 @@ const db = require('../config/db');
 exports.createBooking = (req, res) => {
     const user_id = req.user.id; 
 
-    const { room_id, start_date, end_date } = req.body;
+    const { room_number, start_date, end_date } = req.body;
 
     const roomSql = 'SELECT * FROM rooms WHERE id = ?';
-    db.query(roomSql, [room_id], (err, roomResults) => {
+    db.query(roomSql, [room_number], (err, roomResults) => {
         if (err) {
             console.error('Error fetching room:', err);
             return res.status(500).json({ error: 'Database error' });
         }
 
         const conflictSql = 'SELECT * FROM bookings WHERE room_id = ? AND booking_status IN ("pending", "confirmed") AND (start_date < ? AND end_date > ?)';
-        db.query(conflictSql, [room_id, end_date, start_date], (err, conflictResults) => {
+        db.query(conflictSql, [room_number, end_date, start_date], (err, conflictResults) => {
             if (err) {
                 console.error('Error checking booking conflicts:', err);
                 return res.status(500).json({ error: 'Database error' });
@@ -39,8 +39,8 @@ exports.createBooking = (req, res) => {
         const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
         const total_amount = days * room.price;
 
-        const bookingSql = 'INSERT INTO bookings (user_id, room_id, start_date, end_date, total_amount) VALUES (?, ?, ?, ?, ?)';
-        db.query(bookingSql, [user_id, room_id, start_date, end_date, total_amount], (err, bookingResults) => {
+        const bookingSql = 'INSERT INTO bookings (user_id, room_number, start_date, end_date, total_amount) VALUES (?, ?, ?, ?, ?)';
+        db.query(bookingSql, [user_id, room_number, start_date, end_date, total_amount], (err, bookingResults) => {
             if (err) {
                 console.error('Error creating booking:', err);
                 return res.status(500).json({ error: 'Database error' });
@@ -56,7 +56,7 @@ exports.getBookings = (req, res) => {
 
     const user_id = req.user.id;
 
-    const sql = 'SELECT bookings.*, rooms.room_number, rooms.room_type FROM bookings JOIN rooms ON bookings.room_id = rooms.id WHERE bookings.user_id = ?';
+    const sql = 'SELECT bookings.*, rooms.room_id, rooms.room_type FROM bookings JOIN rooms ON bookings.room_number = rooms.number WHERE bookings.user_id = ?';
     db.query(sql, [user_id], (err, results) => {
         if (err) {
             console.error('Error fetching bookings:', err);
@@ -103,7 +103,7 @@ exports.cancelBooking = (req, res) => {
 
         const booking = bookingResults[0];
 
-        db.query("UPDATE rooms SET status = 'available' WHERE id = ?", [booking.room_id], (err) => {
+        db.query("UPDATE rooms SET status = 'available' WHERE id = ?", [booking.room_number], (err) => {
             if (err) {
                 console.error('Error updating room status:', err);
                 return res.status(500).json({ error: 'Database error' });
