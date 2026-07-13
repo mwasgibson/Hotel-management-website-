@@ -32,9 +32,13 @@ function loginUser() {
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({email, password})
     })
-    .then(res => res.json())
-    .then(data => {
+    .then(res => res.json().then(data => ({ok: res.ok, data})))
+    .then(({ok, data}) => {
 
+        if(!ok){
+            alert(data.error || 'Login failed');
+            return;
+        }
         if (
             data.role === "admin" ||
             data.role === "receptionist"
@@ -43,5 +47,9 @@ function loginUser() {
         } else {
         window.location.href = "index.html";
         }
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Unable to connect to the server.");
     });
 }

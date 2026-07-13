@@ -9,7 +9,7 @@ exports.register = async (req, res) => {
         return res.status(400).json({ error: 'Full name, email, password, and role are required' });
     }
 
-    const allowedRoles = ['user', 'admin', 'receptionist'];
+    const allowedRoles = ['guest', 'admin', 'receptionist'];
     if (!allowedRoles.includes(role)) {
         return res.status(400).json({ error: 'Invalid role' });
     }
@@ -73,6 +73,11 @@ exports.login = (req, res) => {
             sameSite: 'lax',
             maxAge: 60 * 60 * 1000, // 1 hour
             path: '/'
+        });
+        return res.status(200).json({
+            message: "Login successful",
+            token,
+            role: user.role
         });
     });
 };
