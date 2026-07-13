@@ -2,7 +2,11 @@ const jwt = require("jsonwebtoken");
 
 const authMiddleware = (req, res, next) => {
 
-    const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
+    const token = jwt.sign(
+        { id: user.id, email: user.email, role: user.role },
+        process.env.JWT_SECRET,
+        { expiresIn: '1h' }
+    ); req.cookies.token || req.headers.authorization?.split(" ")[1];
     const authHeader = req.headers.authorization;
 
     if (!authHeader && !token) {

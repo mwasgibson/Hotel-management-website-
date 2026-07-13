@@ -1,5 +1,3 @@
-const API_URL ="https://bookish-yodel-97gx7r7xqgxjcxrx4-3000.app.github.dev/api";
-
 function bookRoom() {
 
     fetch(`${API_URL}/bookings`, {
