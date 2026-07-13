@@ -63,10 +63,11 @@ exports.login = (req, res) => {
         const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
         
         res.cookie('token', token, {
-            httpOnly: true,
+            httpOnly: false,
             secure: process.env.NODE_ENV === 'production', // requires HTTPS in prod
-            sameSite: 'strict',
-            maxAge: 60 * 60 * 1000 // 1 hour
+            sameSite: 'lax',
+            maxAge: 60 * 60 * 1000, // 1 hour
+            path: '/'
         });
 
         res.json({ token, role: user.role });

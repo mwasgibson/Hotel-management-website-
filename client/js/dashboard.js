@@ -4,6 +4,8 @@ function escapeHtml(str) {
     return div.innerHTML;
 }
 
+const token = getCookie('token');
+
 if (!token) {
     window.location.href = 'login.html';
 }
@@ -14,7 +16,7 @@ function loadBookings() {
     fetch(`${API_URL}/bookings`, {
         credentials: 'include',
         headers: {
-            'Authorization': `Bearer ${token}`
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         }
     })
     .then(response => response.json())
@@ -51,7 +53,7 @@ function cancelBooking(id) {
         credentials: 'include',
         method: 'PUT',
         headers: {
-            'Authorization': `Bearer ${token}`
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         }
     })
     .then(response => response.json())
@@ -65,8 +67,7 @@ function cancelBooking(id) {
 };
 
 function Logout() {
-
-    res.clearCookie('token'),
+    deleteCookie('token');
     window.location.href = 'login.html';
 };
 
@@ -77,7 +78,7 @@ function loadProfile(){
     fetch(`${API_URL}/auth/profile`, {
         credentials: 'include',
         headers: {
-            'Authorization': `Bearer ${token}`
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         }
     })
     .then(response => response.json())
@@ -101,7 +102,7 @@ function loadPayments() {
     fetch(`${API_URL}/payments`, {
         credentials: 'include',
         headers: {
-            'Authorization': `Bearer ${token}`
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         }
     })
     .then(response => response.json())
