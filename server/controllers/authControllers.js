@@ -35,7 +35,7 @@ exports.register = async (req, res) => {
                 console.error('Error occurred while registering user:', err);
                 return res.status(500).json({ error: 'Internal server error' });
             }
-            res.status(201).json({ message: 'User registered successfully' });
+            res.status(201).json({ message: 'User registered successfully', role });
         });
     } catch (error) {
         console.error('Error occurred while hashing password:', error);

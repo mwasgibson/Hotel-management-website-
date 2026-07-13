@@ -17,7 +17,7 @@ function registerUser() {
             return;
         }
         alert(data.message);
-        window.location.href = 'login.html';
+    window.location.href = 'login.html';
     })
     .catch(error => console.error('Error:', error));
 }
