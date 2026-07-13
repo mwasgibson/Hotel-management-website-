@@ -11,8 +11,19 @@ const paymentRoutes = require('./routes/paymentRoutes');
 const mpesaRoutes = require('./routes/mpesaRoutes');
 const paypalRoutes = require('./routes/paypalRoutes');
 const app = express ();
+const allowedOrigins = (process.env.CLIENT_URL || "").split(",").map(o => o.trim());
 
-app.use(cors({origin: process.env.CLIENT_URL, credentials: true}));
+app.use(cors({
+    origin: function (origin, callback) {
+        // allow requests with no origin (e.g. curl, Postman) and any origin in the allowed list
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true
+}));
 app.use (express.json ());
 app.use(cookieParser());
 
