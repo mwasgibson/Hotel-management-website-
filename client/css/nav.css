@@ -58,8 +58,9 @@ nav.scrolled {
 
 .nav-toggle span {
   display: block;
+  width: 20px;
   height: 2px;
-  background: var(--white);
+  background: var(--midnight);
   border-radius: 2px;
   transform-origin: center;
   transition:

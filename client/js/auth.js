@@ -1,21 +1,25 @@
-const API_URL = "https://bookish-yodel-97gx7r7xqgxjcxrx4-3000.app.github.dev/api";
-
 function registerUser() {
     const fullname = document.getElementById("fullname").value;
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
+    const role = document.getElementById("role").value;
 
     fetch(`${API_URL}/auth/register`, {
         credentials: 'include',
         method: "POST",
         headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({fullname, email, password})
+        body: JSON.stringify({fullname, email, password, role})
     })
-    .then(res => res.json())
-    .then(data => {
+    .then(res => res.json().then(data => ({ ok: res.ok, data })))
+    .then(({ ok, data }) => {
+        if (!ok) {
+            alert(data.error || 'Registration failed');
+            return;
+        }
         alert(data.message);
-        window.location.href = "login.html";
-    });
+        window.location.href = 'login.html';
+    })
+    .catch(error => console.error('Error:', error));
 }
 
 function loginUser() {

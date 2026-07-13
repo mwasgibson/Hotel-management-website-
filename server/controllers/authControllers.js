@@ -3,10 +3,10 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 exports.register = async (req, res) => {
-    const { fullname, email, password } = req.body;
+    const { fullname, email, password, role } = req.body;
 
-    if (!fullname || !email || !password) {
-        return res.status(400).json({ error: 'Full name, email, and password are required' });
+    if (!fullname || !email || !password || !role) {
+        return res.status(400).json({ error: 'Full name, email, password, and role are required' });
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -20,9 +20,9 @@ exports.register = async (req, res) => {
 
     try {
         const hashedpassword = await bcrypt.hash(password, 10);
-        const sql = 'INSERT INTO users (fullname, email, password) VALUES (?, ?, ?)';
+        const sql = 'INSERT INTO users (fullname, email, password, role) VALUES (?, ?, ?, ?)';
 
-        db.query(sql, [fullname, email, hashedpassword], (err, result) => {
+        db.query(sql, [fullname, email, hashedpassword, role], (err, result) => {
             if (err) {
                 if (err.code === 'ER_DUP_ENTRY') {                          
                     return res.status(409).json({ error: 'An account with this email already exists' });
@@ -60,7 +60,7 @@ exports.login = (req, res) => {
             return res.status(401).json({ error: 'Invalid email or password' });
         }
 
-        const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
         
         res.cookie('token', token, {
             httpOnly: true,
