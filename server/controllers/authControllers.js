@@ -9,6 +9,11 @@ exports.register = async (req, res) => {
         return res.status(400).json({ error: 'Full name, email, password, and role are required' });
     }
 
+    const allowedRoles = ['user', 'admin', 'receptionist'];
+    if (!allowedRoles.includes(role)) {
+        return res.status(400).json({ error: 'Invalid role' });
+    }
+    
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
         return res.status(400).json({ error: 'Invalid email format' });
@@ -69,14 +74,12 @@ exports.login = (req, res) => {
             maxAge: 60 * 60 * 1000, // 1 hour
             path: '/'
         });
-
-        res.json({ token, role: user.role });
     });
 };
 
 exports.profile = (req, res) => {
 
-    const sql = 'SELECT id, fullname, email FROM users WHERE id =?';
+    const sql = 'SELECT id, fullname, email, role FROM users WHERE id =?';
 
     db.query(sql, [req.user.id], (err, results) => {
         if (err) {

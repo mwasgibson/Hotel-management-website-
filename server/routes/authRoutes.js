@@ -5,8 +5,8 @@ const authMiddleware = require('../middleware/authMiddleware');
 const adminMiddleware = require('../middleware/adminMiddleware');
 const {register, login, profile} = require('../controllers/authControllers');
 
-router.post('/register', adminMiddleware,register);
-router.post('/login', adminMiddleware, login);
-router.get('/profile', authMiddleware, adminMiddleware, profile);
+router.post('/register', register);
+router.post('/login', login);
+router.get('/profile', authMiddleware, profile);
 
 module.exports = router;

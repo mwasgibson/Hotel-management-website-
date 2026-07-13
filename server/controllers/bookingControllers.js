@@ -68,7 +68,7 @@ exports.getBookings = (req, res) => {
 
     const user_id = req.user.id;
 
-    const sql = 'SELECT bookings.*, rooms.room_id, rooms.room_type FROM bookings JOIN rooms ON bookings.room_number = rooms.number WHERE bookings.user_id = ?';
+    const sql = 'SELECT bookings.*, rooms.room_id, rooms.room_type, rooms.status FROM bookings JOIN rooms ON bookings.room_number = rooms.number WHERE bookings.user_id = ?';
     db.query(sql, [user_id], (err, results) => {
         if (err) {
             console.error('Error fetching bookings:', err);

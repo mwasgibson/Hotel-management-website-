@@ -6,6 +6,6 @@ const{
 } = require("../controllers/paypalControllers");
 
 router.post('/create-order', createOrder);
-router.post('/capture_order', captureOrder);
+router.post('/capture-order', captureOrder);
 
 module.exports = router;

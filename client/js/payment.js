@@ -4,14 +4,16 @@ function escapeHtml(str) {
     return div.innerHTML;
 }
 
+const token = getCookie('token');
 const params = new URLSearchParams(window.location.search);
 const bookingId = params.get('booking'); 
+
 let bookingAmount = 0;   
 
     fetch(`${API_URL}/bookings/${bookingId}`, {
         credentials: 'include',
         headers: {
-            'Authorization': `Bearer ${token}`
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         }
     })
     .then(response => response.json())

@@ -1,25 +1,28 @@
 const axios = require('axios');
 
-async function fetchAccessToken(){
+function buildAuthHeader() {
     const consumerKey = process.env.MPESA_CONSUMER_KEY;
     const consumerSecret = process.env.MPESA_CONSUMER_SECRET;
-    const auth = Buffer.from(`${consumerKey}:${consumerSecret}`).toString('base64');
+    return Buffer.from(`${consumerKey}:${consumerSecret}`).toString('base64');
+}
+
+async function fetchAccessToken() {
+    const auth = buildAuthHeader();
+    const response = await axios.get(
+        'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials',
+        { headers: { 'Authorization': `Basic ${auth}` } }
+    );
+    return response.data.access_token;
 }
 
 exports.getAccessToken = async (req, res) => {
     try {
-        const response = await axios.get('https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials', {
-            headers: {
-                'Authorization': `Basic ${auth}`
-            }
-        });
-
-        res.json(response.data);
+        const token = await fetchAccessToken();
+        res.json({ access_token: token });
     } catch (error) {
         console.error('Error fetching access token:', error);
         res.status(500).json({ error: 'Failed to fetch access token' });
     }
-    return response.data.access_token;
 };
 
 exports.stkPush = async (req, res) => {

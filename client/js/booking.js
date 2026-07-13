@@ -1,11 +1,13 @@
 function bookRoom() {
 
+    const token = getCookie('token');
+    
     fetch(`${API_URL}/bookings`, {
         credentials: 'include',
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         },
         body: JSON.stringify({
             room_number: document.getElementById('room_number').value,

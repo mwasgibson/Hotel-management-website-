@@ -30,7 +30,7 @@ function loadBookings() {
             bookingDiv.innerHTML += `
                 <div>
                     <h3> Booking #${booking.id}</h3>
-                    <p> Room: <span class="${escapeHtml(booking.room_status)}">${escapeHtml(booking.room_number)}</span></p>
+                    <p> Room: <span class="${escapeHtml(booking.status)}">${escapeHtml(booking.room_number)}</span></p>
                     <p> Type: <span class="${escapeHtml(booking.room_type)}">${escapeHtml(booking.room_type)}</span></p>
                     <p> Check-in: <span class="${escapeHtml(booking.check_in)}">${escapeHtml(booking.check_in)}</span></p>
                     <p> Check-out: <span class="${escapeHtml(booking.check_out)}">${escapeHtml(booking.check_out)}</span></p>
