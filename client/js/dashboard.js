@@ -67,7 +67,7 @@ function cancelBooking(id) {
 };
 
 function Logout() {
-    deleteCookie('token');
+    res.clearCookie('token');
     window.location.href = 'login.html';
 };
 
