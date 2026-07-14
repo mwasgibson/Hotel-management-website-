@@ -31,7 +31,7 @@ exports.createBooking = (req, res) => {
             return res.status(500).json({ error: 'Database error' });
         }
 
-        const conflictSql = 'SELECT * FROM bookings WHERE room_id = ? AND booking_status IN ("pending", "confirmed") AND (check_in < ? AND check_out > ?)';
+        const conflictSql = 'SELECT * FROM bookings WHERE room_number = ? AND booking_status IN ("pending", "confirmed") AND (check_in < ? AND check_out > ?)';
         db.query(conflictSql, [room_number, check_out, check_in], (err, conflictResults) => {
             if (err) {
                 console.error('Error checking booking conflicts:', err);
@@ -68,7 +68,7 @@ exports.getBookings = (req, res) => {
 
     const user_id = req.user.id;
 
-    const sql = 'SELECT bookings.*, rooms.room_type, rooms.status FROM bookings JOIN rooms ON bookings.room_number = rooms.number WHERE bookings.user_id = ?';
+    const sql = 'SELECT bookings.*, rooms.room_type, rooms.status FROM bookings JOIN rooms ON bookings.room_number = rooms.id WHERE bookings.user_id = ?';
     db.query(sql, [user_id], (err, results) => {
         if (err) {
             console.error('Error fetching bookings:', err);
