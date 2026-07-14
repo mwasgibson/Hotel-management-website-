@@ -6,7 +6,7 @@ function escapeHtml(str) {
 
 const token = getCookie('token');
 const params = new URLSearchParams(window.location.search);
-const bookingId = params.get('booking'); 
+const bookingId = params.get('booking_id'); 
 
 let bookingAmount = 0;   
 
@@ -19,7 +19,7 @@ let bookingAmount = 0;
     .then(response => response.json())
     .then(data => {
         bookingAmount = data.total_amount;
-        document.getElementById('bookingInfo').innerHTML = `
+        document.getElementById('bookingId').innerHTML = `
             <p>Booking ID: ${escapeHtml(data.id)}</p>
             <p>Room: ${escapeHtml(data.room_number)}</p>
             <p>Check-in: ${escapeHtml(data.check_in)}</p>
