@@ -97,17 +97,17 @@ function payBooking() {
 function showPaymentFields() {
 
     const fields = document.getElementById('paymentFields');
-    document.getElementById('mpesa_button_container').style.display = "none"; 
+    document.getElementById('paypal_button_container').style.display = "none"; 
 
     const method = document.getElementById('payment_method').value;
-    if (method === 'mpesa') {
-        document.getElementById('mpesa_button_container').style.display = "block";
-        fields.innerHTML = `
-            <input type="text" id="phone" placeholder="Phone Number" required>
-        `;
-    } else if (method === 'paypal') {
+    if (method === 'paypal') {
+        document.getElementById('paypal_button_container').style.display = "block";
         fields.innerHTML = `
             <p>You will be redirected to PayPal checkout</p>
+        `;
+    } else if (method === 'mpesa') {
+        fields.innerHTML = `
+            <input type="text" id="phone" placeholder="Phone Number" required>
         `;
     } else {
         fields.innerHTML = `
@@ -156,4 +156,4 @@ paypal.Buttons({
             alert("Payment Successful");
         });
     }   
-}).render("#mpesa_button_container");
+}).render("#paypal_button_container");
