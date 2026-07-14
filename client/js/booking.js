@@ -18,7 +18,7 @@ function bookRoom() {
     .then(response => response.json())
     .then(data => {
         console.log('Room booked successfully:', data);
-     window.location.href="payment.html";
+     window.location.href= 'payment.html';
     })
     .catch(error => {
         console.error('Error booking room:', error);
