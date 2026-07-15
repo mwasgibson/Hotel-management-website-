@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const sendEmail = require('../utils/sendEmail');
 
 exports.createBooking = (req, res) => {
     const user_id = req.user.id; 
@@ -57,17 +58,32 @@ exports.createBooking = (req, res) => {
                     console.error('Error creating booking:', err);
                     return res.status(500).json({ error: 'Database error' });
                 }
-                    res.status(201).json({ message: 'Booking created successfully', bookingId: bookingResults.insertId, total_amount});
                 db.query("UPDATE bookings SET booking_status = 'confirmed' WHERE id = ?", [bookingResults.insertId], (err) => {
                     if (err) {
                         console.log('Error updating booking status:', err);
                     }
                 });
-                    db.query("UPDATE rooms SET status = 'reserved' WHERE id = ?", [room_number], (err) =>{
-                    if (err) {
-                        console.error('Error updating room status:', err);
-                    }
+                    db.query("UPDATE rooms SET status = 'reserved' WHERE id = ?", [room_number], (err) => {
+                        if (err) console.error('Error updating room status:', err);
+                    });
+
+                sendEmail({
+                    to: req.user.email,
+                    subject: 'Booking Confirmation',
+                    html: `
+                    <p>Hi,</p>
+                    <p>Your booking has been created:</p>
+                    <ul>
+                    <li>Room: ${room_number}</li>
+                    <li>Check-in: ${check_in}</li>
+                    <li>Check-out: ${check_out}</li>
+                    <li>Total: KES ${total_amount}</li>
+                    </ul>
+                    <p>Please complete payment to confirm your stay.</p>
+                    `
                 });
+
+                res.status(201).json({ message: 'Booking created successfully', bookingId: bookingResults.insertId, total_amount });
             });            
         });
     });
@@ -155,7 +171,23 @@ exports.cancelBooking = (req, res) => {
                     console.error('Error updating booking status:', err);
                     return res.status(500).json({ error: 'Database error' });
                 }
-                res.json({ message: 'Booking cancelled successfully' });
+
+            sendEmail({
+                    to: req.user.email,
+                    subject: 'Booking Confirmation',
+                    html: `
+                    <p>Hi,</p>
+                    <p>Your booking has been cancelled:</p>
+                    <ul>
+                    <li>Room: ${room_number}</li>
+                    <li>Check-in: ${check_in}</li>
+                    <li>Check-out: ${check_out}</li>
+                    <li>Total: KES ${total_amount}</li>
+                    </ul>
+                    `
+                });
+
+                res.status(201).json({ message: 'Booking cancelled successfully' });
             });
         });
     });
@@ -212,6 +244,22 @@ exports.reserveRoom = (req, res) => {
                 // Room is held immediately — this is what makes it a "reservation" rather than a plain booking
                 db.query("UPDATE rooms SET status = 'reserved' WHERE id = ?", [room_number], (err) => {
                     if (err) console.error('Error updating room status:', err);
+                });
+
+                sendEmail({
+                    to: req.user.email,
+                    subject: 'Booking Confirmation',
+                    html: `
+                    <p>Hi,</p>
+                    <p>Your reservation has been made:</p>
+                    <ul>
+                    <li>Room: ${room_number}</li>
+                    <li>Check-in: ${check_in}</li>
+                    <li>Check-out: ${check_out}</li>
+                    <li>Total: KES ${total_amount}</li>
+                    </ul>
+                    <p>Please complete payment to confirm reservation.</p>
+                    `
                 });
 
                 res.status(201).json({ message: 'Room reserved — complete payment to confirm', bookingId: result.insertId, total_amount });

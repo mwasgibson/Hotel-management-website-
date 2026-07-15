@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const sendEmail = require('../utils/sendEmail');
 
 exports.payBookings = (req, res) => {
     const { booking_id, payment_method } = req.body;
@@ -37,6 +38,13 @@ exports.payBookings = (req, res) => {
                         console.error('Error updating booking status:', err);
                         return res.status(500).json({ error: 'Failed to update booking status' });
                     }
+                    
+                sendEmail({
+                    to: req.user.email,
+                    subject: 'Payment Received',
+                    html: `<p>We've received your payment of KES ${booking.total_amount} for booking #${booking_id}. Your reservation is now confirmed.</p>`
+                });
+
                     res.status(201).json({ message: 'Payment created successfully', paymentId: result.insertId });
                 });
             });
