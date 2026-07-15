@@ -63,13 +63,9 @@ function payBooking() {
     }
 
     if (payment_method === 'mpesa') {
-        extraData.phone = {
-            phone: document.getElementById('phone').value
-        };
+        extraData.phone = document.getElementById('phone').value;
     } else if (payment_method === 'paypal') {
-        extraData.paypal_email = {
-            paypal_email: document.getElementById('paypal_email').value
-        };
+        extraData.paypal_email = document.getElementById('paypal_email').value;
     }
 
     fetch(`${API_URL}/payments`, {
