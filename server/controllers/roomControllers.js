@@ -25,7 +25,7 @@ exports.getRooms = (req, res) => {
     // Only show rooms with no conflicting booking in the requested date range
     if (check_in && check_out) {
         sql += ` AND id NOT IN (
-            SELECT room_id FROM bookings
+            SELECT room_number FROM bookings
             WHERE booking_status IN ('pending', 'confirmed')
             AND check_in < ? AND check_out > ?
         )`;
@@ -130,8 +130,8 @@ exports.deleteRoom = (req, res) => {
 
 exports.checkIn = (req, res) => {
     const bookingId = req.params.id;
-    const sql = 'SELECT room_id, booking_status FROM bookings WHERE id = ?';
 
+    const sql = 'SELECT room_number, booking_status FROM bookings WHERE id = ?';
     db.query(sql, [bookingId], (err, bookingResults) => {
         if (err) {
             return res.status(500).json({ error: 'Database error' });
@@ -147,34 +147,38 @@ exports.checkIn = (req, res) => {
             return res.status(400).json({ error: 'Booking must be completed before check-in' });
         }
 
-        db.query('UPDATE rooms SET status = ? WHERE id = ?', ['occupied', booking.room_id], (err, result) => {
-            if (err) {
-                return res.status(500).json({ error: 'Database error' });
-            }
-
-            if (result.affectedRows === 0) {
-                return res.status(404).json({ error: 'Room not found' });
-            }
-
-            res.json({ message: 'Guest checked in.' });
+        db.query(`UPDATE bookings SET actual_check_in = NOW() WHERE id=?`, [bookingId], (err) => {
+                if (err)
+                    return res.status(500).json(err);
         });
+            db.query('UPDATE  SET status = ? WHERE id = ?', ['occupied', booking.room_number], (err, result) => {
+                if (err) {
+                    return res.status(500).json({ error: 'Database error' });
+                }
+                if (result.affectedRows === 0) {
+                    return res.status(404).json({ error: 'Room not found' });
+                }
+                res.json({ message: 'Guest checked in.' });
+            });            
     });
 };
 
 exports.checkOut = (req, res) => {
     const bookingId = req.params.id;
 
-    db.query("SELECT room_id FROM bookings WHERE id=?", [bookingId],(err, booking) => {
+    db.query("SELECT room_number FROM bookings WHERE id=?", [bookingId],(err, booking) => {
             if (err)
                 return res.status(500).json(err);
 
-            const roomId = booking[0].room_id;
+            const roomId = booking[0].room_number;
 
-            db.query("UPDATE rooms SET status='cleaning' WHERE id=?", [roomId], () => {
-                            res.json({
-                                message: "Guest checked out."
-                            });
+            db.query(`UPDATE bookings SET actual_check_out = NOW() WHERE id=?`, [bookingId], (err) => {
+                    if (err)
+                        return res.status(500).json(err);
             });
+                db.query("UPDATE rooms SET status='cleaning' WHERE id=?", [roomId], () => {
+                    res.json({ message: "Guest checked out." });
+                });
     });
 };
 

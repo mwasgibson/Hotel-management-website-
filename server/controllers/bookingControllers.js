@@ -51,24 +51,24 @@ exports.createBooking = (req, res) => {
         const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
         const total_amount = days * room.price;
 
-        const bookingSql = 'INSERT INTO bookings (user_id, room_id, check_in, check_out, total_amount) VALUES (?, ?, ?, ?, ?)';
-        db.query(bookingSql, [user_id, room_number, start, end, total_amount], (err, bookingResults) => {
-            if (err) {
-                console.error('Error creating booking:', err);
-                return res.status(500).json({ error: 'Database error' });
-            }
-                res.status(201).json({ message: 'Booking created successfully', bookingId: bookingResults.insertId, total_amount});
-            });
-            db.query("UPDATE bookings SET status = 'confirmed' WHERE id = ?", [bookingResults.insertId], (err) => {
+        const bookingSql = 'INSERT INTO bookings (user_id, room_number, check_in, check_out, total_amount) VALUES (?, ?, ?, ?, ?)';
+            db.query(bookingSql, [user_id, room_number, start, end, total_amount], (err, bookingResults) => {
                 if (err) {
-                    console.log('Error updating booking status:', err);
+                    console.error('Error creating booking:', err);
+                    return res.status(500).json({ error: 'Database error' });
                 }
-            });
-            db.query("UPDATE rooms SET status = 'reserved' WHERE id = ?", [room_number], (err) =>{
-                if (err) {
-                    console.error('Error updating room status:', err);
-                }
-            })
+                    res.status(201).json({ message: 'Booking created successfully', bookingId: bookingResults.insertId, total_amount});
+                db.query("UPDATE bookings SET booking_status = 'confirmed' WHERE id = ?", [bookingResults.insertId], (err) => {
+                    if (err) {
+                        console.log('Error updating booking status:', err);
+                    }
+                });
+                    db.query("UPDATE rooms SET status = 'reserved' WHERE id = ?", [room_number], (err) =>{
+                    if (err) {
+                        console.error('Error updating room status:', err);
+                    }
+                });
+            });            
         });
     });
 };
@@ -76,7 +76,7 @@ exports.createBooking = (req, res) => {
 exports.completeBooking = (req, res) => {
     const bookingId = req.params.id;
 
-    const sql = ` SELECT room_id FROM bookings WHERE id = ? `;
+    const sql = ` SELECT room_number FROM bookings WHERE id = ? `;
     db.query(sql, [bookingId], (err, booking) => {
         if (err)
             return res.status(500).json(err);
@@ -86,7 +86,7 @@ exports.completeBooking = (req, res) => {
                 error: "Booking not found"
             });
 
-        const roomId = booking[0].room_id;
+        const roomId = booking[0].room_number;
 
         db.query("UPDATE bookings SET booking_status='completed' WHERE id=?", [bookingId], (err) => {
 
@@ -159,4 +159,65 @@ exports.cancelBooking = (req, res) => {
             });
         });
     });
+};
+
+exports.reserveRoom = (req, res) => {
+    const {
+        user_id,
+        room_number,
+        check_in,
+        check_out
+    } = req.body;
+
+    db.query("SELECT * FROM rooms WHERE id=?", [room_number], (err, rooms) => {
+            if (err)
+                return res.status(500).json(err);
+            if (rooms.length === 0)
+                return res.status(404).json({
+                    error: "Room not found"
+                });
+            if (rooms[0].status !== "available")
+                return res.status(400).json({
+                    error: "Room is not available"
+                });
+
+            const sql = `INSERT INTO bookings (user_id, room_number, check_in, check_out) VALUES (?, ?, ?, ?, ?, ?) `;
+            db.query(sql, [user_id, room_number, check_in, check_out],
+                (err, result) => {
+                    if (err)
+                        return res.status(500).json(err);
+
+                    db.query("UPDATE rooms SET status='reserved' WHERE id=?", [room_number], (err) => {
+                            if (err)
+                                return res.status(500).json(err);
+                            res.status(201).json({ message: "Room reserved successfully.", bookingId: result.insertId });
+                        });
+                });
+        });
+};
+
+exports.cancelReservation = (req, res) => {
+    const bookingId = req.params.id;
+
+    db.query("SELECT room_number FROM bookings WHERE id=?", [bookingId], (err, booking) => {
+            if (err)
+                return res.status(500).json(err);
+            if (booking.length === 0)
+                return res.status(404).json({
+                    error: "Reservation not found"
+                });
+
+            const roomId = booking[0].room_number;
+
+            db.query("DELETE FROM bookings WHERE id=?", [bookingId], (err) => {
+                    if (err)
+                        return res.status(500).json(err);
+                    db.query( "UPDATE rooms SET status='available' WHERE id=?", [roomId], (err) => {
+                            if (err)
+                                return res.status(500).json(err);
+                            res.json({ message: "Reservation cancelled." });
+                        });
+                });
+
+        });
 };

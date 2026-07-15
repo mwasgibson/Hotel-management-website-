@@ -18,9 +18,37 @@ function bookRoom() {
     .then(response => response.json())
     .then(data => {
         console.log('Room booked successfully:', data);
-     window.location.href= 'payment.html';
+        window.location.href = `payment.html?booking_id=${data.bookingId}`;
     })
     .catch(error => {
         console.error('Error booking room:', error);
     });
+}
+
+function reserveRoom(roomId) {
+
+    const user_id = document.getElementById("user_id").value;
+    const check_in = document.getElementById("check_in").value;
+    const check_out = document.getElementById("check_out").value;
+
+    fetch(`${API_URL}/bookings/reserve`, {
+        credentials: 'include',
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            user_id,
+            room_nimber: roomId,
+            check_in,
+            check_out
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert(data.message);
+        location.reload();
+    })
+    .catch(console.error);
+
 }
