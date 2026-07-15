@@ -1,15 +1,45 @@
 const db = require('../config/db');
 
-exports.getRooms = (req, res) => {    
-    const sql = 'SELECT * FROM rooms';
+exports.getRooms = (req, res) => {
+    const { room_type, min_price, max_price, capacity, check_in, check_out } = req.query;
 
-    db.query(sql, (err, results) => {
+    let sql = 'SELECT * FROM rooms WHERE 1=1';
+    const params = [];
+
+    if (room_type) {
+        sql += ' AND room_type = ?';
+        params.push(room_type);
+    }
+    if (min_price) {
+        sql += ' AND price >= ?';
+        params.push(min_price);
+    }
+    if (max_price) {
+        sql += ' AND price <= ?';
+        params.push(max_price);
+    }
+    if (capacity) {
+        sql += ' AND capacity >= ?';
+        params.push(capacity);
+    }
+    // Only show rooms with no conflicting booking in the requested date range
+    if (check_in && check_out) {
+        sql += ` AND id NOT IN (
+            SELECT room_id FROM bookings
+            WHERE booking_status IN ('pending', 'confirmed')
+            AND check_in < ? AND check_out > ?
+        )`;
+        params.push(check_out, check_in);
+    }
+
+    sql += ' ORDER BY price ASC';
+
+    db.query(sql, params, (err, results) => {
         if (err) {
             console.error('Error fetching rooms:', err);
-            res.status(500).json({ error: 'Failed to fetch rooms' });
-        } else {
-            res.json(results);
+            return res.status(500).json({ error: 'Failed to fetch rooms' });
         }
+        res.json(results);
     });
 };
 
