@@ -151,7 +151,7 @@ exports.checkIn = (req, res) => {
                 if (err)
                     return res.status(500).json(err);
         });
-            db.query('UPDATE  SET status = ? WHERE id = ?', ['occupied', booking.room_number], (err, result) => {
+            db.query('UPDATE rooms SET status = ? WHERE id = ?', ['occupied', booking.room_number], (err, result) => {
                 if (err) {
                     return res.status(500).json({ error: 'Database error' });
                 }

@@ -9,8 +9,8 @@ const { createBooking, getBookings, getBooking, cancelBooking, completeBooking, 
 router.post('/', authMiddleware, createBooking);
 router.get('/', authMiddleware, getBookings);
 router.get('/:id', authMiddleware, getBooking);
-router.put('/:id', authMiddleware, cancelBooking);
-router.put('/:id', authMiddleware, completeBooking);
+router.put('/:id/cancel', authMiddleware, cancelBooking);
+router.put('/:id/complete', authMiddleware, completeBooking);
 router.post('/id', authMiddleware, reserveRoom);
 router.delete('/:id', authMiddleware, cancelReservation);
 
