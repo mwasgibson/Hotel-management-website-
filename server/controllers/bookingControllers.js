@@ -37,17 +37,17 @@ exports.createBooking = (req, res) => {
                 console.error('Error checking booking conflicts:', err);
                 return res.status(500).json({ error: 'Database error' });
             }
-
             if (conflictResults.length > 0) {
                 return res.status(400).json({ error: 'Room is already booked for the selected dates' });
             }
-
             if (roomResults.length === 0) {
                 return res.status(404).json({ error: 'Room not found' });
             }
+            if (roomResults[0].status !== 'available') {
+                return res.status(400).json({ error: `Room is currently ${roomResults[0].status}` });
+            }
 
         const room = roomResults[0];        
-
         const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
         const total_amount = days * room.price;
 
@@ -57,15 +57,49 @@ exports.createBooking = (req, res) => {
                 console.error('Error creating booking:', err);
                 return res.status(500).json({ error: 'Database error' });
             }
-
                 res.status(201).json({ message: 'Booking created successfully', bookingId: bookingResults.insertId, total_amount});
             });
+            db.query("UPDATE bookings SET status = 'confirmed' WHERE id = ?", [bookingResults.insertId], (err) => {
+                if (err) {
+                    console.log('Error updating booking status:', err);
+                }
+            });
+            db.query("UPDATE rooms SET status = 'reserved' WHERE id = ?", [room_number], (err) =>{
+                if (err) {
+                    console.error('Error updating room status:', err);
+                }
+            })
+        });
+    });
+};
+
+exports.completeBooking = (req, res) => {
+    const bookingId = req.params.id;
+
+    const sql = ` SELECT room_id FROM bookings WHERE id = ? `;
+    db.query(sql, [bookingId], (err, booking) => {
+        if (err)
+            return res.status(500).json(err);
+
+        if (booking.length === 0)
+            return res.status(404).json({
+                error: "Booking not found"
+            });
+
+        const roomId = booking[0].room_id;
+
+        db.query("UPDATE bookings SET booking_status='completed' WHERE id=?", [bookingId], (err) => {
+
+                if (err)
+                    return res.status(500).json(err);
+                    res.json({
+                            message: "Booking completed."
+                    });
         });
     });
 };
 
 exports.getBookings = (req, res) => {
-
     const user_id = req.user.id;
 
     const sql = 'SELECT bookings.*, rooms.room_type, rooms.status FROM bookings JOIN rooms ON bookings.room_number = rooms.id WHERE bookings.user_id = ?';
@@ -74,7 +108,6 @@ exports.getBookings = (req, res) => {
             console.error('Error fetching bookings:', err);
             return res.status(500).json({ error: 'Database error' });
         }
-
         res.json(results);
     });
 };
@@ -89,17 +122,14 @@ exports.getBooking = (req, res) => {
             console.error('Error fetching booking:', err);
             return res.status(500).json({ error: 'Database error' });
         }
-
         if (results.length === 0) {
             return res.status(404).json({ error: 'Booking not found' });
         }
-
         res.json(results[0]);
     });
 };
 
 exports.cancelBooking = (req, res) => {
-
     const user_id = req.user.id;
     const { id } = req.params;
 
@@ -109,7 +139,6 @@ exports.cancelBooking = (req, res) => {
             console.error('Error fetching booking:', err);
             return res.status(500).json({ error: 'Database error' });
         }
-
         if (bookingResults.length === 0) {
             return res.status(404).json({ error: 'Booking not found' });
         }
@@ -126,9 +155,7 @@ exports.cancelBooking = (req, res) => {
                     console.error('Error updating booking status:', err);
                     return res.status(500).json({ error: 'Database error' });
                 }
-
                 res.json({ message: 'Booking cancelled successfully' });
-
             });
         });
     });
