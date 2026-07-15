@@ -26,6 +26,30 @@
 
     <h1>Available Rooms</h1>
 
+    <div class="filters">
+    <select id="filter_room_type">
+        <option value="">All Types</option>
+        <option value="Standard">Standard</option>
+        <option value="Single">Single</option>
+        <option value="Double">Double</option>
+        <option value="Suite">Suite</option>
+        <option value="Deluxe">Deluxe</option>
+        <option value="Executive">Executive</option>
+    </select>
+
+    <input type="number" id="filter_min_price" placeholder="Min Price">
+    <input type="number" id="filter_max_price" placeholder="Max Price">
+    <input type="number" id="filter_capacity" placeholder="Min Capacity">
+
+    <label>Check-in</label>
+    <input type="date" id="filter_check_in">
+    <label>Check-out</label>
+    <input type="date" id="filter_check_out">
+
+    <button type="button" onclick="searchRooms()">Search</button>
+    <button type="button" onclick="clearFilters()">Clear</button>
+    </div>
+
     <div id="rooms"></div>
 
     <script src="js/config.js"></script>
