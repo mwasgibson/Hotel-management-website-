@@ -4,6 +4,14 @@ function escapeHtml(str) {
     return div.innerHTML;
 }
 
+const bookingParams = new URLSearchParams(window.location.search);
+const preselectedRoom = bookingParams.get('room_number');
+if (preselectedRoom) {
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('room_number').value = preselectedRoom;
+    });
+}
+
 const roomImages = {
     'Standard': "https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&w=800&q=80",
     'Single': "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=800&q=80",
@@ -15,7 +23,18 @@ const roomImages = {
 
 function renderRooms(data) {
     const roomContainer = document.getElementById("rooms");
-    roomContainer.innerHTML = '';
+    roomContainer.innerHTML += `
+        <div>
+            <img class="room-img" src="${img}" alt="${escapeHtml(room.room_type)} Room"
+                style="cursor: pointer;" onclick="window.location.href='room.html?id=${room.id}'">
+            <h3>${escapeHtml(room.room_type)}</h3>
+            <p>Room: ${escapeHtml(room.room_number)}</p>
+            <p>Price: KES ${escapeHtml(room.price)}</p>
+            <p>Capacity: ${escapeHtml(room.capacity)}</p>
+            <p>Status: ${escapeHtml(room.status)}</p>
+            <p>Description: ${escapeHtml(room.description)}</p>
+        </div>
+    `;
 
     if (!data.length) {
         roomContainer.innerHTML = '<p>No rooms match your search.</p>';
