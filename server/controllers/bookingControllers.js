@@ -51,7 +51,7 @@ exports.createBooking = (req, res) => {
         const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
         const total_amount = days * room.price;
 
-        const bookingSql = 'INSERT INTO bookings (user_id, room_number, check_in, check_out, total_amount) VALUES (?, ?, ?, ?, ?)';
+        const bookingSql = 'INSERT INTO bookings (user_id, room_id, check_in, check_out, total_amount) VALUES (?, ?, ?, ?, ?)';
         db.query(bookingSql, [user_id, room_number, start, end, total_amount], (err, bookingResults) => {
             if (err) {
                 console.error('Error creating booking:', err);
