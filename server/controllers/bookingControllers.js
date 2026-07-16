@@ -145,6 +145,23 @@ exports.getBooking = (req, res) => {
     });
 };
 
+exports.getAllBookings = (req, res) => {
+    const sql = `
+        SELECT bookings.*, rooms.room_type, rooms.status AS room_status, users.fullname, users.email
+        FROM bookings
+        JOIN rooms ON bookings.room_number = rooms.id
+        JOIN users ON bookings.user_id = users.id
+        ORDER BY bookings.check_in DESC
+    `;
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.error('Error fetching all bookings:', err);
+            return res.status(500).json({ error: 'Database error' });
+        }
+        res.json(results);
+    });
+};
+
 exports.cancelBooking = (req, res) => {
     const user_id = req.user.id;
     const { id } = req.params;

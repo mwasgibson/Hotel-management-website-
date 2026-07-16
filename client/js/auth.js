@@ -43,9 +43,9 @@ function loginUser() {
             data.role === "admin" ||
             data.role === "receptionist"
         ) {
-            window.location.href = "dashboard.html";
+            window.location.href = "staff-dashboard.html";
         } else {
-        window.location.href = "index.html";
+            window.location.href = "dashboard.html";
         }
     })
     .catch(err => {

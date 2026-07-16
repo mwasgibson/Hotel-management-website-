@@ -11,6 +11,7 @@ const paymentRoutes = require('./routes/paymentRoutes');
 const mpesaRoutes = require('./routes/mpesaRoutes');
 const paypalRoutes = require('./routes/paypalRoutes');
 const contactRoutes = require('./routes/contactRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 const app = express ();
 const allowedOrigins = (process.env.CLIENT_URL || "").split(",").map(o => o.trim());
 
@@ -35,6 +36,7 @@ app.use ('/api/mpesa', mpesaRoutes);
 app.use('/api/paypal', paypalRoutes);
 app.use ('/api/payments', paymentRoutes);
 app.use('/api/contact', contactRoutes);
+app.use('/api/admin', adminRoutes);
 
 app.get ("/", (req, res) => {
     res.send ("Hotel Management System API");
