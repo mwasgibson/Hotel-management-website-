@@ -8,3 +8,8 @@ function getCookie(name) {
 function deleteCookie(name) {
     document.cookie = `${name}=; path=/; max-age=0;`;
 }
+
+function Logout() {
+    res.clearCookie('token');
+    window.location.href = 'login.html';
+};

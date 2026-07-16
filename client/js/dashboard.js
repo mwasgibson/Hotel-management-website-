@@ -66,11 +66,6 @@ function cancelBooking(id) {
     });
 };
 
-function Logout() {
-    res.clearCookie('token');
-    window.location.href = 'login.html';
-};
-
 loadProfile();
 
 function loadProfile(){

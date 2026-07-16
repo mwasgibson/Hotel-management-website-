@@ -44,9 +44,9 @@ function payBooking() {
         fetch(`${API_URL}/mpesa/stkpush`, {
             credentials: 'include',
 
-            method: "POST",
+            method: 'POST',
             headers: {
-                "Content-Type": "application/json"
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 phoneNumber: phone,
@@ -118,12 +118,12 @@ paypal.Buttons({
     createOrder() {
         
         return fetch(`${API_URL}/paypal/create-order`, {
-            
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
             credentials: 'include',
+            
+            method: 'POST',
+            headers: {
+                'Content-Typ': 'application/json'
+            },
 
             body: JSON.stringify({
                 booking_id: bookingId,
@@ -136,12 +136,12 @@ paypal.Buttons({
     onApprove(data){
 
         return fetch(`${API_URL}/paypal/capture-order`, {
-
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
             credentials: 'include',
+
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
 
             body: JSON.stringify({
                 orderID: data.orderID 
