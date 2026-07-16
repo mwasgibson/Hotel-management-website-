@@ -179,10 +179,10 @@ exports.cancelBooking = (req, res) => {
                     <p>Hi,</p>
                     <p>Your booking has been cancelled:</p>
                     <ul>
-                    <li>Room: ${room_number}</li>
-                    <li>Check-in: ${check_in}</li>
-                    <li>Check-out: ${check_out}</li>
-                    <li>Total: KES ${total_amount}</li>
+                    <li>Room: ${booking.room_number}</li>
+                    <li>Check-in: ${booking.check_in}</li>
+                    <li>Check-out: ${booking.check_out}</li>
+                    <li>Total: KES ${booking.total_amount}</li>
                     </ul>
                     `
                 });

@@ -10,6 +10,9 @@ function deleteCookie(name) {
 }
 
 function Logout() {
-    res.clearCookie('token');
-    window.location.href = 'login.html';
-};
+    fetch(`${API_URL}/auth/logout`,
+        {   method: 'POST',  
+            credentials: 'include'
+        })
+        .then(() => window.location.href = 'login.html');
+}

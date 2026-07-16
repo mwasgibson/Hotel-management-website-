@@ -49,7 +49,7 @@ function loadBookings() {
 
 function cancelBooking(id) {
 
-    fetch(`${API_URL}/bookings/${id}`, {
+    fetch(`${API_URL}/bookings/${id}/cancel`, {
         credentials: 'include',
         method: 'PUT',
         headers: {
