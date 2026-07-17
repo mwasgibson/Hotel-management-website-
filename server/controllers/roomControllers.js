@@ -130,7 +130,7 @@ exports.updateRoom = (req, res) => {
         return res.status(400).json({ error: errors.join('; ') });
     }
 
-    const { room_number, room_type, price, capacity, status, description } = req.body;
+    const { room_type, price, capacity, status, description } = req.body;
     const sql = 'UPDATE rooms SET room_number = ?, room_type = ?, price = ?, capacity = ?, status = ?, description = ? WHERE room_number = ?';
 
     db.query(sql, [room_number, room_type, price, capacity, status, description, id], (err, results) => {
