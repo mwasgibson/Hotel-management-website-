@@ -4,24 +4,26 @@ function escapeHtml(str) {
     return div.innerHTML;
 }
 
-const token = getCookie('token');
-
 let currentUserRole = null;
 
 loadProfileAndInit();
 
 function loadProfileAndInit() {
-    fetch(`${API_URL}/auth/profile`, 
-        { 
-            credentials: 'include' 
+    fetch(`${API_URL}/auth/profile`, { credentials: 'include' })
+        .then(res => {
+            if (res.status === 401) {
+                window.location.href = 'login.html';
+                return null;
+            }
+            return res.json();
         })
-        .then(res => res.json())
         .then(user => {
+            if (!user) return;
             currentUserRole = user.role;
             if (currentUserRole !== 'admin' && currentUserRole !== 'receptionist') {
-                window.location.href = 'dashboard.html';   // guests don't belong on this page
+                window.location.href = 'dashboard.html';
                 return;
-            }    
+            }
             if (currentUserRole === 'admin') {
                 document.getElementById('usersHeading').style.display = 'block';
                 loadUsers();
