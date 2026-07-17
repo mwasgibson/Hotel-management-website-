@@ -84,7 +84,7 @@ exports.login = (req, res) => {
 
 exports.profile = (req, res) => {
 
-    const sql = 'SELECT id, fullname, email, role FROM users WHERE roomm_number =?';
+    const sql = 'SELECT id, fullname, email, role FROM users WHERE id =?';
 
     db.query(sql, [req.user.id], (err, results) => {
         if (err) {
