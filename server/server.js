@@ -12,6 +12,7 @@ const mpesaRoutes = require('./routes/mpesaRoutes');
 const paypalRoutes = require('./routes/paypalRoutes');
 const contactRoutes = require('./routes/contactRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const expireStaleReservations = require('./utils/expireReservations');
 const app = express ();
 const allowedOrigins = (process.env.CLIENT_URL || "").split(",").map(o => o.trim());
 
@@ -47,3 +48,6 @@ const PORT = process.env.PORT || 3000;
 app.listen (PORT, () => {
     console.log (`Server is running on port ${PORT}`);
 });
+
+expireStaleReservations();
+setInterval(expireStaleReservations, 5 * 60 * 1000);

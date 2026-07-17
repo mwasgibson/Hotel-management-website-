@@ -6,10 +6,6 @@ function escapeHtml(str) {
 
 const token = getCookie('token');
 
-if (!token) {
-    window.location.href = 'login.html';
-}
-
 loadBookings();
 
 function loadBookings() {
@@ -39,6 +35,7 @@ function loadBookings() {
 
                     ${booking.booking_status === 'pending' ? `<button onclick="goToPayment(${booking.id})">Pay</button>` : ''}
                     <button onclick="cancelBooking(${booking.id})">Cancel</button>
+                    ${booking.booking_status === 'pending' ? `<button onclick="rescheduleBooking(${booking.id})">Reschedule</button>` : ''}
 
                     <hr>
                 </div>`
@@ -46,6 +43,30 @@ function loadBookings() {
         });
     })
 };
+
+function rescheduleBooking(id) {
+    const check_in = prompt('New check-in date (YYYY-MM-DD):');
+    if (!check_in) return;
+    const check_out = prompt('New check-out date (YYYY-MM-DD):');
+    if (!check_out) return;
+
+    fetch(`${API_URL}/bookings/${id}/reschedule`, {
+        credentials: 'include',
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ check_in, check_out })
+    })
+    .then(response => response.json().then(data => ({ ok: response.ok, data })))
+    .then(({ ok, data }) => {
+        if (!ok) {
+            alert(data.error || 'Reschedule failed');
+            return;
+        }
+        alert('Booking rescheduled successfully');
+        loadBookings();
+    })
+    .catch(error => console.error('Error rescheduling booking:', error));
+}
 
 function cancelBooking(id) {
 

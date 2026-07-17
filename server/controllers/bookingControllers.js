@@ -58,14 +58,9 @@ exports.createBooking = (req, res) => {
                     console.error('Error creating booking:', err);
                     return res.status(500).json({ error: 'Database error' });
                 }
-                db.query("UPDATE bookings SET booking_status = 'confirmed' WHERE id = ?", [bookingResults.insertId], (err) => {
-                    if (err) {
-                        console.log('Error updating booking status:', err);
-                    }
+                db.query("UPDATE rooms SET status = 'reserved' WHERE id = ?", [room_number], (err) => {
+                    if (err) console.error('Error updating room status:', err);
                 });
-                    db.query("UPDATE rooms SET status = 'reserved' WHERE id = ?", [room_number], (err) => {
-                        if (err) console.error('Error updating room status:', err);
-                    });
 
                 sendEmail({
                     to: req.user.email,
@@ -85,6 +80,61 @@ exports.createBooking = (req, res) => {
 
                 res.status(201).json({ message: 'Booking created successfully', bookingId: bookingResults.insertId, total_amount });
             });            
+        });
+    });
+};
+
+exports.rescheduleBooking = (req, res) => {
+    const user_id = req.user.id;
+    const { id } = req.params;
+    const { check_in, check_out } = req.body;
+
+    if (!check_in || !check_out) {
+        return res.status(400).json({ error: 'check_in and check_out are required' });
+    }
+
+    const start = new Date(check_in);
+    const end = new Date(check_out);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (isNaN(start) || isNaN(end)) {
+        return res.status(400).json({ error: 'Invalid date format' });
+    }
+    if (start < today) {
+        return res.status(400).json({ error: 'Check-in date cannot be in the past' });
+    }
+    if (end <= start) {
+        return res.status(400).json({ error: 'Check-out date must be after check-in date' });
+    }
+
+    db.query('SELECT * FROM bookings WHERE id = ? AND user_id = ?', [id, user_id], (err, results) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        if (results.length === 0) return res.status(404).json({ error: 'Booking not found' });
+
+        const booking = results[0];
+        if (booking.booking_status !== 'pending') {
+            return res.status(400).json({ error: 'Only unpaid bookings can be rescheduled — cancel and rebook instead' });
+        }
+
+        const conflictSql = 'SELECT * FROM bookings WHERE room_number = ? AND id != ? AND booking_status IN ("pending", "confirmed") AND (check_in < ? AND check_out > ?)';
+        db.query(conflictSql, [booking.room_number, id, check_out, check_in], (err, conflicts) => {
+            if (err) return res.status(500).json({ error: 'Database error' });
+            if (conflicts.length > 0) {
+                return res.status(400).json({ error: 'Room is already booked for the selected dates' });
+            }
+
+            db.query('SELECT price FROM rooms WHERE id = ?', [booking.room_number], (err, roomResults) => {
+                if (err) return res.status(500).json({ error: 'Database error' });
+
+                const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+                const total_amount = days * roomResults[0].price;
+
+                db.query('UPDATE bookings SET check_in = ?, check_out = ?, total_amount = ? WHERE id = ?', [start, end, total_amount, id], (err) => {
+                    if (err) return res.status(500).json({ error: 'Database error' });
+                    res.json({ message: 'Booking rescheduled', total_amount });
+                });
+            });
         });
     });
 };
@@ -146,14 +196,37 @@ exports.getBooking = (req, res) => {
 };
 
 exports.getAllBookings = (req, res) => {
-    const sql = `
+    const { status, guest, check_in, check_out } = req.query;
+
+    let sql = `
         SELECT bookings.*, rooms.room_type, rooms.status AS room_status, users.fullname, users.email
         FROM bookings
         JOIN rooms ON bookings.room_number = rooms.id
         JOIN users ON bookings.user_id = users.id
-        ORDER BY bookings.check_in DESC
+        WHERE 1=1
     `;
-    db.query(sql, (err, results) => {
+    const params = [];
+
+    if (status) {
+        sql += ' AND bookings.booking_status = ?';
+        params.push(status);
+    }
+    if (guest) {
+        sql += ' AND (users.fullname LIKE ? OR users.email LIKE ?)';
+        params.push(`%${guest}%`, `%${guest}%`);
+    }
+    if (check_in) {
+        sql += ' AND bookings.check_in >= ?';
+        params.push(check_in);
+    }
+    if (check_out) {
+        sql += ' AND bookings.check_out <= ?';
+        params.push(check_out);
+    }
+
+    sql += ' ORDER BY bookings.check_in DESC';
+
+    db.query(sql, params, (err, results) => {
         if (err) {
             console.error('Error fetching all bookings:', err);
             return res.status(500).json({ error: 'Database error' });

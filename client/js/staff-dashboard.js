@@ -5,9 +5,6 @@ function escapeHtml(str) {
 }
 
 const token = getCookie('token');
-if (!token) {
-    window.location.href = 'login.html';
-}
 
 let currentUserRole = null;
 
@@ -133,15 +130,17 @@ function roomAction(roomId, action) {
     .catch(error => console.error('Error performing room action:', error));
 }
 
-function loadAllBookings() {
-    fetch(`${API_URL}/admin/bookings`, 
-        { 
-        credentials: 'include' 
-        })
+function loadAllBookings(queryString = '') {
+    fetch(`${API_URL}/admin/bookings${queryString}`, { credentials: 'include' })
         .then(res => res.json())
         .then(bookings => {
             const container = document.getElementById('allBookings');
             container.innerHTML = '';
+
+            if (!bookings.length) {
+                container.innerHTML = '<p>No bookings match your search.</p>';
+                return;
+            }
 
             bookings.forEach(booking => {
                 container.innerHTML += `
@@ -158,6 +157,30 @@ function loadAllBookings() {
             });
         })
         .catch(error => console.error('Error loading bookings:', error));
+}
+
+function searchBookings() {
+    const params = new URLSearchParams();
+    const status = document.getElementById('bookingStatusFilter').value;
+    const guest = document.getElementById('guestFilter').value;
+    const check_in = document.getElementById('bookingCheckInFilter').value;
+    const check_out = document.getElementById('bookingCheckOutFilter').value;
+
+    if (status) params.set('status', status);
+    if (guest) params.set('guest', guest);
+    if (check_in) params.set('check_in', check_in);
+    if (check_out) params.set('check_out', check_out);
+
+    const query = params.toString();
+    loadAllBookings(query ? `?${query}` : '');
+}
+
+function clearBookingFilters() {
+    document.getElementById('bookingStatusFilter').value = '';
+    document.getElementById('guestFilter').value = '';
+    document.getElementById('bookingCheckInFilter').value = '';
+    document.getElementById('bookingCheckOutFilter').value = '';
+    loadAllBookings();
 }
 
 function completeBooking(id) {
