@@ -4,7 +4,6 @@ function escapeHtml(str) {
     return div.innerHTML;
 }
 
-const token = getCookie('token');
 const params = new URLSearchParams(window.location.search);
 const bookingId = params.get('booking_id'); 
 
@@ -13,7 +12,7 @@ let bookingAmount = 0;
     fetch(`${API_URL}/bookings/${bookingId}`, {
         credentials: 'include',
         headers: {
-            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+            'Content-Type': 'application/json'
         }
     })
     .then(response => response.json())
@@ -73,7 +72,6 @@ function payBooking() {
 
         method: 'POST',
         headers: {
-            'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({

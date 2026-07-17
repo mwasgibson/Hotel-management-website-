@@ -4,7 +4,6 @@ function escapeHtml(str) {
     return div.innerHTML;
 }
 
-const token = getCookie('token');
 
 loadBookings();
 
@@ -12,7 +11,7 @@ function loadBookings() {
     fetch(`${API_URL}/bookings`, {
         credentials: 'include',
         headers: {
-            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+            'Content-Type': 'application/json'
         }
     })
     .then(response => response.json())
@@ -20,9 +19,9 @@ function loadBookings() {
         const bookingDiv = document.getElementById('booking-list');
         bookingDiv.innerHTML = '';
         document.getElementById('totalBookings').innerHTML = `Total Bookings: ${data.length}`;
-        document.getElementById('confirmedBookings').innerHTML = `Confirmed Bookings: ${data.filter(booking => booking.booking_status === 'confirmed').length}`;
-        document.getElementById('pendingBookings').innerHTML = `Pending Bookings: ${data.filter(booking => booking.booking_status === 'pending').length}`;
-        data.forEach(booking => {
+        document.getElementById('confirmedBookings').innerHTML = `Confirmed Bookings: ${(Array.isArray(data) ? data : []).filter(booking => booking.booking_status === 'confirmed').length}`;
+        document.getElementById('pendingBookings').innerHTML = `Pending Bookings: ${(Array.isArray(data) ? data : []).filter(booking => booking.booking_status === 'pending').length}`;
+        (Array.isArray(data) ? data : (data.bookings || [])).forEach(booking => {
             bookingDiv.innerHTML += `
                 <div>
                     <h3> Booking #${booking.id}</h3>
@@ -53,7 +52,9 @@ function rescheduleBooking(id) {
     fetch(`${API_URL}/bookings/${id}/reschedule`, {
         credentials: 'include',
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+            'Content-Type': 'application/json' 
+        },
         body: JSON.stringify({ check_in, check_out })
     })
     .then(response => response.json().then(data => ({ ok: response.ok, data })))
@@ -74,7 +75,7 @@ function cancelBooking(id) {
         credentials: 'include',
         method: 'PUT',
         headers: {
-            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+            'Content-Type': 'application/json'
         }
     })
     .then(response => response.json())
@@ -94,7 +95,7 @@ function loadProfile(){
     fetch(`${API_URL}/auth/profile`, {
         credentials: 'include',
         headers: {
-            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+            'Content-Type': 'application/json'
         }
     })
     .then(response => response.json())
@@ -118,14 +119,14 @@ function loadPayments() {
     fetch(`${API_URL}/payments`, {
         credentials: 'include',
         headers: {
-            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+            'Content-Type': 'application/json'
         }
     })
     .then(response => response.json())
     .then(data => {
         const payments = document.getElementById('payments');
         payments.innerHTML = '';
-        data.forEach(payment => {
+        (Array.isArray(data) ? data : data.payments || []).forEach(payment => {
             payments.innerHTML += `
                 <div>
                     <h3> Payment #${escapeHtml(payment.id)}</h3>

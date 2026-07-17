@@ -21,7 +21,7 @@ function loadProfileAndInit() {
             if (currentUserRole !== 'admin' && currentUserRole !== 'receptionist') {
                 window.location.href = 'dashboard.html';   // guests don't belong on this page
                 return;
-            }
+            }    
             if (currentUserRole === 'admin') {
                 document.getElementById('usersHeading').style.display = 'block';
                 loadUsers();
@@ -41,9 +41,9 @@ function loadStats() {
         .then(res => res.json())
         .then(stats => {
             const roomCounts = {};
-            stats.rooms.forEach(r => roomCounts[r.status] = r.count);
+            (stats.rooms || []).forEach(r => roomCounts[r.status] = r.count);
             const bookingCounts = {};
-            stats.bookings.forEach(b => bookingCounts[b.booking_status] = b.count);
+            (stats.rooms || []).forEach(b => bookingCounts[b.booking_status] = b.count);
 
             document.getElementById('stats').innerHTML = `
                 <div><strong>Available Rooms:</strong> ${escapeHtml(roomCounts.available || 0)}</div>
