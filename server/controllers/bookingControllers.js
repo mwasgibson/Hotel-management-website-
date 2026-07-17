@@ -51,7 +51,7 @@ exports.createBooking = (req, res) => {
         }
 
         const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
-        const total_amount = days * room[0].price;
+        const total_amount = days * room.price;
 
         const overlapQuery = ` SELECT * FROM bookings WHERE room_number = ? AND booking_status != 'cancelled' AND (check_in < ? AND check_out > ?)`;
         db.query( overlapQuery,[room_number, check_out, check_in], (err, bookings) => {
@@ -333,7 +333,7 @@ exports.reserveRoom = (req, res) => {
 
             const room = rooms[0];
             const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
-            const total_amount = days * room[0].price;
+            const total_amount = days * room.price;
 
             const sql = 'INSERT INTO bookings (user_id, room_number, check_in, check_out, total_amount) VALUES (?, ?, ?, ?, ?)';
             db.query(sql, [user_id, room_number, start, end, total_amount], (err, result) => {
