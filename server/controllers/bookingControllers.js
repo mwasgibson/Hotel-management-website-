@@ -50,17 +50,27 @@ exports.createBooking = (req, res) => {
 
         const room = roomResults[0];        
         const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
-        const total_amount = days * room.price;
+        const total_amount = days * room[0].price;
 
-        const bookingSql = 'INSERT INTO bookings (user_id, room_number, check_in, check_out, total_amount) VALUES (?, ?, ?, ?, ?)';
-            db.query(bookingSql, [user_id, room_number, start, end, total_amount], (err, bookingResults) => {
-                if (err) {
-                    console.error('Error creating booking:', err);
-                    return res.status(500).json({ error: 'Database error' });
-                }
-                db.query("UPDATE rooms SET status = 'reserved' WHERE id = ?", [room_number], (err) => {
-                    if (err) console.error('Error updating room status:', err);
-                });
+        const overlapQuery = ` SELECT * FROM bookings WHERE room_number = ? AND booking_status != 'cancelled' AND (check_in < ? AND check_out > ?)`;
+
+        db.query( overlapQuery,[room_number, check_out, check_in], (err, bookings) => {
+            if (err)
+                return res.status(500).json(err);
+
+            if (bookings.length > 0) {
+                return res.status(400).json({error: "Room already booked for selected dates."});
+            }
+
+            const bookingSql = 'INSERT INTO bookings (user_id, room_number, check_in, check_out, total_amount) VALUES (?, ?, ?, ?, ?)';
+                db.query(bookingSql, [user_id, room_number, start, end, total_amount], (err, bookingResults) => {
+                    if (err) {
+                        console.error('Error creating booking:', err);
+                        return res.status(500).json({ error: 'Database error' });
+                    }
+                    db.query("UPDATE rooms SET status = 'reserved' WHERE room_number = ?", [room_number], (err) => {
+                        if (err) console.error('Error updating room status:', err);
+                    });
 
                 sendEmail({
                     to: req.user.email,
@@ -82,6 +92,7 @@ exports.createBooking = (req, res) => {
             });            
         });
     });
+});
 };
 
 exports.rescheduleBooking = (req, res) => {
@@ -108,7 +119,7 @@ exports.rescheduleBooking = (req, res) => {
         return res.status(400).json({ error: 'Check-out date must be after check-in date' });
     }
 
-    db.query('SELECT * FROM bookings WHERE id = ? AND user_id = ?', [id, user_id], (err, results) => {
+    db.query('SELECT * FROM bookings WHERE room_number = ? AND user_id = ?', [id, user_id], (err, results) => {
         if (err) return res.status(500).json({ error: 'Database error' });
         if (results.length === 0) return res.status(404).json({ error: 'Booking not found' });
 
@@ -124,13 +135,13 @@ exports.rescheduleBooking = (req, res) => {
                 return res.status(400).json({ error: 'Room is already booked for the selected dates' });
             }
 
-            db.query('SELECT price FROM rooms WHERE id = ?', [booking.room_number], (err, roomResults) => {
+            db.query('SELECT price FROM rooms WHERE room_number = ?', [booking.room_number], (err, roomResults) => {
                 if (err) return res.status(500).json({ error: 'Database error' });
 
                 const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
                 const total_amount = days * roomResults[0].price;
 
-                db.query('UPDATE bookings SET check_in = ?, check_out = ?, total_amount = ? WHERE id = ?', [start, end, total_amount, id], (err) => {
+                db.query('UPDATE bookings SET check_in = ?, check_out = ?, total_amount = ? WHERE room_number = ?', [start, end, total_amount, id], (err) => {
                     if (err) return res.status(500).json({ error: 'Database error' });
                     res.json({ message: 'Booking rescheduled', total_amount });
                 });
@@ -142,7 +153,7 @@ exports.rescheduleBooking = (req, res) => {
 exports.completeBooking = (req, res) => {
     const bookingId = req.params.id;
 
-    const sql = ` SELECT room_number FROM bookings WHERE id = ? `;
+    const sql = ` SELECT room_number FROM bookings WHERE room_number = ? `;
     db.query(sql, [bookingId], (err, booking) => {
         if (err)
             return res.status(500).json(err);
@@ -154,7 +165,7 @@ exports.completeBooking = (req, res) => {
 
         const roomId = booking[0].room_number;
 
-        db.query("UPDATE bookings SET booking_status='completed' WHERE id=?", [bookingId], (err) => {
+        db.query("UPDATE bookings SET booking_status='completed' WHERE room_number=?", [bookingId], (err) => {
 
                 if (err)
                     return res.status(500).json(err);
@@ -182,7 +193,7 @@ exports.getBooking = (req, res) => {
 
     const user_id = req.user.id;
 
-    const sql = 'SELECT * FROM bookings WHERE id = ? AND user_id = ?';
+    const sql = 'SELECT * FROM bookings WHERE room_number = ? AND user_id = ?';
     db.query(sql, [req.params.id, user_id], (err, results) => {
         if (err) {
             console.error('Error fetching booking:', err);
@@ -237,10 +248,10 @@ exports.getAllBookings = (req, res) => {
 
 exports.cancelBooking = (req, res) => {
     const user_id = req.user.id;
-    const { id } = req.params;
+    const { room_number } = req.params;
 
-    const bookingSql = 'SELECT * FROM bookings WHERE id = ? AND user_id = ?';
-    db.query(bookingSql, [id, user_id], (err, bookingResults) => {
+    const bookingSql = 'SELECT * FROM bookings WHERE room_number = ? AND user_id = ?';
+    db.query(bookingSql, [room_number, user_id], (err, bookingResults) => {
         if (err) {
             console.error('Error fetching booking:', err);
             return res.status(500).json({ error: 'Database error' });
@@ -251,12 +262,12 @@ exports.cancelBooking = (req, res) => {
 
         const booking = bookingResults[0];
 
-        db.query("UPDATE rooms SET status = 'available' WHERE id = ?", [booking.room_number], (err) => {
+        db.query("UPDATE rooms SET status = 'available' WHERE room_number = ?", [booking.room_number], (err) => {
             if (err) {
                 console.error('Error updating room status:', err);
                 return res.status(500).json({ error: 'Database error' });
             }
-            db.query("UPDATE bookings SET booking_status = 'cancelled' WHERE id = ?", [id], (err) => {
+            db.query("UPDATE bookings SET booking_status = 'cancelled' WHERE room_number = ?", [id], (err) => {
                 if (err) {
                     console.error('Error updating booking status:', err);
                     return res.status(500).json({ error: 'Database error' });
@@ -306,7 +317,7 @@ exports.reserveRoom = (req, res) => {
         return res.status(400).json({ error: 'Check-out date must be after check-in date' });
     }
 
-    db.query("SELECT * FROM rooms WHERE id = ?", [room_number], (err, rooms) => {
+    db.query("SELECT * FROM rooms WHERE room_number = ?", [room_number], (err, rooms) => {
         if (err) return res.status(500).json({ error: 'Database error' });
         if (rooms.length === 0) return res.status(404).json({ error: 'Room not found' });
         if (rooms[0].status !== 'available') {
@@ -322,7 +333,7 @@ exports.reserveRoom = (req, res) => {
 
             const room = rooms[0];
             const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
-            const total_amount = days * room.price;
+            const total_amount = days * room[0].price;
 
             const sql = 'INSERT INTO bookings (user_id, room_number, check_in, check_out, total_amount) VALUES (?, ?, ?, ?, ?)';
             db.query(sql, [user_id, room_number, start, end, total_amount], (err, result) => {
@@ -332,7 +343,7 @@ exports.reserveRoom = (req, res) => {
                 }
 
                 // Room is held immediately — this is what makes it a "reservation" rather than a plain booking
-                db.query("UPDATE rooms SET status = 'reserved' WHERE id = ?", [room_number], (err) => {
+                db.query("UPDATE rooms SET status = 'reserved' WHERE room_number = ?", [room_number], (err) => {
                     if (err) console.error('Error updating room status:', err);
                 });
 
