@@ -23,7 +23,7 @@ let bookingAmount = 0;
             <p>Room: ${escapeHtml(data.room_number)}</p>
             <p>Check-in: ${escapeHtml(data.check_in)}</p>
             <p>Check-out: ${escapeHtml(data.check_out)}</p>
-            <p>Total Price: KES${escapeHtml(data.total_amount.toFixed(2))}</p>
+            <p>Total Price: KES${escapeHtml(data.total_amount?.toFixed(2))}</p>
         `;
     })
     .catch(error => {
