@@ -29,13 +29,18 @@
 
     <h1>Book Room</h1>
 
-    <select id="room_number">
-    <option value="">Loading rooms...</option>
-    </select><br><br>
-    <input type="date" id="check_in"><br><br>
-    <input type="date" id="check_out"><br><br>
+    <form>
+        <div id="selectedRoomDisplay" style="display:none;"></div>
+        <input type="hidden" id="room_number_hidden">
 
-    <form><button  type="button" onclick="bookRoom()">Book Room</button></form>
+        <select id="room_number">
+        <option value="">Loading rooms...</option>
+        </select><br><br>
+
+        <input type="date" id="check_in"><br><br>
+        <input type="date" id="check_out"><br><br>
+        <button type="button" onclick="bookRoom()">Book Room</button>
+    </form>
 
     <script src="js/config.js"></script>
     <script src="js/cookies.js"></script>

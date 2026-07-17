@@ -83,10 +83,10 @@ exports.getRooms = (req, res) => {
 };
 
 exports.getRoom = (req, res) => {
-    const { id } = req.params;
-    const sql = 'SELECT * FROM rooms WHERE id = ?';
+    const { room_number } = req.params;
+    const sql = 'SELECT * FROM rooms WHERE room_number = ?';
 
-    db.query(sql, [id], (err, results) => {
+    db.query(sql, [room_number], (err, results) => {
         if (err) {
             console.error('Error fetching room:', err);
             res.status(500).json({ error: 'Failed to fetch room' });
@@ -124,14 +124,14 @@ exports.addRooms = (req, res) => {
 };
 
 exports.updateRoom = (req, res) => {
-    const { id } = req.params;
+    const { room_number } = req.params;
     const errors = validateRoomInput(req.body);
     if (errors.length > 0) {
         return res.status(400).json({ error: errors.join('; ') });
     }
 
     const { room_number, room_type, price, capacity, status, description } = req.body;
-    const sql = 'UPDATE rooms SET room_number = ?, room_type = ?, price = ?, capacity = ?, status = ?, description = ? WHERE id = ?';
+    const sql = 'UPDATE rooms SET room_number = ?, room_type = ?, price = ?, capacity = ?, status = ?, description = ? WHERE room_number = ?';
 
     db.query(sql, [room_number, room_type, price, capacity, status, description, id], (err, results) => {
         if (err) {
@@ -149,10 +149,10 @@ exports.updateRoom = (req, res) => {
 };
 
 exports.deleteRoom = (req, res) => {
-    const { id } = req.params;
-    const sql = 'DELETE FROM rooms WHERE id = ?';
+    const { room_number } = req.params;
+    const sql = 'DELETE FROM rooms WHERE room_number = ?';
 
-    db.query(sql, [id], (err, results) => {
+    db.query(sql, [room_number], (err, results) => {
         if (err) {
             console.error('Error deleting room:', err);
             res.status(500).json({ error: 'Failed to delete room' });
@@ -167,9 +167,9 @@ exports.deleteRoom = (req, res) => {
 };
 
 exports.checkIn = (req, res) => {
-    const roomId = req.params.id;
+    const roomId = req.params.room_number;
 
-    db.query('SELECT room_number FROM rooms WHERE id = ?', [roomId], (err, roomRows) => {
+    db.query('SELECT room_number FROM rooms WHERE room_number = ?', [roomId], (err, roomRows) => {
         if (err) return res.status(500).json({ error: 'Database error' });
         if (roomRows.length === 0) return res.status(404).json({ error: 'Room not found' });
 
@@ -182,11 +182,11 @@ exports.checkIn = (req, res) => {
 
             const booking = bookingResults[0];
 
-            db.query(`UPDATE bookings SET actual_check_in = NOW() WHERE id = ?`, [booking.id], (err) => {
+            db.query(`UPDATE bookings SET actual_check_in = NOW() WHERE room_number = ?`, [booking.room_number], (err) => {
                 if (err) console.error('Error recording check-in time:', err);
             });
 
-            db.query('UPDATE rooms SET status = ? WHERE id = ?', ['occupied', roomId], (err, result) => {
+            db.query('UPDATE rooms SET status = ? WHERE room_number = ?', ['occupied', roomId], (err, result) => {
                 if (err) return res.status(500).json({ error: 'Database error' });
                 res.json({ message: 'Guest checked in.' });
             });
@@ -195,9 +195,9 @@ exports.checkIn = (req, res) => {
 };
 
 exports.checkOut = (req, res) => {
-    const roomId = req.params.id;
+    const roomId = req.params.room_number;
 
-    db.query('SELECT room_number FROM rooms WHERE id = ?', [roomId], (err, roomRows) => {
+    db.query('SELECT room_number FROM rooms WHERE room_number = ?', [roomId], (err, roomRows) => {
         if (err) return res.status(500).json({ error: 'Database error' });
         if (roomRows.length === 0) return res.status(404).json({ error: 'Room not found' });
 
@@ -210,11 +210,11 @@ exports.checkOut = (req, res) => {
 
             const booking = bookingResults[0];
 
-            db.query(`UPDATE bookings SET actual_check_out = NOW(), booking_status = 'completed' WHERE id = ?`, [booking.id], (err) => {
+            db.query(`UPDATE bookings SET actual_check_out = NOW(), booking_status = 'completed' WHERE rooom_number = ?`, [booking.room_number], (err) => {
                 if (err) console.error('Error recording check-out:', err);
             });
 
-            db.query("UPDATE rooms SET status = 'cleaning' WHERE id = ?", [roomId], (err) => {
+            db.query("UPDATE rooms SET status = 'cleaning' WHERE room_number = ?", [roomId], (err) => {
                 if (err) return res.status(500).json({ error: 'Database error' });
                 res.json({ message: 'Guest checked out.' });
             });
@@ -223,9 +223,9 @@ exports.checkOut = (req, res) => {
 };
 
 exports.finishCleaning = (req, res) => {
-    const roomId = req.params.id;
+    const roomId = req.params.room_number;
 
-    db.query("UPDATE rooms SET status='available' WHERE id=? AND status='cleaning'", [roomId], (err, result) => {
+    db.query("UPDATE rooms SET status='available' WHERE room_number=? AND status='cleaning'", [roomId], (err, result) => {
             if (err)
                 return res.status(500).json(err);
 
@@ -242,7 +242,7 @@ exports.startMaintenance = (req, res) => {
         return res.status(400).json({ error: "Room is not available for maintenance." });
     }
 
-    db.query("UPDATE rooms SET status='maintenance' WHERE id=?", [req.params.id], (err) => {
+    db.query("UPDATE rooms SET status='maintenance' WHERE room_number=?", [req.params.room_number], (err) => {
             if (err)
                 return res.status(500).json(err);
             res.json({ message: "Room sent to maintenance." });
@@ -251,7 +251,7 @@ exports.startMaintenance = (req, res) => {
 
 exports.finishMaintenance = (req, res) => {
 
-    db.query("UPDATE rooms SET status='available' WHERE id=?", [req.params.id], (err) => {
+    db.query("UPDATE rooms SET status='available' WHERE room_number=?", [req.params.room_number], (err) => {
             if (err)
                 return res.status(500).json(err);
             res.json({ message: "Maintenance completed." });

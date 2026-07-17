@@ -75,22 +75,22 @@ function loadRooms() {
 
                 if (currentUserRole === 'receptionist') {
                     if (room.status === 'reserved' || room.status === 'available') {
-                        actions += `<button onclick="roomAction(${room.id}, 'check-in')">Check In</button>`;
+                        actions += `<button onclick="roomAction(${room.room_number}, 'check-in')">Check In</button>`;
                     }
                     if (room.status === 'occupied') {
-                        actions += `<button onclick="roomAction(${room.id}, 'check-out')">Check Out</button>`;
+                        actions += `<button onclick="roomAction(${room.room_number}, 'check-out')">Check Out</button>`;
                     }
                     if (room.status === 'cleaning') {
-                        actions += `<button onclick="roomAction(${room.id}, 'cleaning')">Finish Cleaning</button>`;
+                        actions += `<button onclick="roomAction(${room.room_number}, 'cleaning')">Finish Cleaning</button>`;
                     }
                 }
 
                 if (currentUserRole === 'admin') {
                     if (room.status === 'available') {
-                        actions += `<button onclick="roomAction(${room.id}, 'start-maintenance')">Send to Maintenance</button>`;
+                        actions += `<button onclick="roomAction(${room.room_number}, 'start-maintenance')">Send to Maintenance</button>`;
                     }
                     if (room.status === 'maintenance') {
-                        actions += `<button onclick="roomAction(${room.id}, 'finish-maintenance')">Finish Maintenance</button>`;
+                        actions += `<button onclick="roomAction(${room.room_number}, 'finish-maintenance')">Finish Maintenance</button>`;
                     }
                 }
 
@@ -149,7 +149,7 @@ function loadAllBookings(queryString = '') {
                         <p>${escapeHtml(booking.check_in)} → ${escapeHtml(booking.check_out)}</p>
                         <p>Status: ${escapeHtml(booking.booking_status)}</p>
                         <p>Total: KES ${escapeHtml(Number(booking.total_amount).toFixed(2))}</p>
-                        ${booking.booking_status === 'confirmed' ? `<button onclick="completeBooking(${booking.id})">Mark Completed</button>` : ''}
+                        ${booking.booking_status === 'confirmed' ? `<button onclick="completeBooking(${booking.room_number})">Mark Completed</button>` : ''}
                         <hr>
                     </div>
                 `;

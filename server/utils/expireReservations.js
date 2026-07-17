@@ -13,11 +13,11 @@ function expireStaleReservations() {
         if (staleBookings.length === 0) return;
 
         staleBookings.forEach(booking => {
-            db.query("UPDATE bookings SET booking_status = 'cancelled' WHERE id = ?", [booking.id], (err) => {
+            db.query("UPDATE bookings SET booking_status = 'cancelled' WHERE room_number = ?", [booking.id], (err) => {
                 if (err) console.error(`Error expiring booking ${booking.id}:`, err);
             });
             // only release the room if it's still 'reserved' — don't touch it if it's since become occupied some other way
-            db.query("UPDATE rooms SET status = 'available' WHERE id = ? AND status = 'reserved'", [booking.room_number], (err) => {
+            db.query("UPDATE rooms SET status = 'available' WHERE room_number = ? AND status = 'reserved'", [booking.room_number], (err) => {
                 if (err) console.error(`Error releasing room for booking ${booking.id}:`, err);
             });
         });

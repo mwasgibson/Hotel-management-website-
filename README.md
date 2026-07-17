@@ -180,22 +180,22 @@ POST   /api/auth/login         - User login
 ### Room Endpoints
 ```
 GET    /api/rooms              - Get all rooms
-GET    /api/rooms/:id          - Get specific room details
+GET    /api/rooms/:room_number          - Get specific room details
 ```
 
 ### Booking Endpoints
 ```
 POST   /api/bookings           - Create new booking
 GET    /api/bookings           - Get all bookings
-GET    /api/bookings/:id       - Get specific booking details
-PUT    /api/bookings/:id       - Update booking
-DELETE /api/bookings/:id       - Cancel booking
+GET    /api/bookings/:room_number       - Get specific booking details
+PUT    /api/bookings/:room_number       - Update booking
+DELETE /api/bookings/:room_number      - Cancel booking
 ```
 
 ### Payment Endpoints
 ```
 POST   /api/payments           - Process payment
-GET    /api/payments/:id       - Get payment details
+GET    /api/payments/:room_number      - Get payment details
 ```
 
 ## 🔐 Environment Variables

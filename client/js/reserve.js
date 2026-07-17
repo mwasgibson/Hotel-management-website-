@@ -1,10 +1,29 @@
-const reserveParams = new URLSearchParams(window.location.search);
-const preselectedRoomForReserve = reserveParams.get('room_number');
-if (preselectedRoomForReserve) {
-    document.addEventListener('DOMContentLoaded', () => {
-        document.getElementById('room_number').value = preselectedRoomForReserve;
-    });
+function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str ?? '';
+    return div.innerHTML;
 }
+
+const bookingParams = new URLSearchParams(window.location.search);
+const preselectedRoomNumber = bookingParams.get('room_number');
+const preselectedRoomType = bookingParams.get('room_type');
+const preselectedPrice = bookingParams.get('price');
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (preselectedRoomNumber) {
+        // Arrived from the room details page — lock the room in, no picking needed
+        document.getElementById('room_number_hidden').value = preselectedRoomNumber;
+        document.getElementById('room_number').style.display = 'none';
+
+        const display = document.getElementById('selectedRoomDisplay');
+        display.style.display = 'block';
+        display.innerHTML = `<p>Booking: Room ${escapeHtml(preselectedRoomNumber)} — ${escapeHtml(preselectedRoomType)} (KES ${escapeHtml(preselectedPrice)}/night)</p>`;
+    } else {
+        loadRoomOptions();   // landed here directly — fall back to manual selection
+    }
+});
+
+let preselectedRoom = null;
 
 function loadRoomOptions() {
     fetch(`${API_URL}/rooms`, { credentials: 'include' })
@@ -12,35 +31,31 @@ function loadRoomOptions() {
         .then(rooms => {
             const select = document.getElementById('room_number');
             select.innerHTML = '<option value="">Select a room</option>';
-
             rooms
                 .filter(room => room.status === 'available')
                 .forEach(room => {
                     select.innerHTML += `<option value="${room.room_number}">Room ${room.room_number} — ${room.room_type} (KES ${room.price}/night)</option>`;
                 });
-
-            // if we arrived here from the room detail page, pre-select that room
-            if (preselectedRoom) {
-                select.value = preselectedRoom;
-            }
         })
         .catch(error => console.error('Error loading rooms:', error));
 }
 
-loadRoomOptions();
+function getSelectedRoomNumber() {
+    return preselectedRoomNumber || document.getElementById('room_number').value;
+}
 
 function reserveRoom() {
     const token = getCookie('token');
 
-    fetch(`${API_URL}/bookings/reserve`, {
+    fetch(`${API_URL}/bookings`, {
         credentials: 'include',
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         },
         body: JSON.stringify({
-            room_number: document.getElementById('room_number').value,
+            room_number: getSelectedRoomNumber(),
             check_in: document.getElementById('check_in').value,
             check_out: document.getElementById('check_out').value
         })
@@ -48,13 +63,13 @@ function reserveRoom() {
     .then(response => response.json().then(data => ({ ok: response.ok, data })))
     .then(({ ok, data }) => {
         if (!ok) {
-            alert(data.error || 'Reservation failed');
+            alert(data.error || 'Booking failed');
             return;
         }
         window.location.href = `payment.html?booking_id=${data.bookingId}`;
     })
     .catch(error => {
-        console.error('Error reserving room:', error);
+        console.error('Error booking room:', error);
         alert('Unable to connect to the server.');
     });
 }

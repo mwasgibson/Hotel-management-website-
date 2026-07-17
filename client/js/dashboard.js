@@ -33,9 +33,9 @@ function loadBookings() {
                     <p> Status: <span class="${escapeHtml(booking.booking_status)}">${escapeHtml(booking.booking_number)}</span></p>
                     <p> Total Price: <span class="${escapeHtml(booking.total_amount)}">KES${escapeHtml(booking.total_amount.toFixed(2))}</span></p>
 
-                    ${booking.booking_status === 'pending' ? `<button onclick="goToPayment(${booking.id})">Pay</button>` : ''}
-                    <button onclick="cancelBooking(${booking.id})">Cancel</button>
-                    ${booking.booking_status === 'pending' ? `<button onclick="rescheduleBooking(${booking.id})">Reschedule</button>` : ''}
+                    ${booking.booking_status === 'pending' ? `<button onclick="goToPayment(${booking.room_number})">Pay</button>` : ''}
+                    <button onclick="cancelBooking(${booking.room_number})">Cancel</button>
+                    ${booking.booking_status === 'pending' ? `<button onclick="rescheduleBooking(${booking.room_number})">Reschedule</button>` : ''}
 
                     <hr>
                 </div>`
