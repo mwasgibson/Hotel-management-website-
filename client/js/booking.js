@@ -7,7 +7,7 @@ function bookRoom() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+            'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
             room_number: document.getElementById('room_number').value,
@@ -15,15 +15,44 @@ function bookRoom() {
             check_out: document.getElementById('check_out').value
         })
     })
-    .then(response => response.json())
-    .then(data => {
-        console.log('Room booked successfully:', data);
-        window.location.href = `payment.html?booking_id=${data.booking_id}`;
+    .then(response => response.json().then(data => ({ ok: response.ok, data })))
+    .then(({ ok, data }) => {
+        if (!ok) {
+            alert(data.error || 'Booking failed');
+            return;
+        }
+       // window.location.href = `payment.html?booking_id=${data.bookingId}`;
     })
     .catch(error => {
         console.error('Error booking room:', error);
+        alert('Unable to connect to the server.');
     });
 }
+
+let preselectedRoom = null;
+
+function loadRoomOptions() {
+    fetch(`${API_URL}/rooms`, { credentials: 'include' })
+        .then(res => res.json())
+        .then(rooms => {
+            const select = document.getElementById('room_number');
+            select.innerHTML = '<option value="">Select a room</option>';
+
+            rooms
+                .filter(room => room.status === 'available')
+                .forEach(room => {
+                    select.innerHTML += `<option value="${room.room_number}">Room ${room.room_number} — ${room.room_type} (KES ${room.price}/night)</option>`;
+                });
+
+            // if we arrived here from the room detail page, pre-select that room
+            if (preselectedRoom) {
+                select.value = preselectedRoom;
+            }
+        })
+        .catch(error => console.error('Error loading rooms:', error));
+}
+
+loadRoomOptions();
 
 function reserveRoom(roomId) {
 

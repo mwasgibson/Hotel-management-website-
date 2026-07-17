@@ -24,7 +24,9 @@
     <p>Reserving holds the room for you — payment is required to confirm it.</p>
 
     <form>
-        <input type="number" id="room_number" placeholder="Room ID"><br><br>
+        <select id="room_number">
+        <option value="">Loading rooms...</option>
+        </select><br><br>
         <input type="date" id="check_in"><br><br>
         <input type="date" id="check_out"><br><br>
         <button type="button" onclick="reserveRoom()">Reserve & Pay</button>

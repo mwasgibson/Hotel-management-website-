@@ -7,9 +7,12 @@ function escapeHtml(str) {
 const params = new URLSearchParams(window.location.search);
 const roomId = params.get('id');
 
+let currentRoom = null;
+
 fetch(`${API_URL}/rooms/${roomId}`, { credentials: 'include' })
     .then(res => res.json())
     .then(room => {
+        currentRoom = room;
         document.getElementById('roomDetail').innerHTML = `
             <h2>${escapeHtml(room.room_type)} — Room ${escapeHtml(room.room_number)}</h2>
             <p>Price: KES ${escapeHtml(room.price)} / night</p>
@@ -24,9 +27,9 @@ fetch(`${API_URL}/rooms/${roomId}`, { credentials: 'include' })
     });
 
 function goToBook() {
-    window.location.href = `booking.html?room_number=${roomId}`;
+    window.location.href = `booking.html?room_number=${currentRoom.room_number}`;
 }
 
 function goToReserve() {
-    window.location.href = `reserve.html?room_number=${roomId}`;
+    window.location.href = `reserve.html?room_number=${currentRoom.room_number}`;
 }

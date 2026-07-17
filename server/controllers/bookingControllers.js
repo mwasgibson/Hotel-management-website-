@@ -25,12 +25,15 @@ exports.createBooking = (req, res) => {
         return res.status(400).json({ error: 'Check-out date must be after check-in date' });
     }
 
-    const roomSql = 'SELECT * FROM rooms WHERE id = ?';
+    const roomSql = 'SELECT * FROM rooms WHERE TRIM(room_number) = ?';
     db.query(roomSql, [room_number], (err, roomResults) => {
         if (err) {
             console.error('Error fetching room:', err);
             return res.status(500).json({ error: 'Database error' });
         }
+        if (roomResults.length === 0) {
+                return res.status(404).json({ error: 'Room not found' });
+            }
 
         const conflictSql = 'SELECT * FROM bookings WHERE room_number = ? AND booking_status IN ("pending", "confirmed") AND (check_in < ? AND check_out > ?)';
         db.query(conflictSql, [room_number, check_out, check_in], (err, conflictResults) => {
@@ -40,10 +43,7 @@ exports.createBooking = (req, res) => {
             }
             if (conflictResults.length > 0) {
                 return res.status(400).json({ error: 'Room is already booked for the selected dates' });
-            }
-            if (roomResults.length === 0) {
-                return res.status(404).json({ error: 'Room not found' });
-            }
+            }            
             if (roomResults[0].status !== 'available') {
                 return res.status(400).json({ error: `Room is currently ${roomResults[0].status}` });
             }
@@ -168,7 +168,7 @@ exports.completeBooking = (req, res) => {
 exports.getBookings = (req, res) => {
     const user_id = req.user.id;
 
-    const sql = 'SELECT bookings.*, rooms.room_type, rooms.status FROM bookings JOIN rooms ON bookings.room_number = rooms.id WHERE bookings.user_id = ?';
+    const sql = 'SELECT bookings.*, rooms.room_type, rooms.status FROM bookings JOIN rooms ON bookings.room_number = rooms.room_number WHERE bookings.user_id = ?';
     db.query(sql, [user_id], (err, results) => {
         if (err) {
             console.error('Error fetching bookings:', err);
@@ -201,7 +201,7 @@ exports.getAllBookings = (req, res) => {
     let sql = `
         SELECT bookings.*, rooms.room_type, rooms.status AS room_status, users.fullname, users.email
         FROM bookings
-        JOIN rooms ON bookings.room_number = rooms.id
+        JOIN rooms ON bookings.room_number = rooms.room_number
         JOIN users ON bookings.user_id = users.id
         WHERE 1=1
     `;

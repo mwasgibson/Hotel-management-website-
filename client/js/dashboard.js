@@ -4,14 +4,15 @@ function escapeHtml(str) {
     return div.innerHTML;
 }
 
-
 loadBookings();
 
 function loadBookings() {
+    const token = getCookie('token');
     fetch(`${API_URL}/bookings`, {
         credentials: 'include',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
         }
     })
     .then(response => response.json())

@@ -36,7 +36,7 @@ function renderRooms(data) {
         roomContainer.innerHTML += `
             <div>
                 <img class="room-img" src="${img}" alt="${escapeHtml(room.room_type)} Room"
-                    style="cursor: pointer;" onclick="window.location.href='room-detail.html?id=${room.id}'">
+                    style="cursor: pointer;" onclick="window.location.href='room-detail.html?id=${room.room_number}'">
                 <h3>${escapeHtml(room.room_type)}</h3>
                 <p>Room: ${escapeHtml(room.room_number)}</p>
                 <p>Price: KES ${escapeHtml(room.price)}</p>

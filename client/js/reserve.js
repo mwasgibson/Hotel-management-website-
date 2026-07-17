@@ -6,6 +6,29 @@ if (preselectedRoomForReserve) {
     });
 }
 
+function loadRoomOptions() {
+    fetch(`${API_URL}/rooms`, { credentials: 'include' })
+        .then(res => res.json())
+        .then(rooms => {
+            const select = document.getElementById('room_number');
+            select.innerHTML = '<option value="">Select a room</option>';
+
+            rooms
+                .filter(room => room.status === 'available')
+                .forEach(room => {
+                    select.innerHTML += `<option value="${room.room_number}">Room ${room.room_number} — ${room.room_type} (KES ${room.price}/night)</option>`;
+                });
+
+            // if we arrived here from the room detail page, pre-select that room
+            if (preselectedRoom) {
+                select.value = preselectedRoom;
+            }
+        })
+        .catch(error => console.error('Error loading rooms:', error));
+}
+
+loadRoomOptions();
+
 function reserveRoom() {
     const token = getCookie('token');
 
@@ -14,7 +37,7 @@ function reserveRoom() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+            'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
             room_number: document.getElementById('room_number').value,

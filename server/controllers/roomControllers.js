@@ -63,7 +63,7 @@ exports.getRooms = (req, res) => {
     }
     // Only show rooms with no conflicting booking in the requested date range
     if (check_in && check_out) {
-        sql += ` AND id NOT IN (
+        sql += ` AND room_number NOT IN (
             SELECT room_number FROM bookings
             WHERE booking_status IN ('pending', 'confirmed')
             AND check_in < ? AND check_out > ?
@@ -169,29 +169,27 @@ exports.deleteRoom = (req, res) => {
 exports.checkIn = (req, res) => {
     const roomId = req.params.id;
 
-    const sql = `SELECT * FROM bookings WHERE room_number = ? AND booking_status = 'confirmed' ORDER BY check_in DESC LIMIT 1`;
-    db.query(sql, [roomId], (err, bookingResults) => {
-        if (err) {
-            return res.status(500).json({ error: 'Database error' });
-        }
-        if (bookingResults.length === 0) {
-            return res.status(404).json({ error: 'No confirmed booking found for this room' });
-        }
+    db.query('SELECT room_number FROM rooms WHERE id = ?', [roomId], (err, roomRows) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        if (roomRows.length === 0) return res.status(404).json({ error: 'Room not found' });
 
-        const booking = bookingResults[0];
+        const roomNumber = roomRows[0].room_number;
 
-        db.query(`UPDATE bookings SET actual_check_in = NOW() WHERE id = ?`, [booking.id], (err) => {
-            if (err) console.error('Error recording check-in time:', err);
-        });
+        const sql = `SELECT * FROM bookings WHERE room_number = ? AND booking_status = 'confirmed' ORDER BY check_in DESC LIMIT 1`;
+        db.query(sql, [roomNumber], (err, bookingResults) => {
+            if (err) return res.status(500).json({ error: 'Database error' });
+            if (bookingResults.length === 0) return res.status(404).json({ error: 'No confirmed booking found for this room' });
 
-        db.query('UPDATE rooms SET status = ? WHERE id = ?', ['occupied', roomId], (err, result) => {
-            if (err) {
-                return res.status(500).json({ error: 'Database error' });
-            }
-            if (result.affectedRows === 0) {
-                return res.status(404).json({ error: 'Room not found' });
-            }
-            res.json({ message: 'Guest checked in.' });
+            const booking = bookingResults[0];
+
+            db.query(`UPDATE bookings SET actual_check_in = NOW() WHERE id = ?`, [booking.id], (err) => {
+                if (err) console.error('Error recording check-in time:', err);
+            });
+
+            db.query('UPDATE rooms SET status = ? WHERE id = ?', ['occupied', roomId], (err, result) => {
+                if (err) return res.status(500).json({ error: 'Database error' });
+                res.json({ message: 'Guest checked in.' });
+            });
         });
     });
 };
@@ -199,26 +197,27 @@ exports.checkIn = (req, res) => {
 exports.checkOut = (req, res) => {
     const roomId = req.params.id;
 
-    const sql = `SELECT * FROM bookings WHERE room_number = ? AND booking_status = 'confirmed' ORDER BY check_in DESC LIMIT 1`;
-    db.query(sql, [roomId], (err, bookingResults) => {
-        if (err) {
-            return res.status(500).json({ error: 'Database error' });
-        }
-        if (bookingResults.length === 0) {
-            return res.status(404).json({ error: 'No active booking found for this room' });
-        }
+    db.query('SELECT room_number FROM rooms WHERE id = ?', [roomId], (err, roomRows) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        if (roomRows.length === 0) return res.status(404).json({ error: 'Room not found' });
 
-        const booking = bookingResults[0];
+        const roomNumber = roomRows[0].room_number;
 
-        db.query(`UPDATE bookings SET actual_check_out = NOW(), booking_status = 'completed' WHERE id = ?`, [booking.id], (err) => {
-            if (err) console.error('Error recording check-out:', err);
-        });
+        const sql = `SELECT * FROM bookings WHERE room_number = ? AND booking_status = 'confirmed' ORDER BY check_in DESC LIMIT 1`;
+        db.query(sql, [roomNumber], (err, bookingResults) => {
+            if (err) return res.status(500).json({ error: 'Database error' });
+            if (bookingResults.length === 0) return res.status(404).json({ error: 'No active booking found for this room' });
 
-        db.query("UPDATE rooms SET status = 'cleaning' WHERE id = ?", [roomId], (err) => {
-            if (err) {
-                return res.status(500).json({ error: 'Database error' });
-            }
-            res.json({ message: 'Guest checked out.' });
+            const booking = bookingResults[0];
+
+            db.query(`UPDATE bookings SET actual_check_out = NOW(), booking_status = 'completed' WHERE id = ?`, [booking.id], (err) => {
+                if (err) console.error('Error recording check-out:', err);
+            });
+
+            db.query("UPDATE rooms SET status = 'cleaning' WHERE id = ?", [roomId], (err) => {
+                if (err) return res.status(500).json({ error: 'Database error' });
+                res.json({ message: 'Guest checked out.' });
+            });
         });
     });
 };
