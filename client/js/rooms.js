@@ -23,18 +23,8 @@ const roomImages = {
 
 function renderRooms(data) {
     const roomContainer = document.getElementById("rooms");
-    roomContainer.innerHTML += `
-        <div>
-            <img class="room-img" src="${img}" alt="${escapeHtml(room.room_type)} Room"
-                style="cursor: pointer;" onclick="window.location.href='room.html?id=${room.id}'">
-            <h3>${escapeHtml(room.room_type)}</h3>
-            <p>Room: ${escapeHtml(room.room_number)}</p>
-            <p>Price: KES ${escapeHtml(room.price)}</p>
-            <p>Capacity: ${escapeHtml(room.capacity)}</p>
-            <p>Status: ${escapeHtml(room.status)}</p>
-            <p>Description: ${escapeHtml(room.description)}</p>
-        </div>
-    `;
+    
+    roomContainer.innerHTML = ``;
 
     if (!data.length) {
         roomContainer.innerHTML = '<p>No rooms match your search.</p>';
@@ -45,7 +35,8 @@ function renderRooms(data) {
         const img = roomImages[room.room_type] || roomImages['Standard'];
         roomContainer.innerHTML += `
             <div>
-                <img class="room-img" src="${img}" alt="${escapeHtml(room.room_type)} Room">
+                <img class="room-img" src="${img}" alt="${escapeHtml(room.room_type)} Room"
+                    style="cursor: pointer;" onclick="window.location.href='room-detail.html?id=${room.id}'">
                 <h3>${escapeHtml(room.room_type)}</h3>
                 <p>Room: ${escapeHtml(room.room_number)}</p>
                 <p>Price: KES ${escapeHtml(room.price)}</p>

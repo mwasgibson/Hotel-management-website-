@@ -39,7 +39,7 @@ function reserveRoom(roomId) {
         },
         body: JSON.stringify({
             user_id,
-            room_nimber: roomId,
+            room_number: roomId,
             check_in,
             check_out
         })
