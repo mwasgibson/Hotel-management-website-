@@ -3,9 +3,9 @@ const sendEmail = require('../utils/sendEmail');
 
 exports.payBookings = (req, res) => {
     const { booking_id, payment_method } = req.body;
-    const sql = 'SELECT bookings.* FROM bookings WHERE bookings.id = ? and bookings.user_id = ?';
+    const sql = 'SELECT bookings.* FROM bookings WHERE bookings.room_number = ? and bookings.user_id = ?';
 
-    db.query(sql, [booking_id, req.user.id], (err, bookings) => {
+    db.query(sql, [booking_id, req.user.room_number], (err, bookings) => {
         if (err) {
             console.error('Error fetching booking:', err);
             return res.status(500).json({ error: 'Failed to fetch booking' });
@@ -54,9 +54,9 @@ exports.payBookings = (req, res) => {
 
 exports.getPayments = (req, res) => {
 
-    const sql = 'SELECT payments.*, bookings.user_id FROM payments JOIN bookings ON payments.booking_id = bookings.id WHERE bookings.user_id = ?';
+    const sql = 'SELECT payments.*, bookings.user_id FROM payments JOIN bookings ON payments.booking_id = bookings.room_number WHERE bookings.user_id = ?';
 
-    db.query(sql, [req.user.id], (err, results) => {
+    db.query(sql, [req.user.room_number], (err, results) => {
 
         if (err) {
             console.error('Error fetching payments:', err);

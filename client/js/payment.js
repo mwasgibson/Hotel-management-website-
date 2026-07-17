@@ -6,6 +6,7 @@ function escapeHtml(str) {
 
 const params = new URLSearchParams(window.location.search);
 const bookingId = params.get('booking_id'); 
+const bookingNumber = params.get('booking_number');
 
 let bookingAmount = 0;   
 
@@ -19,11 +20,11 @@ let bookingAmount = 0;
     .then(data => {
         bookingAmount = data.total_amount;
         document.getElementById('bookingId').innerHTML = `
-            <p>Booking ID: ${escapeHtml(data.id)}</p>
+            <p>Booking ID: ${escapeHtml(data.room_number)}</p>
             <p>Room: ${escapeHtml(data.room_number)}</p>
             <p>Check-in: ${escapeHtml(data.check_in)}</p>
             <p>Check-out: ${escapeHtml(data.check_out)}</p>
-            <p>Total Price: KES${escapeHtml(data.total_amount?.toFixed(2))}</p>
+            <p>Total Price: KES${escapeHtml(Number(data.total_amount).toFixed(2))}</p>
         `;
     })
     .catch(error => {
@@ -120,7 +121,7 @@ paypal.Buttons({
             
             method: 'POST',
             headers: {
-                'Content-Typ': 'application/json'
+                'Content-Type': 'application/json'
             },
 
             body: JSON.stringify({

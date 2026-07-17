@@ -151,7 +151,7 @@ exports.rescheduleBooking = (req, res) => {
 };
 
 exports.completeBooking = (req, res) => {
-    const bookingId = req.params.id;
+    const bookingId = req.params.room_number;
 
     const sql = ` SELECT room_number FROM bookings WHERE room_number = ? `;
     db.query(sql, [bookingId], (err, booking) => {

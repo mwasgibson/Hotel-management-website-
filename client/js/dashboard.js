@@ -25,13 +25,13 @@ function loadBookings() {
         (Array.isArray(data) ? data : (data.bookings || [])).forEach(booking => {
             bookingDiv.innerHTML += `
                 <div>
-                    <h3> Booking #${booking.id}</h3>
+                    <h3> Booking #${booking.room_number}</h3>
                     <p> Room: <span class="${escapeHtml(booking.status)}">${escapeHtml(booking.room_number)}</span></p>
                     <p> Type: <span class="${escapeHtml(booking.room_type)}">${escapeHtml(booking.room_type)}</span></p>
                     <p> Check-in: <span class="${escapeHtml(booking.check_in)}">${escapeHtml(booking.check_in)}</span></p>
                     <p> Check-out: <span class="${escapeHtml(booking.check_out)}">${escapeHtml(booking.check_out)}</span></p>
                     <p> Status: <span class="${escapeHtml(booking.booking_status)}">${escapeHtml(booking.booking_number)}</span></p>
-                    <p> Total Price: <span class="${escapeHtml(booking.total_amount)}">KES${escapeHtml(booking.total_amount.toFixed(2))}</span></p>
+                    <p> Total Price: <span class="${escapeHtml(booking.total_amount)}">KES${escapeHtml(Number(booking.total_amount).toFixed(2))}</span></p>
 
                     ${booking.booking_status === 'pending' ? `<button onclick="goToPayment(${booking.room_number})">Pay</button>` : ''}
                     <button onclick="cancelBooking(${booking.room_number})">Cancel</button>
@@ -130,7 +130,7 @@ function loadPayments() {
         (Array.isArray(data) ? data : data.payments || []).forEach(payment => {
             payments.innerHTML += `
                 <div>
-                    <h3> Payment #${escapeHtml(payment.id)}</h3>
+                    <h3> Payment #${escapeHtml(payment.room_number)}</h3>
                     <p> Booking ID: ${escapeHtml(payment.booking_id)}</p>
                     <p> Amount: KES${escapeHtml(payment.amount.toFixed(2))}</p>
                     <p> Method: ${escapeHtml(payment.payment_method)}</p>

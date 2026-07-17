@@ -83,10 +83,10 @@ exports.getRooms = (req, res) => {
 };
 
 exports.getRoom = (req, res) => {
-    const { room_number } = req.params;
+    const { id } = req.params;
     const sql = 'SELECT * FROM rooms WHERE room_number = ?';
 
-    db.query(sql, [room_number], (err, results) => {
+    db.query(sql, [id], (err, results) => {
         if (err) {
             console.error('Error fetching room:', err);
             res.status(500).json({ error: 'Failed to fetch room' });

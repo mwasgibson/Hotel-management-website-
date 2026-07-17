@@ -52,7 +52,7 @@ function bookRoom() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+            'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
             room_number: getSelectedRoomNumber(),
@@ -66,7 +66,7 @@ function bookRoom() {
             alert(data.error || 'Booking failed');
             return;
         }
-       // window.location.href = `payment.html?booking_id=${data.bookingId}`;
+        window.location.href = `payment.html?booking_number=${data.bookingId}`;
     })
     .catch(error => {
         console.error('Error booking room:', error);

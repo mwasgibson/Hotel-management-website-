@@ -144,7 +144,7 @@ function loadAllBookings(queryString = '') {
             bookings.forEach(booking => {
                 container.innerHTML += `
                     <div>
-                        <h4>Booking #${escapeHtml(booking.id)} — ${escapeHtml(booking.fullname)} (${escapeHtml(booking.email)})</h4>
+                        <h4>Booking #${escapeHtml(booking.room_number)} — ${escapeHtml(booking.fullname)} (${escapeHtml(booking.email)})</h4>
                         <p>Room ${escapeHtml(booking.room_number)} — ${escapeHtml(booking.room_type)}</p>
                         <p>${escapeHtml(booking.check_in)} → ${escapeHtml(booking.check_out)}</p>
                         <p>Status: ${escapeHtml(booking.booking_status)}</p>
