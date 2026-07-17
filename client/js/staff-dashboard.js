@@ -24,13 +24,10 @@ function loadProfileAndInit() {
                 window.location.href = 'dashboard.html';
                 return;
             }
-            if (currentUserRole === 'admin') {
-                document.getElementById('usersHeading').style.display = 'block';
-                loadUsers();
-            }
             loadStats();
             loadRooms();
             loadAllBookings();
+            loadUsers();
         })
         .catch(error => console.error('Error loading profile:', error));
 }

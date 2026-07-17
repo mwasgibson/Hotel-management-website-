@@ -18,7 +18,10 @@ function Logout() {
 }
 
 function goToDashboard() {
-    fetch(`${API_URL}/auth/profile`, { credentials: 'include' })
+    fetch(`${API_URL}/auth/profile`, 
+        { 
+            credentials: 'include' 
+        })
         .then(res => {
             if (res.status === 401) {
                 window.location.href = 'login.html';

@@ -34,20 +34,23 @@
 
         <h2>All Bookings</h2>
         <div class="filters">
-        <select id="bookingStatusFilter">
-            <option value="">All Statuses</option>
-            <option value="pending">Pending</option>
-            <option value="confirmed">Confirmed</option>
-            <option value="completed">Completed</option>
-            <option value="cancelled">Cancelled</option>
-        </select>
-        <input type="text" id="guestFilter" placeholder="Guest name or email">
-        <input type="date" id="bookingCheckInFilter">
-        <input type="date" id="bookingCheckOutFilter">
-        <button type="button" onclick="searchBookings()">Search</button>
-        <button type="button" onclick="clearBookingFilters()">Clear</button>
-    </div>
-    <div id="allBookings"></div>
+            <select id="bookingStatusFilter">
+                <option value="">All Statuses</option>
+                <option value="pending">Pending</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+            </select>
+            <input type="text" id="guestFilter" placeholder="Guest name or email">
+            <input type="date" id="bookingCheckInFilter">
+            <input type="date" id="bookingCheckOutFilter">
+            <button type="button" onclick="searchBookings()">Search</button>
+            <button type="button" onclick="clearBookingFilters()">Clear</button>
+        </div>
+        <div id="allBookings"></div>
+
+        <h2 id="usersHeading" style="display:none;">Guests</h2>
+        <div id="allUsers"></div>
 
     </div>
 
