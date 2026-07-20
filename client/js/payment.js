@@ -6,7 +6,7 @@ function escapeHtml(str) {
 
 const params = new URLSearchParams(window.location.search);
 const bookingId = params.get('booking_id'); 
-const bookingNumber = params.get('booking_number');
+const bookingNumber = params.get('room_number');
 
 let bookingAmount = 0;   
 

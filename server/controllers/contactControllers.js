@@ -14,7 +14,7 @@ exports.submitContact = async (req, res) => {
 
     // Notify the hotel
     await sendEmail({
-        to: process.env.HOTEL_CONTACT_EMAIL,
+        to: process.env.EMAIL_USER,
         subject: `New contact form message: ${subject || 'No subject'}`,
         html: `
             <p><strong>From:</strong> ${name} (${email})</p>

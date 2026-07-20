@@ -66,7 +66,7 @@ function bookRoom() {
             alert(data.error || 'Booking failed');
             return;
         }
-        window.location.href = `payment.html?booking_number=${data.bookingId}`;
+        window.location.href = `payment.html?room_number=${data.bookingId}`;
     })
     .catch(error => {
         console.error('Error booking room:', error);
