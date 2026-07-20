@@ -6,18 +6,18 @@ function escapeHtml(str) {
 
 const params = new URLSearchParams(window.location.search);
 const bookingId = params.get('booking_id'); 
-const bookingNumber = params.get('room_number');
+const roomNumber = params.get('room_number');
+const id = bookingId || roomNumber;
 
 let bookingAmount = 0;   
 
-    fetch(`${API_URL}/bookings/${bookingId}`, {
-        credentials: 'include',
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
+if (bookingId) {
+        fetch(`${API_URL}/bookings/${bookingId}`, {
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(res => res.json())
+        .then(data => {
         bookingAmount = data.total_amount;
         document.getElementById('bookingId').innerHTML = `
             <p>Booking ID: ${escapeHtml(data.booking_id)}</p>
@@ -26,10 +26,30 @@ let bookingAmount = 0;
             <p>Check-out: ${escapeHtml(data.check_out)}</p>
             <p>Total Price: KES${escapeHtml(Number(data.total_amount).toFixed(2))}</p>
         `;
-    })
-    .catch(error => {
-        console.error('Error:', error);
-    });
+        })
+        .catch(error => { 
+            console.error('Error:', error)
+        });
+    } else if (roomNumber) {
+        fetch(`${API_URL}/rooms/${roomNumber}`, {
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(res => res.json())
+        .then(data => {
+        bookingAmount = data.total_amount;
+        document.getElementById('bookingId').innerHTML = `
+            <p>Booking ID: ${escapeHtml(data.booking_id)}</p>
+            <p>Room: ${escapeHtml(data.room_number)}</p>
+            <p>Check-in: ${escapeHtml(data.check_in)}</p>
+            <p>Check-out: ${escapeHtml(data.check_out)}</p>
+            <p>Total Price: KES${escapeHtml(Number(data.total_amount).toFixed(2))}</p>
+        `;
+        })
+        .catch(error => { 
+            console.error('Error:', error)
+        });
+    }
 
 function payBooking() {
 

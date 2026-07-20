@@ -3,9 +3,9 @@ const sendEmail = require('../utils/sendEmail');
 
 exports.payBookings = (req, res) => {
     const { booking_id, payment_method } = req.body;
-    const sql = 'SELECT bookings.* FROM bookings WHERE bookings.room_number = ? and bookings.user_id = ?';
+    const sql = 'SELECT bookings.* FROM bookings WHERE bookings.booking_id = ? and bookings.user_id = ?';
 
-    db.query(sql, [booking_id, req.user.room_number], (err, bookings) => {
+    db.query(sql, [booking_id, req.user.id], (err, bookings) => {
         if (err) {
             console.error('Error fetching booking:', err);
             return res.status(500).json({ error: 'Failed to fetch booking' });
@@ -33,7 +33,7 @@ exports.payBookings = (req, res) => {
                     return res.status(500).json({ error: 'Failed to create payment' });
                 }
 
-                db.query('UPDATE bookings SET booking_status = "confirmed" WHERE room_number = ?', [booking_id], (err) => {
+                db.query('UPDATE bookings SET booking_status = "confirmed" WHERE booking_id = ?', [booking_id], (err) => {
                     if (err) {
                         console.error('Error updating booking status:', err);
                         return res.status(500).json({ error: 'Failed to update booking status' });
@@ -54,7 +54,7 @@ exports.payBookings = (req, res) => {
 
 exports.getPayments = (req, res) => {
 
-    const sql = 'SELECT payments.*, bookings.user_id FROM payments JOIN bookings ON payments.booking_id = bookings.room_number WHERE bookings.user_id = ?';
+    const sql = 'SELECT payments.*, bookings.user_id FROM payments JOIN bookings ON payments.booking_id = bookings.booking_id WHERE bookings.user_id = ?';
 
     db.query(sql, [req.user.room_number], (err, results) => {
 

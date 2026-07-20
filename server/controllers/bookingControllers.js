@@ -53,15 +53,6 @@ exports.createBooking = (req, res) => {
         const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
         const total_amount = days * room.price;
 
-        const overlapQuery = ` SELECT * FROM bookings WHERE room_number = ? AND booking_status != 'cancelled' AND (check_in < ? AND check_out > ?)`;
-        db.query( overlapQuery,[room_number, check_out, check_in], (err, bookings) => {
-            if (err)
-                return res.status(500).json(err);
-
-            if (bookings.length > 0) {
-                return res.status(400).json({error: "Room already booked for selected dates."});
-            }
-
             const bookingSql = 'INSERT INTO bookings (user_id, room_number, check_in, check_out, total_amount) VALUES (?, ?, ?, ?, ?)';
                 db.query(bookingSql, [user_id, room_number, start, end, total_amount], (err, bookingResults) => {
                     if (err) {
@@ -92,12 +83,11 @@ exports.createBooking = (req, res) => {
             });            
         });
     });
-});
 };
 
 exports.rescheduleBooking = (req, res) => {
     const user_id = req.user.id;
-    const room_number = req.params.room_number;
+    const booking_id = req.params.booking_id;
     const { check_in, check_out } = req.body;
 
     if (!check_in || !check_out) {
@@ -119,7 +109,7 @@ exports.rescheduleBooking = (req, res) => {
         return res.status(400).json({ error: 'Check-out date must be after check-in date' });
     }
 
-    db.query('SELECT * FROM bookings WHERE room_number = ? AND user_id = ?', [room_number, user_id], (err, results) => {
+    db.query('SELECT * FROM bookings WHERE booking_id = ? AND user_id = ?', [booking_id, user_id], (err, results) => {
         if (err) return res.status(500).json({ error: 'Database error' });
         if (results.length === 0) return res.status(404).json({ error: 'Booking not found' });
 
@@ -128,8 +118,8 @@ exports.rescheduleBooking = (req, res) => {
             return res.status(400).json({ error: 'Only unpaid bookings can be rescheduled — cancel and rebook instead' });
         }
 
-        const conflictSql = 'SELECT * FROM bookings WHERE room_number = ? AND room.room_number != ? AND booking_status IN ("pending", "confirmed") AND (check_in < ? AND check_out > ?)';
-        db.query(conflictSql, [booking.room_number, room_number, check_out, check_in], (err, conflicts) => {
+        const conflictSql = 'SELECT * FROM bookings WHERE booking_id = ? AND room.room_number != ? AND booking_status IN ("pending", "confirmed") AND (check_in < ? AND check_out > ?)';
+        db.query(conflictSql, [booking_id, room.room_number, check_out, check_in], (err, conflicts) => {
             if (err) return res.status(500).json({ error: 'Database error' });
             if (conflicts.length > 0) {
                 return res.status(400).json({ error: 'Room is already booked for the selected dates' });
@@ -165,7 +155,7 @@ exports.completeBooking = (req, res) => {
 
         const roomId = booking[0].room_number;
 
-        db.query("UPDATE bookings SET booking_status='completed' WHERE room_number=?", [bookingId], (err) => {
+        db.query("UPDATE bookings SET booking_status='completed' WHERE booking_id=?", [bookingId], (err) => {
 
                 if (err)
                     return res.status(500).json(err);
@@ -193,8 +183,9 @@ exports.getBooking = (req, res) => {
     const user_id = req.user.id;
     const room_number = req.params.room_number;
 
-    const sql = 'SELECT * FROM bookings WHERE room_number = ? AND user_id = ?';
-    db.query(sql, [room_number, user_id], (err, results) => {
+    const sql = 'SELECT * FROM bookings WHERE id = ? AND user_id = ?';
+    db.query(sql, [id, user_id],
+        (err, results) => {
         if (err) {
             console.error('Error fetching booking:', err);
             return res.status(500).json({ error: 'Database error' });
