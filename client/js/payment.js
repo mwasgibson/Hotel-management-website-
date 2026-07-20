@@ -20,7 +20,7 @@ let bookingAmount = 0;
     .then(data => {
         bookingAmount = data.total_amount;
         document.getElementById('bookingId').innerHTML = `
-            <p>Booking ID: ${escapeHtml(data.room_number)}</p>
+            <p>Booking ID: ${escapeHtml(data.booking_id)}</p>
             <p>Room: ${escapeHtml(data.room_number)}</p>
             <p>Check-in: ${escapeHtml(data.check_in)}</p>
             <p>Check-out: ${escapeHtml(data.check_out)}</p>

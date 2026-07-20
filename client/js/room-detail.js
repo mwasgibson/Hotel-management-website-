@@ -6,6 +6,7 @@ function escapeHtml(str) {
 
 const params = new URLSearchParams(window.location.search);
 const roomId = params.get('room_number');
+const bookingId = params.get('booking_id');
 
 let currentRoom = null;
 
@@ -32,7 +33,7 @@ function goToBook() {
         room_type: currentRoom.room_type,
         price: currentRoom.price
     });
-    window.location.href = `booking.html?${params.toString()}`;
+    window.location.href = `booking.html?booking_id=${params.bookingId}`;
 }
 
 function goToReserve() {
@@ -41,5 +42,5 @@ function goToReserve() {
         room_type: currentRoom.room_type,
         price: currentRoom.price
     });
-    window.location.href = `reserve.html?${params.toString()}`;
+    window.location.href = `reserve.html??booking_id=${params.bookingId}`;
 }
