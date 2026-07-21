@@ -20,26 +20,7 @@ if (bookingId) {
         .then(data => {
         bookingAmount = data.total_amount;
         document.getElementById('bookingId').innerHTML = `
-            <p>Booking ID: ${escapeHtml(data.booking_id)}</p>
-            <p>Room: ${escapeHtml(data.room_number)}</p>
-            <p>Check-in: ${escapeHtml(data.check_in)}</p>
-            <p>Check-out: ${escapeHtml(data.check_out)}</p>
-            <p>Total Price: KES${escapeHtml(Number(data.total_amount).toFixed(2))}</p>
-        `;
-        })
-        .catch(error => { 
-            console.error('Error:', error)
-        });
-    } else if (roomNumber) {
-        fetch(`${API_URL}/rooms/${roomNumber}`, {
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json' }
-        })
-        .then(res => res.json())
-        .then(data => {
-        bookingAmount = data.total_amount;
-        document.getElementById('bookingId').innerHTML = `
-            <p>Booking ID: ${escapeHtml(data.booking_id)}</p>
+            <p>Booking ID: ${escapeHtml(data.id)}</p>
             <p>Room: ${escapeHtml(data.room_number)}</p>
             <p>Check-in: ${escapeHtml(data.check_in)}</p>
             <p>Check-out: ${escapeHtml(data.check_out)}</p>
@@ -56,30 +37,18 @@ function payBooking() {
     const payment_method = document.getElementById('payment_method').value;
     let extraData = {};
 
-    if(payment_method === 'mpesa') {
-
+    if (payment_method === 'mpesa') {
         const phone = document.getElementById('phone').value;
-        const amount = document.getElementById('amount').value;
 
         fetch(`${API_URL}/mpesa/stkpush`, {
             credentials: 'include',
-
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                phoneNumber: phone,
-                amount: amount
-            })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phoneNumber: phone, amount: bookingAmount })
         })
         .then(response => response.json())
-        .then(data => {
-            console.log("STK Push Response:", data);
-        })
-        .catch(error => {
-            console.error("Error performing STK push:", error);
-        });
+        .then(data => console.log("STK Push Response:", data))
+        .catch(error => console.error("Error performing STK push:", error));
     }
 
     if (payment_method === 'mpesa') {
@@ -90,23 +59,21 @@ function payBooking() {
 
     fetch(`${API_URL}/payments`, {
         credentials: 'include',
-
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-            booking_id: bookingId, payment_method, ...extraData
-        })
+        body: JSON.stringify({booking_id: bookingId, payment_method, ...extraData })
     })
-    .then(response => response.json())
-    .then(data => {
-        console.log('Payment successful:', data);
+    .then(response => response.json().then(data => ({ ok: response.ok, data })))
+    .then(({ ok, data }) => {
+        if (!ok) {
+            alert(data.error || 'Payment failed');
+            return;
+        }
         window.location.href = 'dashboard.html';
     })
-    .catch(error => {
-        console.error('Error:', error);       
-    });
+    .catch(error => console.error('Error:', error));
 }
 
 function showPaymentFields() {

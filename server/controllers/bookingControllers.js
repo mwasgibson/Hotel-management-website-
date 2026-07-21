@@ -108,15 +108,9 @@ exports.rescheduleBooking = (req, res) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    if (isNaN(start) || isNaN(end)) {
-        return res.status(400).json({ error: 'Invalid date format' });
-    }
-    if (start < today) {
-        return res.status(400).json({ error: 'Check-in date cannot be in the past' });
-    }
-    if (end <= start) {
-        return res.status(400).json({ error: 'Check-out date must be after check-in date' });
-    }
+    if (isNaN(start) || isNaN(end)) return res.status(400).json({ error: 'Invalid date format' });
+    if (start < today) return res.status(400).json({ error: 'Check-in date cannot be in the past' });
+    if (end <= start) return res.status(400).json({ error: 'Check-out date must be after check-in date' });
 
     db.query('SELECT * FROM bookings WHERE id = ? AND user_id = ?', [booking_id, user_id], (err, results) => {
         if (err) return res.status(500).json({ error: 'Database error' });
@@ -127,28 +121,31 @@ exports.rescheduleBooking = (req, res) => {
             return res.status(400).json({ error: 'Only unpaid bookings can be rescheduled — cancel and rebook instead' });
         }
 
-        const conflictSql = 'SELECT * FROM bookings WHERE id = ? AND room.room_number != ? AND booking_status IN ("pending", "confirmed") AND (check_in < ? AND check_out > ?)';
-        db.query(conflictSql, [booking_id, room.room_number, check_out, check_in], async (err, conflicts) => {
+        // find OTHER bookings on the same room (excluding this one) that overlap the new dates
+        const conflictSql = 'SELECT * FROM bookings WHERE room_number = ? AND id != ? AND booking_status IN ("pending", "confirmed") AND (check_in < ? AND check_out > ?)';
+        db.query(conflictSql, [booking.room_number, booking_id, check_out, check_in], (err, conflicts) => {
             if (err) return res.status(500).json({ error: 'Database error' });
             if (conflicts.length > 0) {
                 return res.status(400).json({ error: 'Room is already booked for the selected dates' });
             }
 
-            db.query('SELECT price FROM rooms WHERE room_number = ?', [booking.room_number], (err, roomResults) => {
+            db.query('SELECT price FROM rooms WHERE room_number = ?', [booking.room_number], async (err, roomResults) => {
                 if (err) return res.status(500).json({ error: 'Database error' });
+                if (roomResults.length === 0) return res.status(404).json({ error: 'Room not found' });
 
+                const room = roomResults[0];
                 const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
 
                 let total_amount;
-                    try {
-                        const pricing = await calculateDynamicPrice(room.price, start);
-                        total_amount = pricing.adjustedPrice * days;
-                    } catch (pricingErr) {
-                        console.error('Error calculating dynamic price:', pricingErr);
-                        total_amount = room.price * days;
-                    }
+                try {
+                    const pricing = await calculateDynamicPrice(room.price, start);
+                    total_amount = pricing.adjustedPrice * days;
+                } catch (pricingErr) {
+                    console.error('Error calculating dynamic price:', pricingErr);
+                    total_amount = room.price * days;
+                }
 
-                db.query('UPDATE bookings SET check_in = ?, check_out = ?, total_amount = ? WHERE room_number = ?', [start, end, total_amount, booking.room_number], (err) => {
+                db.query('UPDATE bookings SET check_in = ?, check_out = ?, total_amount = ? WHERE id = ?', [start, end, total_amount, booking_id], (err) => {
                     if (err) return res.status(500).json({ error: 'Database error' });
                     res.json({ message: 'Booking rescheduled', total_amount });
                 });
@@ -243,25 +240,20 @@ exports.reserveRoom = (req, res) => {
 exports.completeBooking = (req, res) => {
     const bookingId = req.params.booking_id;
 
-    const sql = ` SELECT room_number FROM bookings WHERE id = ? `;
-    db.query(sql, [bookingId], (err, booking) => {
-        if (err)
-            return res.status(500).json(err);
+    db.query('SELECT room_number FROM bookings WHERE id = ?', [bookingId], (err, booking) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        if (booking.length === 0) return res.status(404).json({ error: 'Booking not found' });
 
-        if (booking.length === 0)
-            return res.status(404).json({
-                error: "Booking not found"
-            });
-
-        const roomId = booking[0].room_number;
+        const roomNumber = booking[0].room_number;
 
         db.query("UPDATE bookings SET booking_status='completed' WHERE id=?", [bookingId], (err) => {
+            if (err) return res.status(500).json({ error: 'Database error' });
 
-                if (err)
-                    return res.status(500).json(err);
-                    res.json({
-                            message: "Booking completed."
-                    });
+            db.query("UPDATE rooms SET status = 'available' WHERE room_number = ?", [roomNumber], (err) => {
+                if (err) console.error('Error releasing room:', err);
+            });
+
+            res.json({ message: "Booking completed." });
         });
     });
 };

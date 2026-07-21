@@ -56,7 +56,7 @@ exports.getPayments = (req, res) => {
 
     const sql = 'SELECT payments.*, bookings.user_id FROM payments JOIN bookings ON payments.booking_id = bookings.id WHERE bookings.user_id = ?';
 
-    db.query(sql, [req.user.room_number], (err, results) => {
+    db.query(sql, [req.user.id], (err, results) => {
 
         if (err) {
             console.error('Error fetching payments:', err);

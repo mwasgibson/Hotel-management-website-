@@ -102,7 +102,7 @@ exports.getRoom = (req, res) => {
 };
 
 exports.getRoomQuote = async (req, res) => {
-    const { id } = req.params;
+    const { room_number } = req.params;
     const { check_in, check_out } = req.query;
 
     if (!check_in || !check_out) {
@@ -115,7 +115,7 @@ exports.getRoomQuote = async (req, res) => {
         return res.status(400).json({ error: 'Invalid date range' });
     }
 
-    db.query('SELECT * FROM rooms WHERE id = ?', [id], async (err, results) => {
+    db.query('SELECT * FROM rooms WHERE room_number = ?', [room_number], async (err, results) => {
         if (err) {
             console.error('Error fetching room for quote:', err);
             return res.status(500).json({ error: 'Database error' });
@@ -175,7 +175,7 @@ exports.updateRoom = (req, res) => {
     const { room_type, price, capacity, status, description } = req.body;
     const sql = 'UPDATE rooms SET room_number = ?, room_type = ?, price = ?, capacity = ?, status = ?, description = ? WHERE room_number = ?';
 
-    db.query(sql, [room_number, room_type, price, capacity, status, description, id], (err, results) => {
+    db.query(sql, [room_number, room_type, price, capacity, status, description, room_number], (err, results) => {
         if (err) {
             if (err.code === 'ER_DUP_ENTRY') {
                 return res.status(409).json({ error: 'A room with this room_number already exists' });
@@ -252,7 +252,7 @@ exports.checkOut = (req, res) => {
 
             const booking = bookingResults[0];
 
-            db.query(`UPDATE bookings SET actual_check_out = NOW(), booking_status = 'completed' WHERE rooom_number = ?`, [booking.room_number], (err) => {
+            db.query(`UPDATE bookings SET actual_check_out = NOW(), booking_status = 'completed' WHERE id = ?`, [booking.id], (err) => {
                 if (err) console.error('Error recording check-out:', err);
             });
 

@@ -8,7 +8,7 @@ const { getRooms, getRoom, getRoomQuote, addRooms, updateRoom, deleteRoom, check
 
 router.get('/', getRooms);
 router.get('/:room_number', getRoom);
-router.get('/:id/quote', getRoomQuote);
+router.get('/:room_number/quote', getRoomQuote);
 router.post('/', authMiddleware, adminMiddleware, addRooms);
 router.put('/:room_number', authMiddleware, adminMiddleware, updateRoom);
 router.delete('/:room_number', authMiddleware, adminMiddleware, deleteRoom);
