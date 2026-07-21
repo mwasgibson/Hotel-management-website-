@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const { calculateDynamicPrice } = require('../utils/dynamicPricing');
 const sendEmail = require('../utils/sendEmail');
 
 exports.createBooking = (req, res) => {
@@ -35,7 +36,7 @@ exports.createBooking = (req, res) => {
             }
 
         const conflictSql = 'SELECT * FROM bookings WHERE room_number = ? AND booking_status IN ("pending", "confirmed") AND (check_in < ? AND check_out > ?)';
-        db.query(conflictSql, [room_number, check_out, check_in], (err, conflictResults) => {
+        db.query(conflictSql, [room_number, check_out, check_in], async (err, conflictResults) => {
             if (err) {
                 console.error('Error checking booking conflicts:', err);
                 return res.status(500).json({ error: 'Database error' });
@@ -51,7 +52,15 @@ exports.createBooking = (req, res) => {
         }
 
         const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
-        const total_amount = days * room.price;
+        
+        let total_amount;
+            try {
+                const pricing = await calculateDynamicPrice(room.price, start);
+                total_amount = pricing.adjustedPrice * days;
+            } catch (pricingErr) {
+                console.error('Error calculating dynamic price:', pricingErr);
+                total_amount = room.price * days;   // fall back to flat pricing
+            }
 
             const bookingSql = 'INSERT INTO bookings (user_id, room_number, check_in, check_out, total_amount) VALUES (?, ?, ?, ?, ?)';
                 db.query(bookingSql, [user_id, room_number, start, end, total_amount], (err, bookingResults) => {
@@ -119,7 +128,7 @@ exports.rescheduleBooking = (req, res) => {
         }
 
         const conflictSql = 'SELECT * FROM bookings WHERE id = ? AND room.room_number != ? AND booking_status IN ("pending", "confirmed") AND (check_in < ? AND check_out > ?)';
-        db.query(conflictSql, [booking_id, room.room_number, check_out, check_in], (err, conflicts) => {
+        db.query(conflictSql, [booking_id, room.room_number, check_out, check_in], async (err, conflicts) => {
             if (err) return res.status(500).json({ error: 'Database error' });
             if (conflicts.length > 0) {
                 return res.status(400).json({ error: 'Room is already booked for the selected dates' });
@@ -129,7 +138,15 @@ exports.rescheduleBooking = (req, res) => {
                 if (err) return res.status(500).json({ error: 'Database error' });
 
                 const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
-                const total_amount = days * roomResults[0].price;
+
+                let total_amount;
+                    try {
+                        const pricing = await calculateDynamicPrice(room.price, start);
+                        total_amount = pricing.adjustedPrice * days;
+                    } catch (pricingErr) {
+                        console.error('Error calculating dynamic price:', pricingErr);
+                        total_amount = room.price * days;
+                    }
 
                 db.query('UPDATE bookings SET check_in = ?, check_out = ?, total_amount = ? WHERE room_number = ?', [start, end, total_amount, booking.room_number], (err) => {
                     if (err) return res.status(500).json({ error: 'Database error' });
@@ -171,7 +188,7 @@ exports.reserveRoom = (req, res) => {
         }
 
         const conflictSql = 'SELECT * FROM bookings WHERE room_number = ? AND booking_status IN ("pending", "confirmed") AND (check_in < ? AND check_out > ?)';
-        db.query(conflictSql, [room_number, check_out, check_in], (err, conflicts) => {
+        db.query(conflictSql, [room_number, check_out, check_in], async (err, conflicts) => {
             if (err) return res.status(500).json({ error: 'Database error' });
             if (conflicts.length > 0) {
                 return res.status(400).json({ error: 'Room is already booked for the selected dates' });
@@ -179,7 +196,15 @@ exports.reserveRoom = (req, res) => {
 
             const room = rooms[0];
             const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
-            const total_amount = days * room.price;
+
+            let total_amount;
+            try {
+                const pricing = await calculateDynamicPrice(room.price, start);
+                total_amount = pricing.adjustedPrice * days;
+            } catch (pricingErr) {
+                console.error('Error calculating dynamic price:', pricingErr);
+                total_amount = room.price * days;
+            }
 
             const sql = 'INSERT INTO bookings (user_id, room_number, check_in, check_out, total_amount) VALUES (?, ?, ?, ?, ?)';
             db.query(sql, [user_id, room_number, start, end, total_amount], (err, result) => {
@@ -230,7 +255,7 @@ exports.completeBooking = (req, res) => {
 
         const roomId = booking[0].room_number;
 
-        db.query("UPDATE bookings SET booking_status='completed' WHERE booking_id=?", [bookingId], (err) => {
+        db.query("UPDATE bookings SET booking_status='completed' WHERE id=?", [bookingId], (err) => {
 
                 if (err)
                     return res.status(500).json(err);

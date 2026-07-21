@@ -29,6 +29,36 @@ fetch(`${API_URL}/rooms/${roomId}`,
         document.getElementById('roomDetail').innerHTML = '<p>Unable to load this room.</p>';
     });
 
+function getQuote() {
+    const check_in = document.getElementById('quote_check_in').value;
+    const check_out = document.getElementById('quote_check_out').value;
+
+    if (!check_in || !check_out) {
+        alert('Please select both check-in and check-out dates');
+        return;
+    }
+
+    const params = new URLSearchParams({ check_in, check_out });
+
+    fetch(`${API_URL}/rooms/${roomId}/quote?${params.toString()}`, { credentials: 'include' })
+        .then(response => response.json().then(data => ({ ok: response.ok, data })))
+        .then(({ ok, data }) => {
+            if (!ok) {
+                document.getElementById('quoteResult').innerHTML = `<p>${escapeHtml(data.error)}</p>`;
+                return;
+            }
+            const reasonsText = data.appliedReasons.length ? ` (${data.appliedReasons.join(', ')})` : '';
+            document.getElementById('quoteResult').innerHTML = `
+                <p>KES ${escapeHtml(data.pricePerNight)} / night${reasonsText}</p>
+                <p><strong>Total for ${escapeHtml(data.nights)} night(s): KES ${escapeHtml(data.totalPrice)}</strong></p>
+            `;
+        })
+        .catch(error => {
+            console.error('Error fetching quote:', error);
+            document.getElementById('quoteResult').innerHTML = '<p>Unable to fetch pricing right now.</p>';
+        });
+}    
+
 function goToBook() {
     const params = new URLSearchParams({
         room_number: currentRoom.room_number,

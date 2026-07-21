@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const { calculateDynamicPrice } = require('../utils/dynamicPricing');
 
 const VALID_ROOM_TYPES = ['Standard', 'Single', 'Double', 'Suite', 'Deluxe', 'Executive'];
 const VALID_ROOM_STATUSES = ['available', 'reserved', 'occupied', 'cleaning', 'maintenance'];
@@ -96,6 +97,47 @@ exports.getRoom = (req, res) => {
             } else {
                 res.json(results[0]);
             }
+        }
+    });
+};
+
+exports.getRoomQuote = async (req, res) => {
+    const { id } = req.params;
+    const { check_in, check_out } = req.query;
+
+    if (!check_in || !check_out) {
+        return res.status(400).json({ error: 'check_in and check_out are required' });
+    }
+
+    const start = new Date(check_in);
+    const end = new Date(check_out);
+    if (isNaN(start) || isNaN(end) || end <= start) {
+        return res.status(400).json({ error: 'Invalid date range' });
+    }
+
+    db.query('SELECT * FROM rooms WHERE id = ?', [id], async (err, results) => {
+        if (err) {
+            console.error('Error fetching room for quote:', err);
+            return res.status(500).json({ error: 'Database error' });
+        }
+        if (results.length === 0) return res.status(404).json({ error: 'Room not found' });
+
+        const room = results[0];
+        const nights = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+
+        try {
+            const pricing = await calculateDynamicPrice(room.price, start);
+            res.json({
+                basePrice: room.price,
+                pricePerNight: pricing.adjustedPrice,
+                nights,
+                totalPrice: pricing.adjustedPrice * nights,
+                appliedReasons: pricing.appliedReasons
+            });
+        } catch (error) {
+            console.error('Error calculating quote:', error);
+            // fall back to flat pricing rather than blocking the guest from seeing any price at all
+            res.json({ basePrice: room.price, pricePerNight: room.price, nights, totalPrice: room.price * nights, appliedReasons: [] });
         }
     });
 };

@@ -4,10 +4,11 @@ const authMiddleware = require('../middleware/authMiddleware');
 const adminMiddleware = require('../middleware/adminMiddleware');
 const allowedRoles = require('../middleware/allowedRoles');
 
-const { getRooms, getRoom, addRooms, updateRoom, deleteRoom, checkIn, checkOut, finishCleaning, startMaintenance, finishMaintenance } = require('../controllers/roomControllers');
+const { getRooms, getRoom, getRoomQuote, addRooms, updateRoom, deleteRoom, checkIn, checkOut, finishCleaning, startMaintenance, finishMaintenance } = require('../controllers/roomControllers');
 
 router.get('/', getRooms);
 router.get('/:room_number', getRoom);
+router.get('/:id/quote', getRoomQuote);
 router.post('/', authMiddleware, adminMiddleware, addRooms);
 router.put('/:room_number', authMiddleware, adminMiddleware, updateRoom);
 router.delete('/:room_number', authMiddleware, adminMiddleware, deleteRoom);
