@@ -13,10 +13,10 @@ function registerUser() {
     .then(res => res.json().then(data => ({ ok: res.ok, data })))
     .then(({ ok, data }) => {
         if (!ok) {
-            alert(data.error || 'Registration failed');
+            showToast(data.error || 'Registration failed');
             return;
         }
-        alert(data.message);
+        showToast(data.message);
     window.location.href = 'login.html';
     })
     .catch(error => console.error('Error:', error));
@@ -36,7 +36,7 @@ function loginUser() {
     .then(({ok, data}) => {
 
         if(!ok){
-            alert(data.error || 'Login failed');
+            showToast(data.error || 'Login failed');
             return;
         }
         if (
@@ -50,6 +50,6 @@ function loginUser() {
     })
     .catch(err => {
         console.error(err);
-        alert("Unable to connect to the server.");
+        showToast("Unable to connect to the server.");
     });
 }

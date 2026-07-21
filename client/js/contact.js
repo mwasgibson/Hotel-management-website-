@@ -12,14 +12,14 @@ function submitContact() {
     .then(response => response.json().then(data => ({ ok: response.ok, data })))
     .then(({ ok, data }) => {
         if (!ok) {
-            alert(data.error || 'Failed to send message');
+            showToast(data.error || 'Failed to send message');
             return;
         }
-        alert(data.message);
+        showToast(data.message);
         document.querySelector('form').reset();
     })
     .catch(error => {
         console.error('Error sending message:', error);
-        alert('Unable to connect to the server.');
+        showToast('Unable to connect to the server.');
     });
 }

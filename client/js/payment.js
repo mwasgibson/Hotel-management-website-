@@ -68,7 +68,7 @@ function payBooking() {
     .then(response => response.json().then(data => ({ ok: response.ok, data })))
     .then(({ ok, data }) => {
         if (!ok) {
-            alert(data.error || 'Payment failed');
+            showToast(data.error || 'Payment failed');
             return;
         }
         window.location.href = 'dashboard.html';
@@ -135,7 +135,7 @@ paypal.Buttons({
         })
         .then(res=>res.json())
         .then(details=>{
-            alert("Payment Successful");
+            showToast("Payment Successful");
         });
     }   
 }).render("#paypal_button_container");

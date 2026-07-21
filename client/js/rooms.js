@@ -75,7 +75,7 @@ function searchRooms() {
 
     if (check_in && check_out) {
         if (new Date(check_out) <= new Date(check_in)) {
-            alert('Check-out date must be after check-in date');
+            showToast('Check-out date must be after check-in date');
             return;
         }
         params.set('check_in', check_in);

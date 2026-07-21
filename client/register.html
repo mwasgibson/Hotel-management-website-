@@ -27,32 +27,36 @@
 
     <h1>Create Account</h1>
 
-    <div class="input-icon-wrap">
-        <i class="ph ph-user"></i>
-        <input type="text" id="fullname" placeholder="Full Name">
-    </div>
+    <form>
+        <div class="input-icon-wrap">
+            <i class="ph ph-user"></i>
+            <input type="text" id="fullname" placeholder="Full Name">
+        </div>
 
-    <div class="input-icon-wrap">
-        <i class="ph ph-envelope"></i>
-        <input type="email" id="email" placeholder="Email">
-    </div>
+        <div class="input-icon-wrap">
+            <i class="ph ph-envelope"></i>
+            <input type="email" id="email" placeholder="Email">
+        </div>
 
-    <select id="role" required>
-        <option value="guest">Guest</option>
-        <option value="admin">Admin</option>
-        <option value="receptionist">Receptionist</option>
-    </select>
+        <select id="role" required>
+            <option value="guest">Guest</option>
+            <option value="admin">Admin</option>
+            <option value="receptionist">Receptionist</option>
+        </select>
 
-    <div class="input-icon-wrap">
-        <i class="ph ph-lock"></i>
-        <input type="password" id="password" placeholder="Password">
-    </div>
+        <div class="input-icon-wrap">
+            <i class="ph ph-lock"></i>
+            <input type="password" id="password" placeholder="Password">
+        </div>
 
-    <form><button  type="button" onclick="registerUser()">Register</button></form>
+        <button  type="button" onclick="registerUser()">Register</button>
+    </form>
 
     <script src="js/config.js"></script>
     <script src="js/cookies.js"></script>
+    <script src="js/toast.js"></script>
     <script src="js/auth.js"></script>
+    <script src="js/reveal.js"></script>
     <script src="js/nav.js"></script>
 </body>
 </html>

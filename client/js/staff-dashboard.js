@@ -120,7 +120,7 @@ function roomAction(roomId, action) {
     .then(response => response.json().then(data => ({ ok: response.ok, data })))
     .then(({ ok, data }) => {
         if (!ok) {
-            alert(data.error || 'Action failed');
+            showToast(data.error || 'Action failed');
             return;
         }
         loadRooms();
@@ -187,7 +187,7 @@ function completeBooking(id) {
         .then(response => response.json().then(data => ({ ok: response.ok, data })))
         .then(({ ok, data }) => {
             if (!ok) {
-                alert(data.error || 'Failed to complete booking');
+                showToast(data.error || 'Failed to complete booking');
                 return;
             }
             loadAllBookings();

@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
     <link rel="stylesheet" href="css/nav.css">
 </head>
-<body style="--hero: url('https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1920&q=80')">
+<body>
 
     <nav>
         <ul>
@@ -26,31 +26,34 @@
     </nav>
     <div class="nav-overlay"></div>
 
-    <hr>
+    <section class="hero" style="--hero: url('https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1920&q=80')">
+        <div class="hero-content reveal-in">
+            <h1>Welcome to Our Hotel</h1>
+            <p>Find comfortable rooms and book your stay online.</p>
+            <a href="rooms.html" class="btn">View Available Rooms</a>
+        </div>
+    </section>
 
-    <h1>Welcome to Our Hotel</h1>
+    <div class="page">
+        <h2>Services</h2>
+        <ul class="service-list">
+            <li><i class="ph ph-bed"></i> Luxury Rooms</li>
+            <li><i class="ph ph-fork-knife"></i> Restaurant</li>
+            <li><i class="ph ph-wifi-high"></i> Free Wi-Fi</li>
+            <li><i class="ph ph-presentation-chart"></i> Conference Rooms</li>
+            <li><i class="ph ph-airplane-takeoff"></i> Airport Pickup</li>
+        </ul>
 
-    <p>
-        Find comfortable rooms and book your stay online.
-    </p>
+        <h2>Quick Links</h2>
+        <ul class="quick-links">
+            <li><a href="booking.html"><i class="ph ph-calendar-blank"></i> Book a Room</a></li>
+        </ul>
+    </div>
 
-    <h2>Services</h2>
-
-    <ul>
-    <li><i class="ph ph-bed"></i> Luxury Rooms</li>
-    <li><i class="ph ph-fork-knife"></i> Restaurant</li>
-    <li><i class="ph ph-wifi-high"></i> Free Wi-Fi</li>
-    <li><i class="ph ph-presentation-chart"></i> Conference Rooms</li>
-    <li><i class="ph ph-airplane-takeoff"></i> Airport Pickup</li>
-</ul>
-
-    <h2>Quick Links</h2>
-
-    <li><a href="rooms.html"><i class="ph ph-bed"></i> View Available Rooms</a></li>
-    <li><a href="booking.html"><i class="ph ph-calendar-blank"></i> Book a Room</a></li>
-    
-    <script src="js/nav.js"></script>
     <script src="js/config.js"></script>
     <script src="js/cookies.js"></script>
+    <script src="js/toast.js"></script>
+    <script src="js/reveal.js"></script>
+    <script src="js/nav.js"></script>
 </body>
 </html>

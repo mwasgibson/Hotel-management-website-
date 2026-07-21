@@ -61,10 +61,10 @@ function rescheduleBooking(id) {
     .then(response => response.json().then(data => ({ ok: response.ok, data })))
     .then(({ ok, data }) => {
         if (!ok) {
-            alert(data.error || 'Reschedule failed');
+            showToast(data.error || 'Reschedule failed');
             return;
         }
-        alert('Booking rescheduled successfully');
+        showToast('Booking rescheduled successfully');
         loadBookings();
     })
     .catch(error => console.error('Error rescheduling booking:', error));

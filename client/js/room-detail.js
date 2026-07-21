@@ -34,7 +34,7 @@ function getQuote() {
     const check_out = document.getElementById('quote_check_out').value;
 
     if (!check_in || !check_out) {
-        alert('Please select both check-in and check-out dates');
+        showToast('Please select both check-in and check-out dates');
         return;
     }
 

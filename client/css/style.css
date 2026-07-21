@@ -32,6 +32,17 @@ body {
   color: var(--midnight);
   line-height: 1.6;
   font-size: 16px;
+  position: relative;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: var(--hero) center/cover fixed no-repeat;
+  filter: blur(6px) brightness(0.9);
+  opacity: 0.08;
 }
 
 img { display: block; max-width: 100%; height: auto; }
@@ -175,6 +186,188 @@ label {
   margin-bottom: 0.35rem;
 }
 
+/* ── Form pages: box every <form> like the auth pages already are ─────── */
+form {
+  max-width: 480px;
+  margin: 2.5rem auto;
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem;
+  box-shadow: var(--shadow-lg);
+}
+
+form input,
+form select,
+form textarea {
+  margin-bottom: 1.25rem;
+}
+
+form button {
+  width: 100%;
+  justify-content: center;
+}
+
+/* room-detail's quote inputs sit outside a <form> — box them to match */
+#roomDetail,
+#quoteResult {
+  max-width: 480px;
+  margin: 1.5rem auto;
+}
+
+/* ── Custom select arrow — native ones clash with the serif/gold theme ── */
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='8' viewBox='0 0 14 8'%3E%3Cpath d='M1 1l6 6 6-6' stroke='%23c9a84c' stroke-width='2' fill='none' fill-rule='evenodd'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  padding-right: 2.5rem;
+}
+
+/* ── Status pills: fill in the statuses the app actually uses now ─────── */
+.status-reserved, .reserved {
+  display: inline-block; background: rgba(46, 64, 87, 0.1); color: var(--storm);
+  font-size: 0.75rem; font-weight: 600; padding: 0.2rem 0.7rem; border-radius: 99px;
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+.status-cleaning, .cleaning {
+  display: inline-block; background: rgba(107, 114, 128, 0.12); color: var(--pewter);
+  font-size: 0.75rem; font-weight: 600; padding: 0.2rem 0.7rem; border-radius: 99px;
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+.status-maintenance, .maintenance {
+  display: inline-block; background: rgba(239, 68, 68, 0.1); color: #b91c1c;
+  font-size: 0.75rem; font-weight: 600; padding: 0.2rem 0.7rem; border-radius: 99px;
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+.status-cancelled, .cancelled {
+  display: inline-block; background: rgba(107, 114, 128, 0.1); color: #4b5563;
+  font-size: 0.75rem; font-weight: 600; padding: 0.2rem 0.7rem; border-radius: 99px;
+  text-transform: uppercase; letter-spacing: 0.06em; text-decoration: line-through;
+}
+.status-completed, .completed {
+  display: inline-block; background: rgba(201, 168, 76, 0.15); color: var(--gold-dark);
+  font-size: 0.75rem; font-weight: 600; padding: 0.2rem 0.7rem; border-radius: 99px;
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+
+/* ── Staff dashboard: currently has no dedicated styling at all ───────── */
+#stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  max-width: 1200px;
+  margin: 0 auto 2rem;
+  padding: 0 1.5rem;
+}
+
+#stats > div {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  box-shadow: var(--shadow);
+  border-left: 3px solid var(--gold);
+  font-size: 0.95rem;
+}
+
+#stats > div strong {
+  display: block;
+  font-family: var(--ff-display);
+  font-size: 1.6rem;
+  color: var(--midnight);
+  margin-top: 0.25rem;
+}
+
+#roomGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.25rem;
+  max-width: 1200px;
+  margin: 0 auto 2.5rem;
+  padding: 0 1.5rem;
+}
+
+#roomGrid > div {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  box-shadow: var(--shadow);
+  border-top: 3px solid var(--gold);
+}
+
+#roomGrid > div button {
+  margin-top: 0.75rem;
+  margin-right: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto 1.5rem;
+  padding: 0 1.5rem;
+}
+
+.filters select,
+.filters input {
+  width: auto;
+  min-width: 160px;
+  margin-bottom: 0;
+}
+
+.filters button { width: auto; }
+
+#allBookings, #allUsers {
+  max-width: 1200px;
+  margin: 0 auto 2.5rem;
+  padding: 0 1.5rem;
+}
+
+#allBookings > div {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow);
+}
+
+#allBookings > div hr { display: none; }
+
+/* ── Toast notifications — replaces jarring native alert() popups ─────── */
+#toast-container {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.toast {
+  background: var(--midnight);
+  color: var(--white);
+  padding: 0.9rem 1.5rem;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  border-left: 3px solid var(--gold);
+  font-size: 0.9rem;
+  max-width: 320px;
+  animation: toast-in 0.25s ease;
+}
+
+.toast.error { border-left-color: var(--danger); }
+.toast.success { border-left-color: var(--success); }
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .form-wrap {
   max-width: 440px;
   margin: 4rem auto;
@@ -198,6 +391,14 @@ body > select,
 body > button:not(nav button) {
   max-width: 400px;
   margin-left: 2rem;
+}
+
+.service-list, .quick-links {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin: 1rem 0 2rem;
 }
 
 .container,
@@ -413,6 +614,35 @@ body > a:not(nav a):hover {
 ::-webkit-scrollbar       { width: 6px; }
 ::-webkit-scrollbar-track { background: var(--ivory); }
 ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 99px; }
+
+.reveal-in {
+  animation: reveal-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes reveal-rise {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.reveal-on-scroll.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-in, .reveal-on-scroll {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
 
 @media (max-width: 768px) {
   .container {

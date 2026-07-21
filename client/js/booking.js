@@ -63,14 +63,14 @@ function bookRoom() {
     .then(response => response.json().then(data => ({ ok: response.ok, data })))
     .then(({ ok, data }) => {
         if (!ok) {
-            alert(data.error || 'Booking failed');
+            showToast(data.error || 'Booking failed');
             return;
         }
         window.location.href = `payment.html?booking_id=${data.bookingId}`;
     })
     .catch(error => {
         console.error('Error booking room:', error);
-        alert('Unable to connect to the server.');
+        showToast('Unable to connect to the server.');
     });
 }
 /*
@@ -95,7 +95,7 @@ function reserveRoom(roomId) {
     })
     .then(res => res.json())
     .then(data => {
-        alert(data.message);
+        showToast(data.message);
         location.reload();
     })
     .catch(console.error);
