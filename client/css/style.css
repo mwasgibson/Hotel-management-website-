@@ -33,6 +33,16 @@ body {
   line-height: 1.6;
   font-size: 16px;
   position: relative;
+  animation: pageFade 0.6s ease;
+}
+
+@keyframes pageFade {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 body::before {
@@ -64,6 +74,23 @@ hr {
   border: none;
   border-top: 1px solid rgba(201, 168, 76, 0.25);
   margin: 2rem 0;
+  position:relative;
+  overflow:hidden;
+}
+
+hr::after{
+  content:"";
+  position:absolute;
+  left:-100%;
+  top:-1px;
+  width:100%;
+  height:2px;
+  background:var(--gold);
+  animation:dividerMove 5s linear infinite;
+}
+
+@keyframes dividerMove{
+  to{left:100%;}
 }
 
 .hero,
@@ -120,6 +147,21 @@ button,
   transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
   background: var(--gold);
   color: var(--midnight);
+  position:relative;
+  overflow:hidden;
+}
+
+button::before,
+.btn::before{
+  content:"";
+  position:absolute;
+  top:0;
+  left:-120%;
+  width:60%;
+  height:100%;
+  background:
+    linear-gradient(90deg, transparent, rgba(255,255,255,.45), transparent);
+  transition:left .6s ease;
 }
 
 button:hover,
@@ -127,6 +169,11 @@ button:hover,
   background: var(--gold-dark);
   transform: translateY(-1px);
   box-shadow: 0 4px 16px rgba(201, 168, 76, 0.4);
+}
+
+button:hover::before,
+.btn:hover::before{
+  left:140%;
 }
 
 button:active,
@@ -408,18 +455,116 @@ body > button:not(nav button) {
   padding: 3rem 1.5rem;
 }
 
-.card {
-  background: var(--white);
-  border-radius: var(--radius-lg);
-  padding: 1.75rem;
-  box-shadow: var(--shadow);
-  border-top: 3px solid var(--gold);
-  transition: box-shadow var(--transition), transform var(--transition);
+.container .card{
+  display: flex;
+  flex-direction: column;
+  flex:1;
+  min-height: 350px;
+  max-height: 650px;
+  overflow-y:auto;
+  overflow-x: hidden;
+  padding:1.4rem;
+  scrollbar-width:thin;
 }
 
-.card:hover {
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-3px);
+.container .card::-webkit-scrollbar{
+  width:8px;
+}
+
+.container .card::-webkit-scrollbar-track{
+  background:transparent;
+}
+
+.container .card::-webkit-scrollbar-thumb{
+  background:var(--gold);
+  border-radius:999px;
+}
+
+.container .card::-webkit-scrollbar-thumb:hover{
+  background:var(--gold-dark);
+}
+
+.container .card h2{
+  flex-shrink:0;
+}
+
+#profile,
+#booking-list,
+#payments,
+#totalBookings,
+#confirmedBookings,
+#pendingBookings,
+#roomGrid,
+#allBookings,
+#allUsers,
+#stats{
+  display: flex;
+  flex-direction: column;
+  overflow-y:auto;
+  overflow-x:hidden;
+}
+
+.card button{
+  margin-top:1rem;
+  width:100%;
+  border-radius:999px;
+  padding:1rem;
+  font-size:.95rem;
+  font-weight:700;
+  letter-spacing:.05em;
+}
+
+.card,
+#rooms > div,
+#roomGrid > div,
+#allBookings > div,
+.form-wrap,
+form {
+    transition:
+        transform .35s ease,
+        box-shadow .35s ease,
+        border-color .35s ease;
+}
+
+.card:hover,
+#rooms > div:hover,
+#roomGrid > div:hover,
+#allBookings > div:hover,
+.form-wrap:hover,
+form:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 45px rgba(13,27,42,.16);
+}
+
+.card,
+#rooms > div {
+    position: relative;
+    overflow: hidden;
+}
+
+.card::before,
+#rooms > div::before,
+#roomGrid > div::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    left: -150%;
+    width: 80%;
+    background:
+        linear-gradient(
+            110deg,
+            transparent,
+            rgba(255,255,255,.18),
+            transparent
+        );
+    transition:left .8s ease;
+    pointer-events: none;
+}
+
+.card:hover::before,
+#rooms > div:hover::before,
+#roomGrid > div:hover::before {
+    left:150%;
 }
 
 .card h2 {
@@ -451,6 +596,10 @@ body > button:not(nav button) {
 }
 
 #rooms > div {
+  position:relative;
+  height:520px;
+  display:flex;
+  flex-direction:column;
   background: var(--white);
   border-radius: var(--radius-lg);
   overflow: hidden;
@@ -458,11 +607,24 @@ body > button:not(nav button) {
   transition: box-shadow var(--transition), transform var(--transition);
   border-top: 3px solid var(--gold);
   padding: 1.5rem;
+  backdrop-filter:blur(10px);
+}
+
+#rooms > div::after{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  top:0;
+  height:230px;
+  background:
+    linear-gradient(to top, rgba(0,0,0,.55), transparent);
+  pointer-events:none;
 }
 
 #rooms > div:hover {
   box-shadow: var(--shadow-lg);
-  transform: translateY(-4px);
+  transform: translateY(-4px) scale(1.02);
 }
 
 #rooms > div h3 { font-size: 1.25rem; margin-bottom: 0.4rem; }
@@ -478,6 +640,14 @@ body > button:not(nav button) {
   margin-left: -1.5rem;
   margin-top: -1.5rem;
   width: calc(100% + 3rem);
+  transition:
+        transform .6s ease,
+        filter .6s ease;
+}
+
+#rooms > div:hover .room-img{
+    transform:scale(1.08);
+    filter:brightness(1.05);
 }
 
 .status-available,
@@ -518,6 +688,13 @@ body > button:not(nav button) {
   border-radius: 99px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
+  animation:pulseStatus 2s infinite;
+}
+
+@keyframes pulseStatus{
+  0%{box-shadow:0 0 0 0 rgba(245,158,11,.4);}
+  70%{box-shadow:0 0 0 12px rgba(245,158,11,0);}
+  100%{box-shadow:0 0 0 0 rgba(245,158,11,0);}
 }
 
 .status-confirmed,
@@ -531,6 +708,12 @@ body > button:not(nav button) {
   border-radius: 99px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
+  animation:successGlow 3s infinite;
+}
+
+@keyframes successGlow{
+  0%,100%{box-shadow:none;}
+  50%{box-shadow: 0 0 18px rgba(16,185,129,.35);}
 }
 
 body > ul:not(nav ul) {
@@ -622,6 +805,29 @@ body > a:not(nav a):hover {
 @keyframes reveal-rise {
   from { opacity: 0; transform: translateY(18px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+.reveal-up{
+    opacity:0;
+    transform:translateY(40px);
+    animation:revealUp .8s forwards;
+}
+
+@keyframes revealUp{
+  from{opacity:0; transform:translateY(40px);}
+  to{opacity:1; transform:translateY(0);}
+}
+
+#rooms > div:nth-child(1){animation-delay:.05s;}
+#rooms > div:nth-child(2){animation-delay:.1s;}
+#rooms > div:nth-child(3){animation-delay:.15s;}
+#rooms > div:nth-child(4){animation-delay:.2s;}
+#rooms > div:nth-child(5){animation-delay:.25s;}
+#rooms > div:nth-child(6){animation-delay:.3s;}
+
+#rooms > div{
+    animation:
+        revealUp .8s forwards;
 }
 
 .reveal-on-scroll {
