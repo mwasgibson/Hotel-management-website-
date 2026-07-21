@@ -132,7 +132,7 @@ function loadPayments() {
                 <div>
                     <h3> Payment #${escapeHtml(payment.room_number)}</h3>
                     <p> Booking ID: ${escapeHtml(payment.booking_id)}</p>
-                    <p> Amount: KES${escapeHtml(payment.amount.toFixed(2))}</p>
+                    <p> Amount: KES${escapeHtml((Number(payment.amount).toFixed(2)))}</p>
                     <p> Method: ${escapeHtml(payment.payment_method)}</p>
                     <p> Status: ${escapeHtml(payment.payment_status)}</p>
                     <p> Date: ${escapeHtml(payment.date)}</p>
