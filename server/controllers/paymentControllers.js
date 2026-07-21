@@ -3,7 +3,7 @@ const sendEmail = require('../utils/sendEmail');
 
 exports.payBookings = (req, res) => {
     const { booking_id, payment_method } = req.body;
-    const sql = 'SELECT bookings.* FROM bookings WHERE bookings.booking_id = ? and bookings.user_id = ?';
+    const sql = 'SELECT bookings.* FROM bookings WHERE bookings.id = ? and bookings.user_id = ?';
 
     db.query(sql, [booking_id, req.user.id], (err, bookings) => {
         if (err) {
@@ -54,7 +54,7 @@ exports.payBookings = (req, res) => {
 
 exports.getPayments = (req, res) => {
 
-    const sql = 'SELECT payments.*, bookings.user_id FROM payments JOIN bookings ON payments.booking_id = bookings.booking_id WHERE bookings.user_id = ?';
+    const sql = 'SELECT payments.*, bookings.user_id FROM payments JOIN bookings ON payments.booking_id = bookings.id WHERE bookings.user_id = ?';
 
     db.query(sql, [req.user.room_number], (err, results) => {
 
