@@ -33,7 +33,7 @@ exports.payBookings = (req, res) => {
                     return res.status(500).json({ error: 'Failed to create payment' });
                 }
 
-                db.query('UPDATE bookings SET booking_status = "confirmed" WHERE booking_id = ?', [booking_id], (err) => {
+                db.query('UPDATE bookings SET booking_status = "confirmed" WHERE id = ?', [booking_id], (err) => {
                     if (err) {
                         console.error('Error updating booking status:', err);
                         return res.status(500).json({ error: 'Failed to update booking status' });
