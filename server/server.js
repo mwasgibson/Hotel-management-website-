@@ -30,9 +30,12 @@ app.use(cors({
     },
     credentials: true
 }));
+app.use(helmet());
+app.use(hpp());
 app.use (express.json ());
 app.use(cookieParser());
 
+app.use('/api', apiLimiter);
 app.use ('/api/auth', routes);
 app.use ('/api/rooms', roomRoutes);
 app.use ('/api/bookings', bookingRoutes);
@@ -42,20 +45,19 @@ app.use ('/api/payments', paymentRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/admin', adminRoutes);
 
+app.get ("/", (req, res) => {
+    res.send ("Hotel Management System API");
+});
+
 app.use((req, res) => {
     res.status(404).json({ error: 'Route not found' });
 });
-
 app.use((err, req, res, next) => {
     console.error('Unhandled error:', err);   // full detail stays in your server logs
     res.status(500).json({ error: 'Something went wrong' });   // client only ever sees this
 });
 
-app.get ("/", (req, res) => {
-    res.send ("Hotel Management System API");
-});
-
-const REQUIRED_ENV_VARS = ['PORT', 'JWT_SECRET', 'SESSION_SECRET', 'DB_HOST', 'DB_USER', 'DB_PASSWORD', 'DB_NAME', 'EMAIL_USER', 'EMAIL_PASS', 'CLIENT_URL'];
+const REQUIRED_ENV_VARS = ['PORT', 'JWT_SECRET', 'DB_HOST', 'DB_USER', 'DB_PASSWORD', 'DB_NAME', 'EMAIL_USER', 'EMAIL_PASS', 'CLIENT_URL'];
 
 const missing = REQUIRED_ENV_VARS.filter(key => !process.env[key]);
 if (missing.length > 0) {
