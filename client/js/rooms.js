@@ -97,3 +97,51 @@ function clearFilters() {
 }
 
 loadRooms();
+
+function addRoom() {
+    const roomData = {
+        room_number: document.getElementById('new_room_number').value,
+        room_type: document.getElementById('new_room_type').value,
+        price: document.getElementById('new_price').value,
+        capacity: document.getElementById('new_capacity').value,
+        description: document.getElementById('new_description').value,
+        status: 'available'
+    };
+
+    fetch(`${API_URL}/rooms`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(roomData)
+    })
+    .then(res => res.ok ? loadRooms() : showToast("Failed to add room"))
+    .catch(err => console.error(err));
+}
+
+function deleteRoom(roomNumber) {
+    if (!confirm(`Are you sure you want to delete room ${roomNumber}?`)) return;
+
+    fetch(`${API_URL}/rooms/${roomNumber}`, {
+        method: 'DELETE',
+        credentials: 'include'
+    })
+    .then(res => res.ok ? loadRooms() : showToast("Failed to delete room"))
+    .catch(err => console.error(err));
+}
+
+function updateRoom(roomNumber) {
+    const updatedData = {
+        price: document.getElementById('edit_price').value,
+        status: document.getElementById('edit_status').value
+        // Add other fields as necessary
+    };
+
+    fetch(`${API_URL}/rooms/${roomNumber}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(updatedData)
+    })
+    .then(res => res.ok ? loadRooms() : showToast("Update failed"))
+    .catch(err => console.error(err));
+}

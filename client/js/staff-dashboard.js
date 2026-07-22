@@ -212,3 +212,44 @@ function loadUsers() {
         })
         .catch(error => console.error('Error loading users:', error));
 }
+
+function loadPendingCashPayments() {
+    fetch(`${API_URL}/payments/pending-cash`, { credentials: 'include' })
+        .then(res => res.json())
+        .then(payments => {
+            const container = document.getElementById('pendingCashPayments');
+            container.innerHTML = '';
+
+            if (!payments.length) {
+                container.innerHTML = '<p>No pending cash payments.</p>';
+                return;
+            }
+
+            payments.forEach(payment => {
+                container.innerHTML += `
+                    <div>
+                        <p>${escapeHtml(payment.fullname)} (${escapeHtml(payment.email)}) — KES ${escapeHtml(Number(payment.amount).toFixed(2))}</p>
+                        <p>${escapeHtml(payment.check_in)} → ${escapeHtml(payment.check_out)}</p>
+                        <button onclick="confirmCashPayment(${payment.id})">Confirm Payment Received</button>
+                        <hr>
+                    </div>
+                `;
+            });
+        })
+        .catch(error => console.error('Error loading pending cash payments:', error));
+}
+
+function confirmCashPayment(paymentId) {
+    fetch(`${API_URL}/payments/${paymentId}/confirm-cash`, { credentials: 'include', method: 'PATCH' })
+        .then(response => response.json().then(data => ({ ok: response.ok, data })))
+        .then(({ ok, data }) => {
+            if (!ok) {
+                showToast(data.error || 'Failed to confirm payment', 'error');
+                return;
+            }
+            showToast('Payment confirmed', 'success');
+            loadPendingCashPayments();
+            loadStats();
+        })
+        .catch(error => console.error('Error confirming cash payment:', error));
+}
