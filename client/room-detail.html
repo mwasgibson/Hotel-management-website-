@@ -21,18 +21,36 @@
         </button>
     </nav>
 
-    <div id="roomDetail">Loading room...</div>
+    <div class="container">
+        
+        <hr>
 
-    <label>Check-in</label>
-    <input type="date" id="quote_check_in"><br><br>
-    <label>Check-out</label>
-    <input type="date" id="quote_check_out"><br><br>
-    <button type="button" onclick="getQuote()">Check Price</button>
+        <div id="roomDetail">Loading room...</div>
 
-    <div id="quoteResult"></div>
+        <hr>    
 
-    <button type="button" onclick="goToBook()">Book Now</button>
-    <button type="button" onclick="goToReserve()">Reserve</button>
+        <div class="content-wrapper"></div>
+        
+            <div class="card">
+                <label>Check-in</label>
+                <input type="date" id="quote_check_in"><br><br>
+
+                <label>Check-out</label>
+                <input type="date" id="quote_check_out"><br><br>
+
+                <button type="button" onclick="getQuote()">Check Price</button>
+
+                <div id="quoteResult"></div>
+
+                <button type="button" onclick="goToBook()">Book Now</button>
+                <button type="button" onclick="goToReserve()">Reserve</button>
+            </div>
+            <div class="image-container">
+                <img id="roomImage" src="" alt="Room Image" />
+            </div>
+        </div>
+
+    </div>
 
     <script src="js/config.js"></script>
     <script src="js/cookies.js"></script>

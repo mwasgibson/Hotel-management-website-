@@ -34,6 +34,7 @@ nav ul li a:hover::after {
 nav ul li a.active { color: var(--gold-black); }
 
 nav {
+  background-color: transparent;
     position: sticky;
     top: 0;
     z-index: 1000;
@@ -54,7 +55,6 @@ nav {
 
 nav.scrolled {
   padding:.7rem 3rem;
-  background: rgba(13, 27, 42, 0.82) !important;
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
   border-bottom: 1px solid rgba(201, 168, 76, 0.18);

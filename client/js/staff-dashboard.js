@@ -149,7 +149,6 @@ function loadAllBookings(queryString = '') {
                         <p>${escapeHtml(booking.check_in)} → ${escapeHtml(booking.check_out)}</p>
                         <p>Status: ${escapeHtml(booking.booking_status)}</p>
                         <p>Total: KES ${escapeHtml(Number(booking.total_amount).toFixed(2))}</p>
-                        ${booking.booking_status === 'confirmed' ? `<button onclick="completeBooking(${booking.room_number})">Mark Completed</button>` : ''}
                         <hr>
                     </div>
                 `;
