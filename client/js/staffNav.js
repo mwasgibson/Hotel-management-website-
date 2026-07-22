@@ -5,7 +5,8 @@ const AUTH_ONLY_HREFS = ['login.html', 'register.html'];   // hidden for anyone 
 function hideNavLinks(hrefsToHide) {
     document.querySelectorAll('nav a').forEach(link => {
         const href = link.getAttribute('href') || '';
-        if (hrefsToHide.some(target => href.includes(target))) {
+        const isDashboardLink = href.includes('dashboard.html') && !href.includes('staff-dashboard.html');
+        if (isDashboardLink || hrefsToHide.some(target => href.includes(target))){
             const listItem = link.closest('li');
             if (listItem) {
                 listItem.style.display = 'none';
