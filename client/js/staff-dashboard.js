@@ -21,13 +21,16 @@ function loadProfileAndInit() {
             if (!user) return;
             currentUserRole = user.role;
             if (currentUserRole !== 'admin' && currentUserRole !== 'receptionist') {
+                document.getElementById('usersHeading').textContent = currentUserRole === 'admin' ? 'All Accounts' : 'Guests';
+                document.getElementById('usersHeading').style.display = 'block';
+                loadUsers();
                 window.location.href = 'dashboard.html';
                 return;
             }
             loadStats();
             loadRooms();
             loadAllBookings();
-            loadUsers();
+            
         })
         .catch(error => console.error('Error loading profile:', error));
 }

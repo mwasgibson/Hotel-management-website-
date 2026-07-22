@@ -10,6 +10,7 @@ const preselectedRoomType = bookingParams.get('room_type');
 const preselectedPrice = bookingParams.get('price');
 
 document.addEventListener('DOMContentLoaded', () => {
+    requireAuth();
     if (preselectedRoomNumber) {
         // Arrived from the room details page — lock the room in, no picking needed
         document.getElementById('room_number_hidden').value = preselectedRoomNumber;
@@ -20,6 +21,22 @@ document.addEventListener('DOMContentLoaded', () => {
         display.innerHTML = `<p>Booking: Room ${escapeHtml(preselectedRoomNumber)} — ${escapeHtml(preselectedRoomType)} (KES ${escapeHtml(preselectedPrice)}/night)</p>`;
     } else {
         loadRoomOptions();   // landed here directly — fall back to manual selection
+    }
+});
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Parse the URL parameters
+    const params = new URLSearchParams(window.location.search);
+    
+    // 2. Select the input elements on the booking page
+    const checkInInput = document.getElementById('check_in');
+    const checkOutInput = document.getElementById('check_out');
+
+    // 3. Assign the values if they exist in the URL
+    if (params.has('check_in')) {
+        checkInInput.value = params.get('check_in');
+    }
+    if (params.has('check_out')) {
+        checkOutInput.value = params.get('check_out');
     }
 });
 

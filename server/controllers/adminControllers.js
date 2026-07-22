@@ -33,7 +33,16 @@ exports.getStats = async (req, res) => {
 };
 
 exports.getAllUsers = (req, res) => {
-    db.query('SELECT id, fullname, email, role FROM users ORDER BY id DESC', (err, results) => {
+    let sql = 'SELECT id, fullname, email, role FROM users ORDER BY id DESC';
+    const params = [];
+
+    if (req.user.role === 'receptionist') {
+        sql = 'SELECT id, fullname, email, role FROM users WHERE role = ? ORDER BY id DESC';
+        params.push('guest');
+    }
+    // admin gets the unfiltered query above — sees everyone, including other staff
+
+    db.query(sql, params, (err, results) => {
         if (err) {
             console.error('Error fetching users:', err);
             return res.status(500).json({ error: 'Database error' });

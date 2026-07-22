@@ -39,3 +39,16 @@ function goToDashboard() {
         })
         .catch(error => console.error('Error checking profile:', error));
 }
+
+function requireAuth() {
+    fetch(`${API_URL}/auth/profile`, { credentials: 'include' })
+        .then(res => {
+            if (res.status === 401) {
+                // If unauthorized, redirect to login immediately
+                window.location.href = 'login.html';
+            }
+        })
+        .catch(() => {
+            window.location.href = 'login.html';
+        });
+}

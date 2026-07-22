@@ -75,19 +75,27 @@ function getQuote() {
 }    
 
 function goToBook() {
+    const check_in = document.getElementById('quote_check_in').value;
+    const check_out = document.getElementById('quote_check_out').value;
     const params = new URLSearchParams({
         room_number: currentRoom.room_number,
         room_type: currentRoom.room_type,
-        price: currentRoom.price
+        price: currentRoom.price,
+        check_in: check_in,
+        check_out: check_out
     });
     window.location.href = `booking.html?${params.toString()}`;
 }
 
 function goToReserve() {
+    const check_in = document.getElementById('quote_check_in').value;
+    const check_out = document.getElementById('quote_check_out').value;
     const params = new URLSearchParams({
         room_number: currentRoom.room_number,
         room_type: currentRoom.room_type,
-        price: currentRoom.price
+        price: currentRoom.price,
+        check_in: check_in,
+        check_out: check_out
     });
     window.location.href = `reserve.html?${params.toString()}`;
 }

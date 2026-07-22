@@ -8,6 +8,6 @@ const { getAllBookings } = require('../controllers/bookingControllers');
 
 router.get('/stats', authMiddleware, allowedRoles(['admin', 'receptionist']), getStats);
 router.get('/bookings', authMiddleware, allowedRoles(['admin', 'receptionist']), getAllBookings);
-router.get('/users', authMiddleware, allowedRoles(['admin']), getAllUsers);   // guest list stays admin-only
+router.get('/users', authMiddleware, allowedRoles(['admin', 'receptionist']), getAllUsers);   // guest list stays admin & receptionist-only
 
 module.exports = router;
