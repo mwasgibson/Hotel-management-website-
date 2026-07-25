@@ -89,6 +89,51 @@ function cancelBooking(id) {
     });
 };
 
+function loadMyEventBookings() {
+    fetch(`${API_URL}/events/bookings/mine`, { credentials: 'include' })
+        .then(res => res.json())
+        .then(bookings => {
+            const container = document.getElementById('myEventBookings');
+            container.innerHTML = bookings.length ? '' : '<p>No event requests yet.</p>';
+            document.getElementById('eventLink').style.display = 'inline-block';
+
+            bookings.forEach(b => {
+                container.innerHTML += `
+                    <div>
+                        <p>${escapeHtml(b.space_name)} — ${escapeHtml(b.event_date)}, ${escapeHtml(b.start_time)}–${escapeHtml(b.end_time)}</p>
+                        <p>Status: ${escapeHtml(b.status)}${b.quoted_amount ? ` — Quote: KES ${escapeHtml(b.quoted_amount)}` : ''}</p>
+                        ${b.status === 'quoted' ? `<button onclick="confirmEventBooking(${b.id})">Accept Quote</button>` : ''}
+                        ${b.status !== 'cancelled' && b.status !== 'completed' ? `<button onclick="cancelEventBooking(${b.id})">Cancel</button>` : ''}
+                        <hr>
+                    </div>
+                `;
+            });
+        })
+        .catch(error => console.error('Error loading event bookings:', error));
+}
+
+function confirmEventBooking(id) {
+    fetch(`${API_URL}/events/bookings/${id}/confirm`, { credentials: 'include', method: 'PATCH' })
+        .then(response => response.json().then(data => ({ ok: response.ok, data })))
+        .then(({ ok, data }) => {
+            if (!ok) { showToast(data.error || 'Failed to confirm', 'error'); return; }
+            showToast('Event confirmed', 'success');
+            loadMyEventBookings();
+        })
+        .catch(error => console.error('Error confirming event booking:', error));
+}
+
+function cancelEventBooking(id) {
+    fetch(`${API_URL}/events/bookings/${id}/cancel`, { credentials: 'include', method: 'PATCH' })
+        .then(response => response.json().then(data => ({ ok: response.ok, data })))
+        .then(({ ok, data }) => {
+            if (!ok) { showToast(data.error || 'Failed to cancel', 'error'); return; }
+            showToast('Event booking cancelled', 'success');
+            loadMyEventBookings();
+        })
+        .catch(error => console.error('Error cancelling event booking:', error));
+}
+
 loadProfile();
 
 function loadProfile(){

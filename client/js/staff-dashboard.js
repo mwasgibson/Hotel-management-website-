@@ -42,9 +42,136 @@ function loadProfileAndInit() {
                 document.getElementById('dealsHeading').style.display = 'block';
                 document.getElementById('manageDeals').style.display = 'block';
                 loadDealsManager();
-            }                       
+            }
+            if (currentUserRole === 'admin') {
+                document.getElementById('eventSpacesHeading').style.display = 'block';
+                document.getElementById('manageEventSpaces').style.display = 'block';
+            loadEventSpacesManager();
+}                       
         })
         .catch(error => console.error('Error loading profile:', error));
+}
+
+function loadEventRequests() {
+    fetch(`${API_URL}/events/bookings`, { credentials: 'include' })
+        .then(res => res.json())
+        .then(bookings => {
+            const container = document.getElementById('eventRequestsList');
+            container.innerHTML = bookings.length ? '' : '<p>No event bookings.</p>';
+
+            bookings.forEach(b => {
+                container.innerHTML += `
+                    <div>
+                        <p>${escapeHtml(b.space_name)} (${escapeHtml(b.type)}) — ${escapeHtml(b.guest_name)}</p>
+                        <p>${escapeHtml(b.event_date)}, ${escapeHtml(b.start_time)}–${escapeHtml(b.end_time)} — ${escapeHtml(b.expected_attendees || '?')} guests</p>
+                        <p>Status: ${escapeHtml(b.status)}${b.quoted_amount ? ` — KES ${escapeHtml(b.quoted_amount)}` : ''} — Payment: ${escapeHtml(b.payment_status)}</p>
+                        ${b.status === 'requested' ? `
+                            <input type="number" id="quote_${b.id}" placeholder="Quote amount (KES)">
+                            <button onclick="sendEventQuote(${b.id})">Send Quote</button>
+                        ` : ''}
+                        ${b.status === 'confirmed' && b.payment_status === 'pending' ? `<button onclick="confirmEventPayment(${b.id})">Confirm Payment</button>` : ''}
+                        <hr>
+                    </div>
+                `;
+            });
+        })
+        .catch(error => console.error('Error loading event requests:', error));
+}
+
+function sendEventQuote(id) {
+    const amount = document.getElementById(`quote_${id}`).value;
+
+    fetch(`${API_URL}/events/bookings/${id}/quote`, {
+        credentials: 'include',
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ quoted_amount: amount })
+    })
+    .then(response => response.json().then(data => ({ ok: response.ok, data })))
+    .then(({ ok, data }) => {
+        if (!ok) { showToast(data.error || 'Failed to send quote', 'error'); return; }
+        showToast('Quote sent', 'success');
+        loadEventRequests();
+    })
+    .catch(error => console.error('Error sending quote:', error));
+}
+
+function confirmEventPayment(id) {
+    fetch(`${API_URL}/events/bookings/${id}/confirm-payment`, { credentials: 'include', method: 'PATCH' })
+        .then(response => response.json().then(data => ({ ok: response.ok, data })))
+        .then(({ ok, data }) => {
+            if (!ok) { showToast(data.error || 'Failed to confirm payment', 'error'); return; }
+            showToast('Payment confirmed', 'success');
+            loadEventRequests();
+        })
+        .catch(error => console.error('Error confirming event payment:', error));
+}
+
+function loadEventSpacesManager() {
+    fetch(`${API_URL}/events/spaces`, { credentials: 'include' })
+        .then(res => res.json())
+        .then(spaces => {
+            const container = document.getElementById('manageEventSpaces');
+
+            container.innerHTML = spaces.map(space => `
+                <div>
+                    <p>${escapeHtml(space.name)} — ${escapeHtml(space.type)} — up to ${escapeHtml(space.capacity)} guests — KES ${escapeHtml(space.hourly_rate)}/hr</p>
+                    <button onclick="deleteEventSpace(${space.id})">Remove</button>
+                </div>
+            `).join('');
+
+            container.innerHTML += `
+                <h3>New Event Space</h3>
+                <input type="text" id="newSpaceName" placeholder="Name">
+                <select id="newSpaceType">
+                    <option value="conference">Conference Room</option>
+                    <option value="wedding">Wedding Hall</option>
+                    <option value="boardroom">Boardroom</option>
+                </select>
+                <input type="number" id="newSpaceCapacity" placeholder="Capacity">
+                <input type="number" id="newSpaceRate" placeholder="Hourly rate (KES)">
+                <textarea id="newSpaceDescription" placeholder="Description"></textarea>
+                <input type="text" id="newSpaceImageUrl" placeholder="Image URL (optional)">
+                <button onclick="addEventSpace()">Add Event Space</button>
+            `;
+        })
+        .catch(error => console.error('Error loading event spaces:', error));
+}
+
+function addEventSpace() {
+    const body = {
+        name: document.getElementById('newSpaceName').value,
+        type: document.getElementById('newSpaceType').value,
+        capacity: document.getElementById('newSpaceCapacity').value,
+        hourly_rate: document.getElementById('newSpaceRate').value,
+        description: document.getElementById('newSpaceDescription').value || null,
+        image_url: document.getElementById('newSpaceImageUrl').value || null
+    };
+
+    fetch(`${API_URL}/events/spaces`, {
+        credentials: 'include',
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+    })
+    .then(response => response.json().then(data => ({ ok: response.ok, data })))
+    .then(({ ok, data }) => {
+        if (!ok) { showToast(data.error || 'Failed to add event space', 'error'); return; }
+        showToast('Event space added', 'success');
+        loadEventSpacesManager();
+    })
+    .catch(error => console.error('Error adding event space:', error));
+}
+
+function deleteEventSpace(id) {
+    fetch(`${API_URL}/events/spaces/${id}`, { credentials: 'include', method: 'DELETE' })
+        .then(response => response.json().then(data => ({ ok: response.ok, data })))
+        .then(({ ok, data }) => {
+            if (!ok) { showToast(data.error || 'Failed to remove event space', 'error'); return; }
+            showToast('Event space removed', 'success');
+            loadEventSpacesManager();
+        })
+        .catch(error => console.error('Error removing event space:', error));
 }
 
 function loadStats() {

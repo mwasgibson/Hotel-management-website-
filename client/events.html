@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+    <title>Meetings & Events</title>
     <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <nav>
@@ -26,49 +26,27 @@
     </nav>
     <div class="nav-overlay"></div>
 
-    <hr>
-
-    <h1>Dashboard</h1>
-
-    <div class="container">
-
-        <div class="card">
-            <h2>Profile</h2>
-            <div id="profile"></div>
+    <div class="page">
+        <h1>Meetings & Events</h1>
+        <div class="filters">
+            <select id="filter_type">
+                <option value="">All Types</option>
+                <option value="conference">Conference Room</option>
+                <option value="wedding">Wedding Hall</option>
+                <option value="boardroom">Boardroom</option>
+            </select>
+            <input type="number" id="filter_capacity" placeholder="Min capacity">
+            <button type="button" onclick="loadEventSpaces()">Filter</button>
         </div>
-
-        <div class="card">
-            <h2>Bookings</h2>
-            <div id="booking-list"></div>
-        </div>
-
-        <div class="card">
-            <a id="eventLink" href="events.html">+ New Event Request</a>
-
-            <h2>My Event Requests</h2>
-            <div id="myEventBookings"></div>
-        </div>
-
-        <div class="card">    
-            <h2>Payment history</h2>
-            <div id="payments"></div>
-        </div>
-        
-        <div class="card">
-            <h2>Booking Summary</h2>
-            <p id="totalBookings"></p>
-            <p id="confirmedBookings"></p>
-            <p id="pendingBookings"></p>
-        </div>
+        <div id="eventSpaces"></div>
     </div>
-    
+
     <script src="js/config.js"></script>
     <script src="js/cookies.js"></script>
     <script src="js/staffNav.js"></script>
     <script src="js/toast.js"></script>
-    <script src="js/dashboard.js"></script>
+    <script src="js/events.js"></script>
     <script src="js/reveal.js"></script>
     <script src="js/nav.js"></script>
-    
 </body>
 </html>
