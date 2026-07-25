@@ -22,31 +22,27 @@ function loadProfileAndInit() {
             currentUserRole = user.role;
             if (currentUserRole !== 'admin' && currentUserRole !== 'receptionist') {
                 document.getElementById('usersHeading').textContent = currentUserRole === 'admin' ? 'All Accounts' : 'Guests';
-                document.getElementById('usersHeading').style.display = 'block';
-                loadUsers();
+                document.getElementById('usersHeading').style.display = 'block';                
                 window.location.href = 'dashboard.html';
                 return;
             }
+            loadUsers();
+            loadStats();
+            loadRooms();
+            loadAllBookings();
             if (currentUserRole === 'admin' || currentUserRole === 'receptionist') {
                 document.getElementById('walkInLink').style.display = 'inline-block';
             }
             if (currentUserRole === 'admin') {
-                document.getElementById('usersHeading').style.display = 'block';
                 document.getElementById('servicesHeading').style.display = 'block';
                 document.getElementById('manageServices').style.display = 'block';
                 loadServicesManager();
             }
             if (currentUserRole === 'admin') {
-                document.getElementById('usersHeading').style.display = 'block';
-                document.getElementById('servicesHeading').style.display = 'block';
-                document.getElementById('manageServices').style.display = 'block';
                 document.getElementById('dealsHeading').style.display = 'block';
                 document.getElementById('manageDeals').style.display = 'block';
                 loadDealsManager();
-            } 
-            loadStats();
-            loadRooms();
-            loadAllBookings();           
+            }                       
         })
         .catch(error => console.error('Error loading profile:', error));
 }
@@ -200,7 +196,6 @@ function loadDealsManager() {
         .then(res => res.json())
         .then(deals => {
             const container = document.getElementById('manageDeals');
-
             container.innerHTML = deals.map(deal => `
                 <div>
                     <p>
@@ -212,7 +207,6 @@ function loadDealsManager() {
                     <button onclick="deleteDeal(${deal.id})">Remove</button>
                 </div>
             `).join('');
-
             container.innerHTML += `
                 <h3>New Deal</h3>
                 <input type="text" id="newDealTitle" placeholder="Title">

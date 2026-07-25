@@ -1,34 +1,66 @@
+const selectedServices = {}
+
 function loadServicesPicker(containerId) {
     fetch(`${API_URL}/services`, { credentials: 'include' })
         .then(res => res.json())
         .then(services => {
             const container = document.getElementById(containerId);
-            container.innerHTML = '<h3>Optional Services</h3>';
+            container.innerHTML = '<h3>Optional Services</h3> <div class="services-grid"></div>';
+            const grid = container.querySelector(".services-grid");
 
             services.forEach(service => {
-                container.innerHTML += `
-                    <label>
-                        <input type="checkbox" class="service-checkbox" value="${service.id}" data-price="${service.price}">
-                        ${service.name} — KES ${service.price}
-                        ${service.description ? `<small>${service.description}</small>` : ''}
-                    </label>
+                grid.innerHTML += `
+                    <div class="service-card">
+                        <div class="service-details">
+                            <h4>${service.name}</h4>
+                            <small>${service.description || "" }</small>
+                            <span>KES ${Number(service.price).toLocaleString()}</span>
+                        </div>    
+                        <div class="qty-picker">
+                            <button type="button" onclick="changeQty(${service.id},-1)"> - </button>
+                            <span id="qty-${service.id}">0</span>
+                            <button type="button" onclick="changeQty(${service.id},1)"> + </button>
+                        </div>
+                    </div>
                 `;
             });
         })
         .catch(error => console.error('Error loading services:', error));
 }
 
+function changeQty(id, amount){
+    if(!selectedServices[id]){
+        selectedServices[id]=0;
+    }
+    selectedServices[id]+=amount;
+    if(selectedServices[id]<0){
+        selectedServices[id]=0;
+    }
+    document.getElementById(`qty-${id}`).textContent =
+        selectedServices[id];
+}
+
 function getSelectedServices() {
-    return Array.from(document.querySelectorAll('.service-checkbox:checked'))
-        .map(checkbox => ({ service_id: Number(checkbox.value), quantity: 1 }));
+    return Object.entries(selectedServices)
+        .filter(([id,qty])=>qty>0)
+        .map(([id,qty])=>({
+            service_id:Number(id),
+            quantity:qty
+        }));
 }
 
 function applyPromoPreview() {
     const code = document.getElementById('promo_code').value;
     if (!code) return;
 
-    const servicesTotal = Array.from(document.querySelectorAll('.service-checkbox:checked'))
-        .reduce((sum, cb) => sum + Number(cb.dataset.price), 0);
+    let servicesTotal = 0;
+    document.querySelectorAll(".service-card").forEach(card=>{
+        const id = card.dataset.id;
+        if(selectedServices[id]){
+            const price = Number(card.dataset.price);
+            servicesTotal +=  price * selectedServices[id];
+        }
+    });
 
     const roomSubtotal = window.currentBookingSubtotal || 0;   // each page sets this once it knows the room price/nights
 

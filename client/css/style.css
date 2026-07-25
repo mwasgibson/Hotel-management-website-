@@ -587,8 +587,9 @@ form:hover {
   display: flex;
   flex-direction: column;
   flex:1;
-  min-height: 350px;
-  max-height: 650px;
+  justify-content:space-between;
+  min-height: 250px;
+  max-height: 350px;
   background:
         linear-gradient(
             110deg,
@@ -599,7 +600,59 @@ form:hover {
   overflow-y:auto;
   overflow-x: hidden;
   padding:1.4rem;
+  align-items:center;
+  border-radius:15px;
+  border:1px solid #ddd;
+  transition:.3s;
   scrollbar-width:thin;
+}
+
+.services-grid{
+    display:grid;
+    gap:18px;
+    margin-top:20px;
+}
+
+.service-card:hover{
+    transform:translateY(-5px);
+    box-shadow:0 10px 25px rgba(0,0,0,.12);
+}
+
+.service-details h4{
+    margin-bottom:5px;
+}
+
+.service-details p{
+    font-size:.9rem;
+    opacity:.7;
+    margin-bottom:8px;
+}
+
+.service-details span{
+    font-weight:bold;
+    color: var(--midnight);
+}
+
+.service-qty{
+    display:flex;
+    align-items:center;
+    gap:15px;
+}
+
+.service-qty button{
+    width:38px;
+    height:38px;
+    border:none;
+    border-radius:50%;
+    cursor:pointer;
+    font-size:22px;
+}
+
+.service-qty span{
+    font-size:20px;
+    font-weight:bold;
+    min-width:25px;
+    text-align:center;
 }
 
 .service-list{
