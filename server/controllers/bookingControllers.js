@@ -2,11 +2,13 @@ const db = require('../config/db');
 const { calculateDynamicPrice } = require('../utils/dynamicPricing');
 const sendEmail = require('../utils/sendEmail');
 const { attachServicesToBooking } = require('../utils/bookingServices');
+const { validateAndApplyPromoCode } = require('../utils/promoCodes');
 
 exports.createBooking = (req, res) => {
     const user_id = req.user.id; 
     const { room_number, check_in, check_out } = req.body;
     const { services } = req.body;
+    const { services, promo_code } = req.body;
 
     if (!room_number || !check_in || !check_out) {
         return res.status(400).json({ error: 'room_number, check_in, and check_out are required' });
@@ -82,12 +84,23 @@ exports.createBooking = (req, res) => {
                         // don't fail the booking over this — the room booking itself is what matters most
                     }
 
-                    const finalTotal = total_amount + servicesTotal;
-                    if (servicesTotal > 0) {
-                        db.query('UPDATE bookings SET total_amount = ? WHERE id = ?', [finalTotal, bookingResults.insertId], (err) => {
-                        if (err) console.error('Error updating total with services:', err);
-                        });
-                    }    
+                    const subtotalBeforeDiscount = total_amount + servicesTotal;
+
+                    let discount = 0;
+                    try {
+                        const promoResult = await validateAndApplyPromoCode(promo_code, subtotalBeforeDiscount);
+                        discount = promoResult.discount;
+                    } catch (promoErr) {
+                        if (promoErr.isPromoError) {
+                            return res.status(400).json({ error: promoErr.message });   // bad code — reject the whole booking rather than silently ignoring it
+                        }
+                        console.error('Error applying promo code:', promoErr);
+                    }
+
+                    const finalTotal = subtotalBeforeDiscount - discount;
+                    db.query('UPDATE bookings SET total_amount = ?, promo_code_used = ? WHERE id = ?', [finalTotal, promo_code || null, bookingResults.insertId], (err) => {
+                        if (err) console.error('Error updating total with promo code:', err);
+                    });   
 
                     sendEmail({
                         to: req.user.email,
@@ -241,12 +254,23 @@ exports.reserveRoom = (req, res) => {
                         // don't fail the reservation over this — the room reservation itself is what matters most
                     }
 
-                    const finalTotal = total_amount + servicesTotal;
-                    if (servicesTotal > 0) {
-                        db.query('UPDATE bookings SET total_amount = ? WHERE id = ?', [finalTotal, result.insertId], (err) => {
-                        if (err) console.error('Error updating total with services:', err);
-                        });
-                    }    
+                    const subtotalBeforeDiscount = total_amount + servicesTotal;
+
+                    let discount = 0;
+                    try {
+                        const promoResult = await validateAndApplyPromoCode(promo_code, subtotalBeforeDiscount);
+                        discount = promoResult.discount;
+                    } catch (promoErr) {
+                        if (promoErr.isPromoError) {
+                            return res.status(400).json({ error: promoErr.message });   // bad code — reject the whole booking rather than silently ignoring it
+                        }
+                        console.error('Error applying promo code:', promoErr);
+                    }
+
+                    const finalTotal = subtotalBeforeDiscount - discount;
+                    db.query('UPDATE bookings SET total_amount = ?, promo_code_used = ? WHERE id = ?', [finalTotal, promo_code || null, bookingResults.insertId], (err) => {
+                        if (err) console.error('Error updating total with promo code:', err);
+                    });    
 
                     sendEmail({
                         to: req.user.email,

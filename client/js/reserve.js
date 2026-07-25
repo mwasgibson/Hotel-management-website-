@@ -77,7 +77,8 @@ function reserveRoom() {
             room_number: getSelectedRoomNumber(),
             check_in: document.getElementById('check_in').value,
             check_out: document.getElementById('check_out').value,
-            services: getSelectedServices()
+            services: getSelectedServices(),
+            promo_code: document.getElementById('promo_code').value || null
         })
     })
     .then(response => response.json().then(data => ({ ok: response.ok, data })))

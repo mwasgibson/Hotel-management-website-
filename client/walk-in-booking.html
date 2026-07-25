@@ -2,12 +2,27 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>New Walk-in Reservation</title>
     <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <nav></nav>
+    <nav>
+        <ul>
+            <li><a href="index.html"><i class="ph ph-house"></i> Home</a></li>
+            <li><a href="rooms.html"><i class="ph ph-bed"></i> Rooms</a></li>
+            <li><a href="#" onclick="goToDashboard(); return false;"><i class="ph ph-squares-four"></i> Dashboard</a></li>
+            <li><a href="booking.html"><i class="ph ph-calendar-blank"></i> Booking</a></li>
+            <li><a href="deals.html">Deals</a></li>
+            <li><a href="contact.html"><i class="ph ph-envelope"></i> Contact</a></li>
+        </ul>
+        <button onclick="Logout()"><i class="ph ph-sign-out"></i> Logout</button>
+        <button class="nav-toggle" aria-label="Menu">
+            <span></span><span></span><span></span>
+        </button>
+    </nav>
     <div class="nav-overlay"></div>
 
     <h1>New Walk-in Reservation</h1>
@@ -40,6 +55,10 @@
         <div class="service-card">
             <div id="servicesPicker"></div>
         </div>
+
+        <input type="text" id="promo_code" placeholder="Promo code (optional)">
+        <button type="button" onclick="applyPromoPreview()">Apply</button>
+        <p id="promoPreviewResult"></p>
 
         <label><input type="checkbox" id="payment_received"> Payment received now</label>
 

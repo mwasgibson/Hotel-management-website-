@@ -79,12 +79,23 @@ exports.createWalkInBooking = async (req, res) => {
                         console.error('Error attaching services:', serviceErr);
                     }
 
-                    const finalTotal = total_amount + servicesTotal;
-                    if (servicesTotal > 0) {
-                        db.query('UPDATE bookings SET total_amount = ? WHERE id = ?', [finalTotal, bookingId], (err) => {
-                        if (err) console.error('Error updating total with services:', err);
-                        });
-                    }    
+                    const subtotalBeforeDiscount = total_amount + servicesTotal;
+
+                    let discount = 0;
+                    try {
+                        const promoResult = await validateAndApplyPromoCode(promo_code, subtotalBeforeDiscount);
+                        discount = promoResult.discount;
+                    } catch (promoErr) {
+                        if (promoErr.isPromoError) {
+                            return res.status(400).json({ error: promoErr.message });   // bad code — reject the whole booking rather than silently ignoring it
+                        }
+                        console.error('Error applying promo code:', promoErr);
+                    }
+
+                    const finalTotal = subtotalBeforeDiscount - discount;
+                    db.query('UPDATE bookings SET total_amount = ?, promo_code_used = ? WHERE id = ?', [finalTotal, promo_code || null, bookingResults.insertId], (err) => {
+                        if (err) console.error('Error updating total with promo code:', err);
+                    });    
 
                     res.status(201).json({ message: 'Walk-in reservation created', bookingId, total_amount: finalTotal, booking_status: bookingStatus, guest: { fullname, phone } });
                 });

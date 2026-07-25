@@ -77,7 +77,8 @@ function bookRoom() {
             room_number: getSelectedRoomNumber(),
             check_in: document.getElementById('check_in').value,
             check_out: document.getElementById('check_out').value,
-            services: getSelectedServices()
+            services: getSelectedServices(),
+            promo_code: document.getElementById('promo_code').value || null
         })
     })
     .then(response => response.json().then(data => ({ ok: response.ok, data })))
@@ -100,6 +101,8 @@ function reserveRoom(roomId) {
     const user_id = document.getElementById("user_id").value;
     const check_in = document.getElementById("check_in").value;
     const check_out = document.getElementById("check_out").value;
+    const services = getSelectedServices();
+    const promo_code = document.getElementById('promo_code').value || null
 
     fetch(`${API_URL}/bookings/reserve`, {
         credentials: 'include',
@@ -111,7 +114,9 @@ function reserveRoom(roomId) {
             user_id,
             room_number: roomId,
             check_in,
-            check_out
+            check_out,
+            services,
+            promo_code
         })
     })
     .then(res => res.json())

@@ -38,6 +38,7 @@ function createWalkInBooking() {
         check_in: document.getElementById('check_in').value,
         check_out: document.getElementById('check_out').value,
         services: getSelectedServices(),
+        promo_code: document.getElementById('promo_code').value || null,
         payment_method: document.getElementById('payment_method').value,
         payment_received: document.getElementById('payment_received').checked
     };

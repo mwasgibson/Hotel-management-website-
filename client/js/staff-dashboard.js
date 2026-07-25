@@ -27,9 +27,6 @@ function loadProfileAndInit() {
                 window.location.href = 'dashboard.html';
                 return;
             }
-            loadStats();
-            loadRooms();
-            loadAllBookings();
             if (currentUserRole === 'admin' || currentUserRole === 'receptionist') {
                 document.getElementById('walkInLink').style.display = 'inline-block';
             }
@@ -38,7 +35,18 @@ function loadProfileAndInit() {
                 document.getElementById('servicesHeading').style.display = 'block';
                 document.getElementById('manageServices').style.display = 'block';
                 loadServicesManager();
-            }            
+            }
+            if (currentUserRole === 'admin') {
+                document.getElementById('usersHeading').style.display = 'block';
+                document.getElementById('servicesHeading').style.display = 'block';
+                document.getElementById('manageServices').style.display = 'block';
+                document.getElementById('dealsHeading').style.display = 'block';
+                document.getElementById('manageDeals').style.display = 'block';
+                loadDealsManager();
+            } 
+            loadStats();
+            loadRooms();
+            loadAllBookings();           
         })
         .catch(error => console.error('Error loading profile:', error));
 }
@@ -185,6 +193,83 @@ function deleteService(id) {
             loadServicesManager();
         })
         .catch(error => console.error('Error removing service:', error));
+}
+
+function loadDealsManager() {
+    fetch(`${API_URL}/deals`, { credentials: 'include' })
+        .then(res => res.json())
+        .then(deals => {
+            const container = document.getElementById('manageDeals');
+
+            container.innerHTML = deals.map(deal => `
+                <div>
+                    <p>
+                        ${escapeHtml(deal.title)} —
+                        ${deal.discount_type === 'percentage' ? `${escapeHtml(deal.discount_value)}%` : `KES ${escapeHtml(deal.discount_value)}`} off
+                        ${deal.promo_code ? ` — code <code>${escapeHtml(deal.promo_code)}</code>` : ''}
+                    </p>
+                    <p>${escapeHtml(deal.start_date)} → ${escapeHtml(deal.end_date)}</p>
+                    <button onclick="deleteDeal(${deal.id})">Remove</button>
+                </div>
+            `).join('');
+
+            container.innerHTML += `
+                <h3>New Deal</h3>
+                <input type="text" id="newDealTitle" placeholder="Title">
+                <textarea id="newDealDescription" placeholder="Description"></textarea>
+                <select id="newDealDiscountType">
+                    <option value="percentage">Percentage</option>
+                    <option value="fixed">Fixed amount (KES)</option>
+                </select>
+                <input type="number" id="newDealDiscountValue" placeholder="Discount value">
+                <input type="text" id="newDealPromoCode" placeholder="Promo code (optional)">
+                <label>Start date</label>
+                <input type="date" id="newDealStartDate">
+                <label>End date</label>
+                <input type="date" id="newDealEndDate">
+                <input type="text" id="newDealImageUrl" placeholder="Image URL (optional)">
+                <button onclick="addDeal()">Add Deal</button>
+            `;
+        })
+        .catch(error => console.error('Error loading deals:', error));
+}
+
+function addDeal() {
+    const body = {
+        title: document.getElementById('newDealTitle').value,
+        description: document.getElementById('newDealDescription').value || null,
+        discount_type: document.getElementById('newDealDiscountType').value,
+        discount_value: document.getElementById('newDealDiscountValue').value,
+        promo_code: document.getElementById('newDealPromoCode').value || null,
+        start_date: document.getElementById('newDealStartDate').value,
+        end_date: document.getElementById('newDealEndDate').value,
+        image_url: document.getElementById('newDealImageUrl').value || null
+    };
+
+    fetch(`${API_URL}/deals`, {
+        credentials: 'include',
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+    })
+    .then(response => response.json().then(data => ({ ok: response.ok, data })))
+    .then(({ ok, data }) => {
+        if (!ok) { showToast(data.error || 'Failed to add deal', 'error'); return; }
+        showToast('Deal created', 'success');
+        loadDealsManager();
+    })
+    .catch(error => console.error('Error adding deal:', error));
+}
+
+function deleteDeal(id) {
+    fetch(`${API_URL}/deals/${id}`, { credentials: 'include', method: 'DELETE' })
+        .then(response => response.json().then(data => ({ ok: response.ok, data })))
+        .then(({ ok, data }) => {
+            if (!ok) { showToast(data.error || 'Failed to remove deal', 'error'); return; }
+            showToast('Deal removed', 'success');
+            loadDealsManager();
+        })
+        .catch(error => console.error('Error removing deal:', error));
 }
 
 function loadAllBookings(queryString = '') {
