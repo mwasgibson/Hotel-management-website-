@@ -45,13 +45,19 @@ exports.stkPush = async (req, res) => {
     }
 
     // Look the price up server-side — never trust a client-supplied amount for a real charge
-    db.query('SELECT * FROM bookings WHERE id = ? AND user_id = ?', [booking_id, req.user.id], (err, bookings) => {
+    db.query('SELECT * FROM bookings WHERE id = ?', [booking_id, req.id], (err, bookings) => {
+        if(
+            req.user.role !== "admin" &&
+            req.user.role !== "receptionist"
+        ){
+            return res.status(403).json({ error:"Unauthorized" });
+        }
         if (err) return res.status(500).json({ error: 'Database error' });
         if (bookings.length === 0) return res.status(404).json({ error: 'Booking not found' });
 
         const booking = bookings[0];
 
-        db.query('SELECT * FROM payments WHERE booking_id = ? AND payment_status = "Paid"', [booking_id], async (err, existing) => {
+        db.query('SELECT * FROM payments WHERE booking_id = ? AND payment_status = "paid"', [booking_id], async (err, existing) => {
             if (err) return res.status(500).json({ error: 'Database error' });
             if (existing.length > 0) {
                 return res.status(400).json({ error: 'This booking has already been paid' });
@@ -117,7 +123,7 @@ exports.callback = (req, res) => {
         const payment = payments[0];
 
         if (ResultCode === 0) {
-            db.query('UPDATE payments SET payment_status = "Paid" WHERE id = ?', [payment.id], (err) => {
+            db.query('UPDATE payments SET payment_status = "paid" WHERE id = ?', [payment.id], (err) => {
                 if (err) console.error('Error updating payment status:', err);
             });
             db.query('UPDATE bookings SET booking_status = "confirmed" WHERE id = ?', [payment.booking_id], (err) => {

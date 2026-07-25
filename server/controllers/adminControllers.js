@@ -14,7 +14,7 @@ exports.getStats = async (req, res) => {
         const [roomStats, bookingStats, revenueResult, checkInsToday, checkOutsToday] = await Promise.all([
             query('SELECT status, COUNT(*) AS count FROM rooms GROUP BY status'),
             query('SELECT booking_status, COUNT(*) AS count FROM bookings GROUP BY booking_status'),
-            query('SELECT SUM(amount) AS total_revenue FROM payments WHERE payment_status = "Paid"'),
+            query('SELECT SUM(amount) AS total_revenue FROM payments WHERE payment_status = "paid"'),
             query(`SELECT COUNT(*) AS count FROM bookings WHERE DATE(check_in) = CURDATE() AND booking_status IN ('pending','confirmed')`),
             query(`SELECT COUNT(*) AS count FROM bookings WHERE DATE(check_out) = CURDATE() AND booking_status = 'confirmed'`)
         ]);

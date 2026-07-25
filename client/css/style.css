@@ -582,6 +582,34 @@ form:hover {
   grid-column: 1;
 }
 
+.service-card {
+  grid-column: auto;
+  display: flex;
+  flex-direction: column;
+  flex:1;
+  min-height: 350px;
+  max-height: 650px;
+  background:
+        linear-gradient(
+            110deg,
+            transparent,
+            rgb(201, 168, 76, 0.2),
+            transparent
+        );
+  overflow-y:auto;
+  overflow-x: hidden;
+  padding:1.4rem;
+  scrollbar-width:thin;
+}
+
+.service-list{
+  font-size: 1.3rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid rgba(201, 168, 76, 0.2);
+  color: var(--storm);
+}
+
 .container {
   display: grid;
   grid-column: auto;
@@ -739,26 +767,22 @@ form:hover {
 }
 
 .image-container{
-  flex: 1 1 0%;
-  min-width: 0;
-  width: 100%;
-  display: flex;
+  width: 100vw;
+  max-width: none;
   overflow: hidden;
-  position: absolute;
+  position: fixed;
   top: 0;
   right: 0;
-  width: 100%;
   height: 100%;
-  z-index: 0;
+  z-index: -1;
 }
 
 .image-container img{
   width: 100%;
-  max-width: 100%;
+  max-width: none;
   height: 400px;
-  min-height: 350px;
   display: block;
-  object-fit: cover;
+  object-fit: fill;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   transition: transform .4s ease, box-shadow .4s ease;
@@ -772,7 +796,8 @@ form:hover {
 img#roomImage {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* Prevents stretching */
+  object-fit: fill; /* Prevents stretching */
+  object-position: center;
   border: none;
   opacity: 0.6;
 
@@ -998,17 +1023,14 @@ body > a:not(nav a):hover {
     grid-template-columns: 1fr;
     padding: 1.5rem 1rem;
   }
-
   #rooms {
     grid-template-columns: 1fr;
     padding: 1.5rem 1rem;
   }
-
   .form-wrap {
     margin: 2rem 1rem;
     padding: 1.75rem 1.25rem;
   }
-
   body > h1     { padding: 2rem 1rem 0.5rem; }
   body > p      { padding: 0 1rem; }
   body > h2     { padding: 1rem 1rem 0.4rem; }
@@ -1019,9 +1041,7 @@ body > a:not(nav a):hover {
 @media (max-width: 480px) {
   h1 { font-size: 1.8rem; }
   h2 { font-size: 1.3rem; }
-
   button, .btn { width: 100%; justify-content: center; }
-
   input, select { font-size: 16px;}
 }
 
@@ -1030,19 +1050,20 @@ body > a:not(nav a):hover {
 }
 
 @media (max-width: 768px){
-
     .content-wrapper{
         flex-direction:column-reverse;
     }
-
     .content-wrapper .card,
     .image-container{
         width:100%;
         max-width:none;
     }
-
     .image-container img{
         height:280px;
     }
+}
 
+@media print {
+    body > *:not(#receipt) { display: none !important; }
+    #receipt { display: block !important; }
 }

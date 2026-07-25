@@ -30,7 +30,15 @@ function loadProfileAndInit() {
             loadStats();
             loadRooms();
             loadAllBookings();
-            
+            if (currentUserRole === 'admin' || currentUserRole === 'receptionist') {
+                document.getElementById('walkInLink').style.display = 'inline-block';
+            }
+            if (currentUserRole === 'admin') {
+                document.getElementById('usersHeading').style.display = 'block';
+                document.getElementById('servicesHeading').style.display = 'block';
+                document.getElementById('manageServices').style.display = 'block';
+                loadServicesManager();
+            }            
         })
         .catch(error => console.error('Error loading profile:', error));
 }
@@ -75,7 +83,6 @@ function loadRooms() {
 
             rooms.forEach(room => {
                 let actions = '';
-
                 if (currentUserRole === 'receptionist') {
                     if (room.status === 'reserved' || room.status === 'available') {
                         actions += `<button onclick="roomAction(${room.room_number}, 'check-in')">Check In</button>`;
@@ -87,7 +94,6 @@ function loadRooms() {
                         actions += `<button onclick="roomAction(${room.room_number}, 'cleaning')">Finish Cleaning</button>`;
                     }
                 }
-
                 if (currentUserRole === 'admin') {
                     if (room.status === 'available') {
                         actions += `<button onclick="roomAction(${room.room_number}, 'start-maintenance')">Send to Maintenance</button>`;
@@ -130,6 +136,55 @@ function roomAction(roomId, action) {
         loadStats();
     })
     .catch(error => console.error('Error performing room action:', error));
+}
+
+function loadServicesManager() {
+    fetch(`${API_URL}/services`, { credentials: 'include' })
+        .then(res => res.json())
+        .then(services => {
+            const container = document.getElementById('manageServices');
+            container.innerHTML = services.map(s => `
+                <div>
+                    <p>${escapeHtml(s.name)} — KES ${escapeHtml(s.price)}</p>
+                    <button onclick="deleteService(${s.id})">Remove</button>
+                </div>
+            `).join('') + `
+                <input type="text" id="newServiceName" placeholder="Service name">
+                <input type="number" id="newServicePrice" placeholder="Price">
+                <button onclick="addService()">Add Service</button>
+            `;
+        })
+        .catch(error => console.error('Error loading services:', error));
+}
+
+function addService() {
+    const name = document.getElementById('newServiceName').value;
+    const price = document.getElementById('newServicePrice').value;
+
+    fetch(`${API_URL}/services`, {
+        credentials: 'include',
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, price })
+    })
+    .then(response => response.json().then(data => ({ ok: response.ok, data })))
+    .then(({ ok, data }) => {
+        if (!ok) { showToast(data.error || 'Failed to add service', 'error'); return; }
+        showToast('Service added', 'success');
+        loadServicesManager();
+    })
+    .catch(error => console.error('Error adding service:', error));
+}
+
+function deleteService(id) {
+    fetch(`${API_URL}/services/${id}`, { credentials: 'include', method: 'DELETE' })
+        .then(response => response.json().then(data => ({ ok: response.ok, data })))
+        .then(({ ok, data }) => {
+            if (!ok) { showToast(data.error || 'Failed to remove service', 'error'); return; }
+            showToast('Service removed', 'success');
+            loadServicesManager();
+        })
+        .catch(error => console.error('Error removing service:', error));
 }
 
 function loadAllBookings(queryString = '') {
@@ -213,43 +268,35 @@ function loadUsers() {
         .catch(error => console.error('Error loading users:', error));
 }
 
-function loadPendingCashPayments() {
-    fetch(`${API_URL}/payments/pending-cash`, { credentials: 'include' })
+function loadPendingManualPayments() {
+    fetch(`${API_URL}/payments/pending-manual`, { credentials: 'include' })
         .then(res => res.json())
         .then(payments => {
-            const container = document.getElementById('pendingCashPayments');
-            container.innerHTML = '';
-
-            if (!payments.length) {
-                container.innerHTML = '<p>No pending cash payments.</p>';
-                return;
-            }
+            const container = document.getElementById('pendingManualPayments');
+            container.innerHTML = payments.length ? '' : '<p>No pending payments.</p>';
 
             payments.forEach(payment => {
                 container.innerHTML += `
                     <div>
-                        <p>${escapeHtml(payment.fullname)} (${escapeHtml(payment.email)}) — KES ${escapeHtml(Number(payment.amount).toFixed(2))}</p>
+                        <p>${escapeHtml(payment.fullname)} (${escapeHtml(payment.email || 'walk-in')}) — ${escapeHtml(payment.payment_method)} — KES ${escapeHtml(Number(payment.amount).toFixed(2))}</p>
                         <p>${escapeHtml(payment.check_in)} → ${escapeHtml(payment.check_out)}</p>
-                        <button onclick="confirmCashPayment(${payment.id})">Confirm Payment Received</button>
+                        <button onclick="confirmManualPayment(${payment.id})">Confirm Payment Received</button>
                         <hr>
                     </div>
                 `;
             });
         })
-        .catch(error => console.error('Error loading pending cash payments:', error));
+        .catch(error => console.error('Error loading pending payments:', error));
 }
 
-function confirmCashPayment(paymentId) {
-    fetch(`${API_URL}/payments/${paymentId}/confirm-cash`, { credentials: 'include', method: 'PATCH' })
+function confirmManualPayment(paymentId) {
+    fetch(`${API_URL}/payments/${paymentId}/confirm-manual`, { credentials: 'include', method: 'PATCH' })
         .then(response => response.json().then(data => ({ ok: response.ok, data })))
         .then(({ ok, data }) => {
-            if (!ok) {
-                showToast(data.error || 'Failed to confirm payment', 'error');
-                return;
-            }
+            if (!ok) { showToast(data.error || 'Failed to confirm payment', 'error'); return; }
             showToast('Payment confirmed', 'success');
-            loadPendingCashPayments();
+            loadPendingManualPayments();
             loadStats();
         })
-        .catch(error => console.error('Error confirming cash payment:', error));
+        .catch(error => console.error('Error confirming payment:', error));
 }

@@ -14,8 +14,12 @@ const mpesaRoutes = require('./routes/mpesaRoutes');
 const paypalRoutes = require('./routes/paypalRoutes');
 const contactRoutes = require('./routes/contactRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const servicesRoutes = require('./routes/servicesRoutes');
+
 const expireStaleReservations = require('./utils/expireReservations');
+
 const { apiLimiter, authLimiter } = require('./middleware/rateLimiters');
+
 const app = express ();
 const allowedOrigins = (process.env.CLIENT_URL || "").split(",").map(o => o.trim());
 
@@ -44,6 +48,7 @@ app.use('/api/paypal', paypalRoutes);
 app.use ('/api/payments', paymentRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/services', servicesRoutes);
 
 app.get ("/", (req, res) => {
     res.send ("Hotel Management System API");

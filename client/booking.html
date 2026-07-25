@@ -24,27 +24,37 @@
     </nav>
     <div class="nav-overlay"></div>
 
-    <hr>
+    <div class="container">
 
-    <h1>Book Room</h1>
+        <h1>Book Room</h1>
+        <hr>
 
-    <form>
-        <div id="selectedRoomDisplay" style="display:none;"></div>
-        <input type="hidden" id="room_number_hidden">
+        <form>
+            <div id="selectedRoomDisplay" style="display:none;"></div>
+            <input type="hidden" id="room_number_hidden">
 
-        <select id="room_number">
-        <option value="">Loading rooms...</option>
-        </select><br><br>
+            <select id="room_number">
+            <option value="">Loading rooms...</option>
+            </select><br><br>
 
-        <input type="date" id="check_in" name="Check In"><br><br>
-        <input type="date" id="check_out" name="Check Out"><br><br>
-        <button type="button" onclick="bookRoom()">Book Room</button>
-    </form>
+            <div class="service-card">
+                <div id="servicesPicker"></div>
+            </div><br><br>
+
+            <input type="date" id="check_in" name="Check In"><br><br>
+            <input type="date" id="check_out" name="Check Out"><br><br>
+
+            <button type="button" onclick="bookRoom()">Book Room</button>
+        </form>
+
+        <hr>
+    </div>
 
     <script src="js/config.js"></script>
     <script src="js/cookies.js"></script>
     <script src="js/staffNav.js"></script>
     <script src="js/toast.js"></script>
+    <script src="js/services-picker.js"></script>
     <script src="js/booking.js"></script>
     <script src="js/reveal.js"></script>
     <script src="js/nav.js"></script>

@@ -27,7 +27,7 @@ exports.payBookings = (req, res) => {
 };
 
 // Staff-only: mark a pending cash payment as actually received
-exports.confirmCashPayment = (req, res) => {
+exports.confirmManualPayment = (req, res) => {
     const { id } = req.params;
 
     db.query('SELECT * FROM payments WHERE id = ?', [id], (err, payments) => {
@@ -35,30 +35,31 @@ exports.confirmCashPayment = (req, res) => {
         if (payments.length === 0) return res.status(404).json({ error: 'Payment not found' });
 
         const payment = payments[0];
-        if (payment.payment_method !== 'cash') {
-            return res.status(400).json({ error: 'Only cash payments can be confirmed this way' });
+        if (!['cash', 'card'].includes(payment.payment_method)) {
+            return res.status(400).json({ error: 'Only cash or card payments can be confirmed this way' });
         }
-        if (payment.payment_status === 'Paid') {
+        if (payment.payment_status === 'paid') {
             return res.status(400).json({ error: 'This payment is already confirmed' });
         }
 
-        db.query('UPDATE payments SET payment_status = "Paid" WHERE id = ?', [id], (err) => {
+        db.query('UPDATE payments SET payment_status = "paid" WHERE id = ?', [id], (err) => {
             if (err) return res.status(500).json({ error: 'Database error' });
 
             db.query('UPDATE bookings SET booking_status = "confirmed" WHERE id = ?', [payment.booking_id], (err) => {
                 if (err) return res.status(500).json({ error: 'Database error' });
 
+                // email only if this belongs to a registered guest — walk-ins may not have one
                 db.query('SELECT users.email FROM bookings JOIN users ON bookings.user_id = users.id WHERE bookings.id = ?', [payment.booking_id], (err, rows) => {
                     if (!err && rows.length > 0) {
                         sendEmail({
                             to: rows[0].email,
                             subject: 'Payment Received',
-                            html: `<p>Your cash payment of KES ${payment.amount} has been confirmed at reception. Your reservation is now confirmed.</p>`
+                            html: `<p>Your ${payment.payment_method} payment of KES ${payment.amount} has been confirmed at reception. Your reservation is now confirmed.</p>`
                         });
                     }
                 });
 
-                res.json({ message: 'Cash payment confirmed' });
+                res.json({ message: 'Payment confirmed' });
             });
         });
     });
@@ -81,13 +82,16 @@ exports.getPaymentStatus = (req, res) => {
     );
 };
 
-exports.getAllPendingCashPayments = (req, res) => {
+exports.getAllPendingManualPayments = (req, res) => {
     const sql = `
-        SELECT payments.*, bookings.check_in, bookings.check_out, users.fullname, users.email
+        SELECT payments.*, bookings.check_in, bookings.check_out,
+            COALESCE(users.fullname, walk_in_guests.fullname) AS fullname,
+            COALESCE(users.email, walk_in_guests.email) AS email
         FROM payments
         JOIN bookings ON payments.booking_id = bookings.id
-        JOIN users ON bookings.user_id = users.id
-        WHERE payments.payment_method = 'cash' AND payments.payment_status = 'pending'
+        LEFT JOIN users ON bookings.user_id = users.id
+        LEFT JOIN walk_in_guests ON bookings.walk_in_guest_id = walk_in_guests.id
+        WHERE payments.payment_method IN ('cash', 'card') AND payments.payment_status = 'pending'
         ORDER BY payments.id DESC
     `;
     db.query(sql, (err, results) => {

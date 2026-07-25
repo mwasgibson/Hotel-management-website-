@@ -1,10 +1,12 @@
 const db = require('../config/db');
 const { calculateDynamicPrice } = require('../utils/dynamicPricing');
 const sendEmail = require('../utils/sendEmail');
+const { attachServicesToBooking } = require('../utils/bookingServices');
 
 exports.createBooking = (req, res) => {
     const user_id = req.user.id; 
     const { room_number, check_in, check_out } = req.body;
+    const { services } = req.body;
 
     if (!room_number || !check_in || !check_out) {
         return res.status(400).json({ error: 'room_number, check_in, and check_out are required' });
@@ -45,15 +47,15 @@ exports.createBooking = (req, res) => {
                 return res.status(400).json({ error: 'Room is already booked for the selected dates' });
             }            
 
-        const room = roomResults[0]; 
+            const room = roomResults[0]; 
         
-        if (roomResults[0].status !== 'available') {
+            if (roomResults[0].status !== 'available') {
                 return res.status(400).json({ error: `Room is currently ${roomResults[0].status}` });
-        }
+            }
 
-        const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+            const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
         
-        let total_amount;
+            let total_amount;
             try {
                 const pricing = await calculateDynamicPrice(room.price, start);
                 total_amount = pricing.adjustedPrice * days;
@@ -63,7 +65,7 @@ exports.createBooking = (req, res) => {
             }
 
             const bookingSql = 'INSERT INTO bookings (user_id, room_number, check_in, check_out, total_amount) VALUES (?, ?, ?, ?, ?)';
-                db.query(bookingSql, [user_id, room_number, start, end, total_amount], (err, bookingResults) => {
+                db.query(bookingSql, [user_id, room_number, start, end, total_amount], async (err, bookingResults) => {
                     if (err) {
                         console.error('Error creating booking:', err);
                         return res.status(500).json({ error: 'Database error' });
@@ -72,27 +74,43 @@ exports.createBooking = (req, res) => {
                         if (err) console.error('Error updating room status:', err);
                     });
 
-                sendEmail({
-                    to: req.user.email,
-                    subject: 'Booking Confirmation',
-                    html: `
-                    <p>Hi,</p>
-                    <p>Your booking has been created:</p>
-                    <ul>
-                    <li>Room: ${room_number}</li>
-                    <li>Check-in: ${check_in}</li>
-                    <li>Check-out: ${check_out}</li>
-                    <li>Total: KES ${total_amount}</li>
-                    </ul>
-                    <p>Please complete payment to confirm your stay.</p>
-                    `
-                });
+                    let servicesTotal = 0;
+                    try {
+                        servicesTotal = await attachServicesToBooking(bookingResults.insertId, services);
+                    } catch (serviceErr) {
+                        console.error('Error attaching services:', serviceErr);
+                        // don't fail the booking over this — the room booking itself is what matters most
+                    }
 
-                res.status(201).json({ message: 'Booking created successfully', bookingId: bookingResults.insertId, total_amount });
-            });            
+                    const finalTotal = total_amount + servicesTotal;
+                    if (servicesTotal > 0) {
+                        db.query('UPDATE bookings SET total_amount = ? WHERE id = ?', [finalTotal, bookingResults.insertId], (err) => {
+                        if (err) console.error('Error updating total with services:', err);
+                        });
+                    }    
+
+                    sendEmail({
+                        to: req.user.email,
+                        subject: 'Booking Confirmation',
+                        html: `
+                        <p>Hi,</p>
+                        <p>Your booking has been created:</p>
+                        <ul>
+                        <li>Room: ${room_number}</li>
+                        <li>Check-in: ${check_in}</li>
+                        <li>Check-out: ${check_out}</li>
+                        <li>Total: KES ${total_amount}</li>
+                        </ul>
+                        <p>Please complete payment to confirm your stay.</p>
+                        `
+                    });
+
+                    res.status(201).json({ message: 'Booking created successfully', bookingId: bookingResults.insertId, total_amount: finalTotal });
+                }
+            );
         });
     });
-};
+}
 
 exports.rescheduleBooking = (req, res) => {
     const user_id = req.user.id;
@@ -204,7 +222,7 @@ exports.reserveRoom = (req, res) => {
             }
 
             const sql = 'INSERT INTO bookings (user_id, room_number, check_in, check_out, total_amount) VALUES (?, ?, ?, ?, ?)';
-            db.query(sql, [user_id, room_number, start, end, total_amount], (err, result) => {
+            db.query(sql, [user_id, room_number, start, end, total_amount], async (err, result) => {
                 if (err) {
                     console.error('Error creating reservation:', err);
                     return res.status(500).json({ error: 'Database error' });
@@ -215,27 +233,43 @@ exports.reserveRoom = (req, res) => {
                     if (err) console.error('Error updating room status:', err);
                 });
 
-                sendEmail({
-                    to: req.user.email,
-                    subject: 'Booking Confirmation',
-                    html: `
-                    <p>Hi,</p>
-                    <p>Your reservation has been made:</p>
-                    <ul>
-                    <li>Room: ${room_number}</li>
-                    <li>Check-in: ${check_in}</li>
-                    <li>Check-out: ${check_out}</li>
-                    <li>Total: KES ${total_amount}</li>
-                    </ul>
-                    <p>Please complete payment to confirm reservation.</p>
-                    `
-                });
+                let servicesTotal = 0;
+                    try {
+                        servicesTotal = await attachServicesToBooking(result.insertId, services);
+                    } catch (serviceErr) {
+                        console.error('Error attaching services:', serviceErr);
+                        // don't fail the reservation over this — the room reservation itself is what matters most
+                    }
 
-                res.status(201).json({ message: 'Room reserved — complete payment to confirm', bookingId: result.insertId, total_amount });
-            });
+                    const finalTotal = total_amount + servicesTotal;
+                    if (servicesTotal > 0) {
+                        db.query('UPDATE bookings SET total_amount = ? WHERE id = ?', [finalTotal, result.insertId], (err) => {
+                        if (err) console.error('Error updating total with services:', err);
+                        });
+                    }    
+
+                    sendEmail({
+                        to: req.user.email,
+                        subject: 'Booking Confirmation',
+                        html: `
+                        <p>Hi,</p>
+                        <p>Your reservation has been created:</p>
+                        <ul>
+                        <li>Room: ${room_number}</li>
+                        <li>Check-in: ${check_in}</li>
+                        <li>Check-out: ${check_out}</li>
+                        <li>Total: KES ${total_amount}</li>
+                        </ul>
+                        <p>Please complete payment to confirm your reservation.</p>
+                        `
+                    });
+
+                    res.status(201).json({ message: 'Reservation created successfully', bookingId: result.insertId, total_amount: finalTotal });
+                }
+            );
         });
     });
-};
+}
 
 exports.completeBooking = (req, res) => {
     const bookingId = req.params.booking_id;
@@ -293,30 +327,26 @@ exports.getAllBookings = (req, res) => {
     const { status, guest, check_in, check_out } = req.query;
 
     let sql = `
-        SELECT bookings.*, rooms.room_type, rooms.status AS room_status, users.fullname, users.email
+        SELECT bookings.*, rooms.room_type, rooms.status AS room_status,
+            COALESCE(users.fullname, walk_in_guests.fullname) AS fullname,
+            COALESCE(users.email, walk_in_guests.email) AS email,
+            walk_in_guests.phone AS walk_in_phone,
+            CASE WHEN bookings.walk_in_guest_id IS NOT NULL THEN 1 ELSE 0 END AS is_walk_in
         FROM bookings
         JOIN rooms ON bookings.room_number = rooms.room_number
-        JOIN users ON bookings.user_id = users.id
+        LEFT JOIN users ON bookings.user_id = users.id
+        LEFT JOIN walk_in_guests ON bookings.walk_in_guest_id = walk_in_guests.id
         WHERE 1=1
     `;
     const params = [];
 
-    if (status) {
-        sql += ' AND bookings.booking_status = ?';
-        params.push(status);
-    }
+    if (status) { sql += ' AND bookings.booking_status = ?'; params.push(status); }
     if (guest) {
-        sql += ' AND (users.fullname LIKE ? OR users.email LIKE ?)';
+        sql += ' AND (COALESCE(users.fullname, walk_in_guests.fullname) LIKE ? OR COALESCE(users.email, walk_in_guests.email) LIKE ?)';
         params.push(`%${guest}%`, `%${guest}%`);
     }
-    if (check_in) {
-        sql += ' AND bookings.check_in >= ?';
-        params.push(check_in);
-    }
-    if (check_out) {
-        sql += ' AND bookings.check_out <= ?';
-        params.push(check_out);
-    }
+    if (check_in) { sql += ' AND bookings.check_in >= ?'; params.push(check_in); }
+    if (check_out) { sql += ' AND bookings.check_out <= ?'; params.push(check_out); }
 
     sql += ' ORDER BY bookings.check_in DESC';
 

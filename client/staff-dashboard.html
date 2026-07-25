@@ -27,6 +27,13 @@
     <div class="container">
 
         <div class="card">
+            <a id="walkInLink" href="walk-in-booking.html" style="display:none;">+ New Walk-in Reservation</a>
+
+            <h2>Pending Payments</h2>
+            <div id="pendingManualPayments"></div>
+        </div>
+
+        <div class="card">
             <h2>Stats</h2>
             <section id="stats"></section>
         </div>
@@ -34,6 +41,11 @@
         <div class="card">
             <h2>Rooms</h2>
             <div id="roomGrid"></div>
+        </div>
+
+        <div class="card">
+            <h2 id="servicesHeading" style="display:none;">Manage Services</h2>
+            <div id="manageServices" style="display:none;"></div>
         </div>
 
         <div class="card">
@@ -52,11 +64,6 @@
                 <button type="button" onclick="searchBookings()">Search</button>
                 <button type="button" onclick="clearBookingFilters()">Clear</button>
             </div>
-        </div>
-
-        <div class="card">
-            <h2>Pending Cash Payments</h2>
-            <div id="pendingCashPayments"></div>
         </div>
 
         <div class="card">

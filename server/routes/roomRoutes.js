@@ -9,9 +9,9 @@ const { getRooms, getRoom, getRoomQuote, addRooms, updateRoom, deleteRoom, check
 router.get('/', getRooms);
 router.get('/:room_number', getRoom);
 router.get('/:room_number/quote', getRoomQuote);
-router.post('/', authMiddleware, adminMiddleware, addRooms);
-router.put('/:room_number', authMiddleware, adminMiddleware, updateRoom);
-router.delete('/:room_number', authMiddleware, adminMiddleware, deleteRoom);
+router.post('/', authMiddleware, adminMiddleware, allowedRoles(['admin']), addRooms);
+router.put('/:room_number', authMiddleware, adminMiddleware, allowedRoles(['admin']), updateRoom);
+router.delete('/:room_number', authMiddleware, adminMiddleware, allowedRoles(['admin']), deleteRoom);
 router.patch('/:room_number/check-in', authMiddleware, allowedRoles(['receptionist']), checkIn);
 router.patch('/:room_number/check-out', authMiddleware, allowedRoles(['receptionist']), checkOut);
 router.patch('/:room_number/cleaning', authMiddleware, allowedRoles(['receptionist']), finishCleaning);

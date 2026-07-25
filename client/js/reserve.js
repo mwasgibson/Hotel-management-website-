@@ -61,6 +61,8 @@ function getSelectedRoomNumber() {
     return preselectedRoomNumber || document.getElementById('room_number').value;
 }
 
+loadServicesPicker('servicesPicker');
+
 function reserveRoom() {
     const token = getCookie('token');
 
@@ -74,7 +76,8 @@ function reserveRoom() {
         body: JSON.stringify({
             room_number: getSelectedRoomNumber(),
             check_in: document.getElementById('check_in').value,
-            check_out: document.getElementById('check_out').value
+            check_out: document.getElementById('check_out').value,
+            services: getSelectedServices()
         })
     })
     .then(response => response.json().then(data => ({ ok: response.ok, data })))

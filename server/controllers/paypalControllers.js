@@ -58,14 +58,14 @@ exports.captureOrder = async (req, res) => {
 
             const booking = bookings[0];
 
-            db.query('SELECT * FROM payments WHERE booking_id = ? AND payment_status = "Paid"', [booking_id], (err, existing) => {
+            db.query('SELECT * FROM payments WHERE booking_id = ? AND payment_status = "paid"', [booking_id], (err, existing) => {
                 if (err) return res.status(500).json({ error: 'Database error' });
                 if (existing.length > 0) {
                     return res.json(capture.result);   // already recorded — avoid a duplicate row
                 }
 
                 db.query('INSERT INTO payments (booking_id, amount, payment_method, payment_status) VALUES (?, ?, ?, ?)',
-                    [booking_id, booking.total_amount, 'paypal', 'Paid'], (err) => {
+                    [booking_id, booking.total_amount, 'paypal', 'paid'], (err) => {
                         if (err) console.error('Error recording paypal payment:', err);
                     });
 

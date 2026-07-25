@@ -21,6 +21,14 @@ if (bookingId) {
                 <p>Check-out: ${escapeHtml(data.check_out)}</p>
                 <p>Total Price: KES ${escapeHtml(Number(data.total_amount).toFixed(2))}</p>
             `;
+            fetch(`${API_URL}/services/booking/${bookingId}`, { credentials: 'include' })
+                .then(res => res.json())
+                .then(bookingServices => {
+                    if (bookingServices.length === 0) return;
+                    const list = bookingServices.map(s => `<li>${escapeHtml(s.name)} x${escapeHtml(s.quantity)} — KES ${escapeHtml(Number(s.price_at_booking * s.quantity).toFixed(2))}</li>`).join('');
+                    document.getElementById('bookingId').innerHTML += `<p>Services:</p><ul>${list}</ul>`;
+                })
+                .catch(error => console.error('Error loading booking services:', error));
         })
         .catch(error => console.error('Error:', error));
 }
@@ -95,7 +103,7 @@ function pollPaymentStatus() {
         fetch(`${API_URL}/payments/status/${bookingId}`, { credentials: 'include' })
             .then(res => res.json())
             .then(data => {
-                if (data.status === 'Paid') {
+                if (data.status === 'paid') {
                     clearInterval(interval);
                     showToast('Payment confirmed!', 'success');
                     setTimeout(() => window.location.href = 'dashboard.html', 1500);

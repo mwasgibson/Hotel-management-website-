@@ -1,5 +1,5 @@
-const STAFF_ALLOWED_PAGES = ['', 'index.html', 'rooms.html', 'login.html', 'staff-dashboard.html'];
-const RESTRICTED_HREFS = ['booking.html', 'reserve.html', 'contact.html', 'register.html', 'payment.html', 'room-detail.html', 'dashboard.html'];
+const STAFF_ALLOWED_PAGES = ['', 'index.html', 'rooms.html', 'room-detail.html', 'login.html', 'staff-dashboard.html', 'walk-in-booking.html'];
+const RESTRICTED_HREFS = ['booking.html', 'reserve.html', 'contact.html', 'register.html', 'payment.html', 'dashboard.html'];
 const AUTH_ONLY_HREFS = ['login.html', 'register.html'];   // hidden for anyone already logged in, regardless of role
 
 function hideNavLinks(hrefsToHide) {

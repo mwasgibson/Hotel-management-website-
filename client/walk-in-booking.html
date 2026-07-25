@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>New Walk-in Reservation</title>
+    <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav></nav>
+    <div class="nav-overlay"></div>
+
+    <h1>New Walk-in Reservation</h1>
+
+    <form>
+        <input type="text" id="fullname" placeholder="Guest full name" required>
+        <input type="text" id="phone" placeholder="Phone number" required>
+        <input type="email" id="email" placeholder="Email (optional)">
+
+        <select id="room_number">
+            <option value="">Loading rooms...</option>
+        </select>
+
+        <label>Check-in</label>
+        <input type="date" id="check_in">
+        <label>Check-out</label>
+        <input type="date" id="check_out">
+
+        <select id="payment_method">
+            <option value="cash">Cash</option>
+            <option value="card">Card</option>
+            <option value="mpesa">Mpesa</option>
+        </select>
+
+        <div id="mpesaFields" style="display:none;">
+            <label>M-Pesa Phone Number</label>
+            <input type="text" id="phone" placeholder="07XXXXXXXX">
+        </div>
+
+        <div class="service-card">
+            <div id="servicesPicker"></div>
+        </div>
+
+        <label><input type="checkbox" id="payment_received"> Payment received now</label>
+
+        <button type="button" onclick="createWalkInBooking()">Create Reservation</button>
+    </form>
+
+    <div id="result"></div>
+    <div id="receipt" style="display:none;"></div>
+
+    <script src="js/config.js"></script>
+    <script src="js/cookies.js"></script>
+    <script src="js/staffNav.js"></script>
+    <script src="js/toast.js"></script>
+    <script src="js/services-picker.js"></script>
+    <script src="js/walk-in-booking.js"></script>
+    <script src="js/nav.js"></script>
+</body>
+</html>
