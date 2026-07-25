@@ -11,6 +11,9 @@ const sendEmail = async ({ to, subject, html }) => {
     } catch (error) {
         // Don't let email failures break the booking/payment flow — just log it
         console.error('Error sending email:', error);
+        res.status(500).json({
+            error: "Failed to send email"
+        });
     }
 };
 
