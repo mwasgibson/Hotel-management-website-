@@ -271,6 +271,77 @@ select {
   padding-right: 2.5rem;
 }
 
+#help-desk-widget {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 500;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.75rem;
+}
+
+#help-desk-toggle {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: var(--midnight);
+  border: none;
+  font-size: 1.4rem;
+  box-shadow: var(--shadow-lg);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+#help-desk-toggle:hover {
+  transform: scale(1.08);
+}
+
+#help-desk-panel {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 1.5rem;
+  width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  animation: reveal-rise 0.25s ease;
+}
+
+#help-desk-panel.hidden {
+  display: none;
+}
+
+.help-desk-option {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--radius);
+  background: var(--ivory);
+  color: var(--midnight);
+  text-decoration: none;
+  border: none;
+  font-size: 0.9rem;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+}
+
+.help-desk-option:hover {
+  background: rgba(201, 168, 76, 0.15);
+}
+
+#help-desk-panel textarea {
+  min-height: 80px;
+}
+
 /* ── Status pills: fill in the statuses the app actually uses now ─────── */
 .status-reserved, .reserved {
   display: inline-block; background: rgba(46, 64, 87, 0.1); color: var(--storm);
