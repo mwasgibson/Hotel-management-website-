@@ -178,16 +178,13 @@ function deleteEventSpace(id) {
 }
 
 function loadStats() {
-    fetch(`${API_URL}/admin/stats`, 
-        {
-            credentials: 'include' 
-        })
+    fetch(`${API_URL}/admin/stats`, { credentials: 'include' })
         .then(res => res.json())
         .then(stats => {
             const roomCounts = {};
-            (stats.rooms || []).forEach(r => roomCounts[r.status] = r.count);
+            stats.rooms.forEach(r => roomCounts[r.status] = r.count);
             const bookingCounts = {};
-            (stats.rooms || []).forEach(b => bookingCounts[b.booking_status] = b.count);
+            stats.bookings.forEach(b => bookingCounts[b.booking_status] = b.count);
 
             document.getElementById('stats').innerHTML = `
                 <div><strong>Available Rooms:</strong> ${escapeHtml(roomCounts.available || 0)}</div>
@@ -197,12 +194,55 @@ function loadStats() {
                 <div><strong>Maintenance:</strong> ${escapeHtml(roomCounts.maintenance || 0)}</div>
                 <div><strong>Pending Bookings:</strong> ${escapeHtml(bookingCounts.pending || 0)}</div>
                 <div><strong>Confirmed Bookings:</strong> ${escapeHtml(bookingCounts.confirmed || 0)}</div>
+                <div><strong>New Reservations Today:</strong> ${escapeHtml(stats.todayReservations)}</div>
                 <div><strong>Check-ins Today:</strong> ${escapeHtml(stats.checkInsToday)}</div>
                 <div><strong>Check-outs Today:</strong> ${escapeHtml(stats.checkOutsToday)}</div>
                 <div><strong>Total Revenue:</strong> KES ${escapeHtml(Number(stats.totalRevenue).toFixed(2))}</div>
             `;
+
+            renderRevenueChart(stats.revenueLast7Days);
+            renderOccupancyChart(stats.occupancyLast7Days);
+            renderUpcomingCheckIns(stats.upcomingCheckIns);
         })
         .catch(error => console.error('Error loading stats:', error));
+}
+
+let revenueChartInstance = null;
+let occupancyChartInstance = null;
+
+function renderRevenueChart(data) {
+    const labels = data.map(d => new Date(d.day).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric' }));
+    const values = data.map(d => Number(d.revenue));
+
+    if (revenueChartInstance) revenueChartInstance.destroy();
+
+    revenueChartInstance = new Chart(document.getElementById('revenueChart'), {
+        type: 'bar',
+        data: { labels, datasets: [{ label: 'Revenue (KES)', data: values, backgroundColor: '#c9a84c' }] },
+        options: { responsive: true, plugins: { title: { display: true, text: 'Revenue — last 7 days' } } }
+    });
+}
+
+function renderOccupancyChart(data) {
+    const labels = data.map(d => new Date(d.day).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric' }));
+    const values = data.map(d => Number(d.occupied_rooms));
+
+    if (occupancyChartInstance) occupancyChartInstance.destroy();
+
+    occupancyChartInstance = new Chart(document.getElementById('occupancyChart'), {
+        type: 'line',
+        data: { labels, datasets: [{ label: 'Rooms Occupied', data: values, borderColor: '#2e4057', tension: 0.3 }] },
+        options: { responsive: true, plugins: { title: { display: true, text: 'Occupancy — last 7 days' } } }
+    });
+}
+
+function renderUpcomingCheckIns(checkIns) {
+    const container = document.getElementById('upcomingCheckIns');
+    container.innerHTML = checkIns.length ? '' : '<p>No upcoming check-ins.</p>';
+
+    checkIns.forEach(c => {
+        container.innerHTML += `<p>${escapeHtml(c.guest_name)} — Room ${escapeHtml(c.room_number)} — ${escapeHtml(c.check_in)}</p>`;
+    });
 }
 
 function loadRooms() {

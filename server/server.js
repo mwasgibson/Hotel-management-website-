@@ -19,6 +19,7 @@ const dealsRoutes = require('./routes/dealsRoutes');
 const eventRoutes = require('./routes/eventRoutes');
 
 const expireStaleReservations = require('./utils/expireReservations');
+const sendCheckInReminders = require('./utils/sendCheckInReminders');
 
 const { apiLimiter, authLimiter } = require('./middleware/rateLimiters');
 
@@ -82,3 +83,6 @@ app.listen (PORT, () => {
 
 expireStaleReservations();
 setInterval(expireStaleReservations, 5 * 60 * 1000);
+
+sendCheckInReminders();
+setInterval(sendCheckInReminders, 60 * 60 * 1000);
