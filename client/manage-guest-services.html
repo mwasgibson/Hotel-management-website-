@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Guest Services</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+    <link rel="stylesheet" href="css/nav.css">
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="index.html"><i class="ph ph-house"></i> Home</a></li>
+            <li><a href="#" onclick="goToDashboard(); return false;"><i class="ph ph-squares-four"></i> Dashboard</a></li>
+        </ul>
+        <button onclick="Logout()"><i class="ph ph-sign-out"></i> Logout</button>
+        <button class="nav-toggle" aria-label="Menu">
+            <span></span><span></span><span></span>
+        </button>
+    </nav>
+    <div class="nav-overlay"></div>
+
+    <div class="container">
+        <h1>Guest Services</h1>
+
+        <div class="card">
+            <select id="bookingSelect">
+            <option>Loading guests...</option>
+        </select><br><br>
+        </div>
+
+        <div class="card">
+            <div id="servicesPicker"></div>
+        </div>
+
+        <div class="card">
+            <button onclick="addServicesToBill()">Add To Guest Bill</button>
+        </div>
+
+        <div id="result"></div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/cookies.js"></script>
+    <script src="js/staffNav.js"></script>
+    <script src="js/toast.js"></script>
+    <script src="js/services-picker.js"></script>
+    <script src="js/manage-guest-services.js"></script>
+    <script src="js/nav.js"></script>
+</body>
+</html>

@@ -38,6 +38,9 @@ function loadProfileAndInit() {
                 document.getElementById('manageServices').style.display = 'block';
                 loadServicesManager();
             }
+            if (currentUserRole === 'receptionist') {
+                document.getElementById('serviceLink').style.display = 'inline-block';
+            }
             if (currentUserRole === 'admin') {
                 document.getElementById('dealsHeading').style.display = 'block';
                 document.getElementById('manageDeals').style.display = 'block';
@@ -46,8 +49,8 @@ function loadProfileAndInit() {
             if (currentUserRole === 'admin') {
                 document.getElementById('eventSpacesHeading').style.display = 'block';
                 document.getElementById('manageEventSpaces').style.display = 'block';
-            loadEventSpacesManager();
-}                       
+                loadEventSpacesManager();
+            }                       
         })
         .catch(error => console.error('Error loading profile:', error));
 }

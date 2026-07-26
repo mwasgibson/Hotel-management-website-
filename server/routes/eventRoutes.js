@@ -26,8 +26,8 @@ router.post('/bookings', authMiddleware, requestEventBooking);
 router.get('/bookings/mine', authMiddleware, getMyEventBookings);
 router.get('/bookings', authMiddleware, allowedRoles(['admin', 'receptionist']), getAllEventBookings);
 router.patch('/bookings/:id/quote', authMiddleware, allowedRoles(['admin', 'receptionist']), sendQuote);
-router.patch('/bookings/:id/confirm', authMiddleware, confirmEventBooking);
-router.patch('/bookings/:id/cancel', authMiddleware, cancelEventBooking);
+router.patch('/bookings/:id/confirm', authMiddleware, allowedRoles(['receptionist']), confirmEventBooking);
+router.patch('/bookings/:id/cancel', authMiddleware, allowedRoles(['receptionist']), cancelEventBooking);
 router.patch('/bookings/:id/confirm-payment', authMiddleware, allowedRoles(['admin', 'receptionist']), confirmEventPayment);
 
 module.exports = router;

@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const { attachServicesToBooking } = require('../helpers/bookingServicesHelper');
 
 exports.getServices = (req, res) => {
     db.query('SELECT * FROM services WHERE active = 1 ORDER BY name', (err, results) => {
@@ -73,4 +74,59 @@ exports.getBookingServices = (req, res) => {
         }
         res.json(results);
     });
+};
+
+exports.addServiceToBooking = async (req, res) => {
+    try {
+        let bookingId;
+        const { services } = req.body;
+        if (!services || services.length === 0) {
+            return res.status(400).json({
+                error: "No services selected"
+            });
+        }
+        // Reception/Admin chooses booking
+        if (
+            req.user.role === "admin" ||
+            req.user.role === "receptionist"
+        ) {
+            bookingId = req.body.booking_id;
+            if (!bookingId) {
+                return res.status(400).json({
+                    error: "Booking required"
+                });
+            }
+        }
+        // Guest uses own booking
+        else {
+            const booking = await new Promise((resolve, reject) => {
+                db.query(`SELECT id FROM bookings WHERE user_id=? AND booking_status='confirmed' LIMIT 1`,
+                    [req.user.id],
+                    (err, results) => {
+                        if (err) reject(err);
+                        else resolve(results);
+                    });
+            });
+            if (booking.length === 0) {
+                return res.status(404).json({
+                    error: "No active booking"
+                });
+            }
+            bookingId = booking[0].id;
+        }
+        const total = await attachServicesToBooking(
+            bookingId,
+            services
+        );
+        res.json({
+            message: "Services added successfully",
+            services_total: total
+        });
+    }
+    catch (err) {
+        console.error(err);
+        res.status(500).json({
+            error: "Server error"
+        });
+    }
 };

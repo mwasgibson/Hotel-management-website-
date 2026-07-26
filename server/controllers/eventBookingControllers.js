@@ -66,9 +66,9 @@ exports.getAllEventBookings = (req, res) => {
     const { status } = req.query;
     let sql = `
         SELECT event_bookings.*, event_spaces.name AS space_name, event_spaces.type,
-               COALESCE(users.fullname, walk_in_guests.fullname) AS guest_name,
-               COALESCE(users.email, walk_in_guests.email) AS guest_email,
-               walk_in_guests.phone AS guest_phone
+            COALESCE(users.fullname, walk_in_guests.fullname) AS guest_name,
+            COALESCE(users.email, walk_in_guests.email) AS guest_email,
+            walk_in_guests.phone AS guest_phone
         FROM event_bookings
         JOIN event_spaces ON event_bookings.event_space_id = event_spaces.id
         LEFT JOIN users ON event_bookings.user_id = users.id
@@ -128,7 +128,7 @@ exports.confirmEventBooking = (req, res) => {
         if (bookings.length === 0) return res.status(404).json({ error: 'Event booking not found' });
 
         const booking = bookings[0];
-        if (booking.user_id && booking.user_id !== req.user.id && req.user.role !== 'admin' && req.user.role !== 'receptionist') {
+        if (booking.user_id && booking.user_id !== req.user.id && req.user.role !== 'receptionist') {
             return res.status(403).json({ error: 'Not authorized' });
         }
         if (booking.status !== 'quoted') {
@@ -150,7 +150,7 @@ exports.cancelEventBooking = (req, res) => {
         if (bookings.length === 0) return res.status(404).json({ error: 'Event booking not found' });
 
         const booking = bookings[0];
-        if (booking.user_id && booking.user_id !== req.user.id && req.user.role !== 'admin' && req.user.role !== 'receptionist') {
+        if (booking.user_id && booking.user_id !== req.user.id && req.user.role !== 'receptionist') {
             return res.status(403).json({ error: 'Not authorized' });
         }
 

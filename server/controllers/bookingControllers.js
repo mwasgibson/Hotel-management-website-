@@ -383,6 +383,46 @@ exports.getAllBookings = (req, res) => {
     });
 };
 
+exports.getMyCurrentBooking = (req, res) => {
+    const sql = `SELECT bookings.id, bookings.room_number, bookings.check_in, bookings.check_out, users.fullname FROM bookings
+        JOIN users
+            ON bookings.user_id = users.id
+        WHERE bookings.user_id = ?
+        AND bookings.booking_status = 'confirmed'
+        LIMIT 1
+    `;
+    db.query(sql, [req.user.id], (err, results) => {
+        if (err) {
+            return res.status(500).json({
+                error: "Database error"
+            });
+        }
+        if (results.length === 0) {
+            return res.status(404).json({
+                error: "No active booking"
+            });
+        }
+        res.json(results[0]);
+    });
+};
+
+exports.getCurrentBookings = (req,res)=>{
+    const sql=`SELECT  bookings.id, bookings.room_number,
+            COALESCE(
+                users.fullname,
+                walk_in_guests.fullname
+            ) AS fullname
+        FROM bookings  LEFT JOIN users ON bookings.user_id=users.id LEFT JOIN walk_in_guests ON bookings.walk_in_guest_id=walk_in_guests.id  WHERE bookings.booking_status='confirmed' ORDER BY fullname`;
+    db.query(sql,(err,results)=>{
+        if(err){
+            return res.status(500).json({
+                error:"Database error"
+            });
+        }
+        res.json(results);
+    });
+};
+
 exports.cancelBooking = (req, res) => {
     const user_id = req.user.id;
     const booking_id = req.params.booking_id;

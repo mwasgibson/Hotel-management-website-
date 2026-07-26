@@ -11,9 +11,11 @@ router.put('/:booking_id/reschedule', authMiddleware, rescheduleBooking);
 router.post('/reserve', authMiddleware, reserveRoom);
 router.get('/', authMiddleware, getBookings);
 router.get('/:booking_id', authMiddleware, getBooking);
+router.get('/pending-manual', authMiddleware, allowedRoles(['admin', 'receptionist']), getAllPendingManualPayments);
+router.get( "/my-current", authMiddleware, bookingController.getMyCurrentBooking);
+router.get("/current", authMiddleware, allowedRoles(["receptionist"]), bookingController.getCurrentBookings);
 router.put('/:booking_id/cancel', authMiddleware, cancelBooking);
 router.put('/:booking_id/complete', authMiddleware, allowedRoles(['receptionist']), completeBooking);
-router.get('/pending-manual', authMiddleware, allowedRoles(['admin', 'receptionist']), getAllPendingManualPayments);
 router.patch('/:id/confirm-manual', authMiddleware, allowedRoles(['admin', 'receptionist']), confirmManualPayment);
 
 module.exports = router;
