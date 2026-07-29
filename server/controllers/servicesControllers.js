@@ -1,5 +1,5 @@
 const db = require('../config/db');
-const { attachServicesToBooking } = require('../helpers/bookingServicesHelper');
+const { attachServicesToBooking } = require('../utils/bookingServices.js');
 
 exports.getServices = (req, res) => {
     db.query('SELECT * FROM services WHERE active = 1 ORDER BY name', (err, results) => {

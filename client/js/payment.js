@@ -107,7 +107,7 @@ function pollPaymentStatus() {
                     clearInterval(interval);
                     showToast('Payment confirmed!', 'success');
                     setTimeout(() => window.location.href = 'dashboard.html', 1500);
-                } else if (data.status === 'Failed') {
+                } else if (data.status === 'failed') {
                     clearInterval(interval);
                     showToast('Payment failed or was cancelled. Please try again.', 'error');
                     const payButton = document.getElementById('payButton');

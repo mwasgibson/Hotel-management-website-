@@ -68,14 +68,16 @@ exports.confirmManualPayment = (req, res) => {
 // Used by the frontend to poll for M-Pesa confirmation
 exports.getPaymentStatus = (req, res) => {
     const { booking_id } = req.params;
-
     db.query(
         'SELECT payments.*, bookings.user_id FROM payments JOIN bookings ON payments.booking_id = bookings.id WHERE payments.booking_id = ? ORDER BY payments.id DESC LIMIT 1',
         [booking_id],
         (err, results) => {
             if (err) return res.status(500).json({ error: 'Database error' });
             if (results.length === 0) return res.status(404).json({ error: 'No payment found for this booking' });
-            if (results[0].user_id !== req.user.id) return res.status(403).json({ error: 'Not authorized' });
+
+            const isOwner = results[0].user_id === req.user.id;
+            const isStaff = req.user.role === 'admin' || req.user.role === 'receptionist';
+            if (!isOwner && !isStaff) return res.status(403).json({ error: 'Not authorized' });
 
             res.json({ status: results[0].payment_status, method: results[0].payment_method });
         }
@@ -84,18 +86,26 @@ exports.getPaymentStatus = (req, res) => {
 
 exports.getAllPendingManualPayments = (req, res) => {
     const sql = `
-        SELECT payments.*, bookings.check_in, bookings.check_out,
+        SELECT 
+            payments.*, 
+            bookings.check_in, 
+            bookings.check_out,
+            bookings.booking_status,
             COALESCE(users.fullname, walk_in_guests.fullname) AS fullname,
             COALESCE(users.email, walk_in_guests.email) AS email
         FROM payments
         JOIN bookings ON payments.booking_id = bookings.id
         LEFT JOIN users ON bookings.user_id = users.id
         LEFT JOIN walk_in_guests ON bookings.walk_in_guest_id = walk_in_guests.id
-        WHERE payments.payment_method IN ('cash', 'card') AND payments.payment_status = 'pending'
+        WHERE payments.payment_method IN ('cash', 'card') 
+        AND (payments.payment_status = 'pending' OR bookings.booking_status = 'pending')
         ORDER BY payments.id DESC
     `;
     db.query(sql, (err, results) => {
-        if (err) return res.status(500).json({ error: 'Database error' });
+        if (err) {
+            console.error('Database error:', err);
+            return res.status(500).json({ error: 'Database error' });
+        }
         res.json(results);
     });
 };

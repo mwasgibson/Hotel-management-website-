@@ -128,7 +128,7 @@ exports.confirmEventBooking = (req, res) => {
         if (bookings.length === 0) return res.status(404).json({ error: 'Event booking not found' });
 
         const booking = bookings[0];
-        if (booking.user_id && booking.user_id !== req.user.id && req.user.role !== 'receptionist') {
+        if (booking.user_id && booking.user_id !== req.user.id && req.user.role !== 'admin' && req.user.role !== 'receptionist') {
             return res.status(403).json({ error: 'Not authorized' });
         }
         if (booking.status !== 'quoted') {
@@ -150,7 +150,7 @@ exports.cancelEventBooking = (req, res) => {
         if (bookings.length === 0) return res.status(404).json({ error: 'Event booking not found' });
 
         const booking = bookings[0];
-        if (booking.user_id && booking.user_id !== req.user.id && req.user.role !== 'receptionist') {
+        if (booking.user_id && booking.user_id !== req.user.id && req.user.role !== 'admin' && req.user.role !== 'receptionist') {
             return res.status(403).json({ error: 'Not authorized' });
         }
 

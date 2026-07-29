@@ -7,7 +7,6 @@ const { validateAndApplyPromoCode } = require('../utils/promoCodes');
 exports.createBooking = (req, res) => {
     const user_id = req.user.id; 
     const { room_number, check_in, check_out } = req.body;
-    const { services } = req.body;
     const { services, promo_code } = req.body;
 
     if (!room_number || !check_in || !check_out) {
@@ -187,7 +186,7 @@ exports.rescheduleBooking = (req, res) => {
 
 exports.reserveRoom = (req, res) => {
     const user_id = req.user.id;  
-    const { room_number, check_in, check_out } = req.body;
+    const { room_number, check_in, check_out, promo_code } = req.body;
 
     if (!room_number || !check_in || !check_out) {
         return res.status(400).json({ error: 'room_number, check_in, and check_out are required' });

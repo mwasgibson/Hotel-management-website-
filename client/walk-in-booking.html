@@ -41,16 +41,17 @@
         <label>Check-out</label>
         <input type="date" id="check_out">
 
-        <select id="payment_method">
+        <select id="payment_method" onchange="toggleWalkInPaymentFields()">
             <option value="cash">Cash</option>
             <option value="card">Card</option>
-            <option value="mpesa">Mpesa</option>
+            <option value="mpesa">M-Pesa</option>
         </select>
 
-        <div id="mpesaFields" style="display:none;">
-            <label>M-Pesa Phone Number</label>
-            <input type="text" id="phone" placeholder="07XXXXXXXX">
+        <div id="mpesaPhoneField" style="display:none;">
+            <input type="text" id="mpesa_phone" placeholder="Phone number for M-Pesa prompt (e.g. 0712345678)">
         </div>
+
+        <label id="paymentReceivedLabel"><input type="checkbox" id="payment_received"> Payment received now</label>
 
         <div class="service-card" data-id="${service.id}" data-price="${service.price}">
             <div id="servicesPicker"></div>
@@ -59,8 +60,6 @@
         <input type="text" id="promo_code" placeholder="Promo code (optional)">
         <button type="button" onclick="applyPromoPreview()">Apply</button>
         <p id="promoPreviewResult"></p>
-
-        <label><input type="checkbox" id="payment_received"> Payment received now</label>
 
         <button type="button" onclick="createWalkInBooking()">Create Reservation</button>
     </form>

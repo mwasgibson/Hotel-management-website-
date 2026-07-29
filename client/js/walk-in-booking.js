@@ -29,7 +29,16 @@ paymentMethod.addEventListener("change", () => {
 
 loadServicesPicker('servicesPicker');
 
+function toggleWalkInPaymentFields() {
+    const method = document.getElementById('payment_method').value;
+    document.getElementById('mpesaPhoneField').style.display = method === 'mpesa' ? 'block' : 'none';
+    document.getElementById('paymentReceivedLabel').style.display = method === 'mpesa' ? 'none' : 'block';
+}
+toggleWalkInPaymentFields();   // set the correct initial state on page load
+
+
 function createWalkInBooking() {
+    const payment_method = document.getElementById('payment_method').value;
     const body = {
         fullname: document.getElementById('fullname').value,
         phone: document.getElementById('phone').value,
@@ -37,10 +46,10 @@ function createWalkInBooking() {
         room_number: document.getElementById('room_number').value,
         check_in: document.getElementById('check_in').value,
         check_out: document.getElementById('check_out').value,
-        services: getSelectedServices(),
-        promo_code: document.getElementById('promo_code').value || null,
-        payment_method: document.getElementById('payment_method').value,
-        payment_received: document.getElementById('payment_received').checked
+        payment_method,
+        payment_received: payment_method === 'mpesa' ? false : document.getElementById('payment_received').checked,
+        services: typeof getSelectedServices === 'function' ? getSelectedServices() : [],
+        promo_code: document.getElementById('promo_code')?.value || null
     };
 
     fetch(`${API_URL}/bookings/walk-in`, {
@@ -55,18 +64,18 @@ function createWalkInBooking() {
             showToast(data.error || 'Failed to create reservation', 'error');
             return;
         }
-        if(body.payment_method === "mpesa"){
-            sendSTKPush( data.bookingId, document.getElementById("phone").value);
-        } else{
-            showToast("Walk-in reservation created","success");
-        }
 
-        document.getElementById('result').innerHTML = `
-            <p>Booking #${escapeHtml(data.bookingId)} — Total: KES ${escapeHtml(Number(data.total_amount).toFixed(2))} — Status: ${escapeHtml(data.booking_status)}</p>
-            <button type="button" onclick="printReceipt(${JSON.stringify(data).replace(/"/g, '&quot;')})">Print Receipt</button>
-        `;
-        document.querySelector('form').reset();
-        loadRoomOptions();
+        if (payment_method === 'mpesa') {
+            const phone = document.getElementById('phone').value;
+            if (!phone) {
+                showToast('Enter a phone number to send the M-Pesa prompt', 'error');
+                return;
+            }
+            sendWalkInStkPush(data.bookingId, phone, data);
+        } else {
+            showToast('Walk-in reservation created', 'success');
+            renderWalkInResult(data);
+        }
     })
     .catch(error => {
         console.error('Error creating walk-in booking:', error);
@@ -75,51 +84,63 @@ function createWalkInBooking() {
 }
 
 function sendSTKPush(bookingId, phone){
-    fetch(`${API_URL}/mpesa/stkpush`,{
-        method:"POST",
-        credentials:"include",
-        headers:{
-            "Content-Type":"application/json"
-        },
-        body:JSON.stringify({
-            booking_id:bookingId,
-            phoneNumber:phone
-        })
+    showToast('Sending M-Pesa prompt to guest\'s phone...', 'info');
+
+    fetch(`${API_URL}/mpesa/stkpush`, {
+        credentials: 'include',
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ booking_id: bookingId, phoneNumber: phone })
     })
-    .then(res=>res.json())
-    .then(data=>{
-        showToast(data.message);
-        pollPayment(bookingId);
+    .then(response => response.json().then(data => ({ ok: response.ok, data })))
+    .then(({ ok, data }) => {
+        if (!ok) {
+            showToast(data.error || 'Failed to send M-Pesa prompt', 'error');
+            return;
+        }
+        showToast('Prompt sent — waiting for the guest to complete payment...', 'info');
+        pollWalkInPaymentStatus(bookingId, bookingData);
+    })
+    .catch(error => {
+        console.error('Error sending STK push:', error);
+        showToast('Unable to connect to the server.', 'error');
     });
 }
 
 function pollPayment(bookingId){
-    const timer=setInterval(()=>{
-        fetch(`${API_URL}/payments/status/${bookingId}`,{
-            credentials:"include"
-        })
-        .then(res=>res.json())
-        .then(data=>{
-            if(data.status==="paid"){
-                clearInterval(timer);
-                showToast(
-                    "Payment received!",
-                    "success"
-                );
-                loadRoomOptions();
-            }
-        });
-    },3000);
+    let attempts = 0;
+    const maxAttempts = 40;   // ~2 minutes at 3s intervals
+
+    const interval = setInterval(() => {
+        attempts++;
+
+        fetch(`${API_URL}/payments/status/${bookingId}`, { credentials: 'include' })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'paid') {
+                    clearInterval(interval);
+                    showToast('Payment confirmed!', 'success');
+                    renderWalkInResult(bookingData);
+                } else if (data.status === 'Failed') {
+                    clearInterval(interval);
+                    showToast('Payment failed or was cancelled on the guest\'s phone.', 'error');
+                }
+            })
+            .catch(error => console.error('Error checking payment status:', error));
+
+        if (attempts >= maxAttempts) {
+            clearInterval(interval);
+            showToast('Still waiting on confirmation — check the staff dashboard shortly.', 'info');
+        }
+    }, 3000);
 }
 
 function printReceipt(data) {
-    document.getElementById('receipt').innerHTML = `
-        <h2>Payment Receipt</h2>
-        <p>Booking #${escapeHtml(data.bookingId)}</p>
-        <p>Guest: ${escapeHtml(data.guest.fullname)} (${escapeHtml(data.guest.phone)})</p>
-        <p>Total: KES ${escapeHtml(Number(data.total_amount).toFixed(2))}</p>
-        <p>Status: ${escapeHtml(data.booking_status)}</p>
-        <p>Issued: ${new Date().toLocaleString()}</p>
+    document.getElementById('result').innerHTML = `
+        <p>Booking #${escapeHtml(data.bookingId)} — Total: KES ${escapeHtml(Number(data.total_amount).toFixed(2))} — Status: ${escapeHtml(data.booking_status)}</p>
+        <button type="button" onclick='printReceipt(${JSON.stringify(data)})'>Print Receipt</button>
     `;
-    window.print();
+    document.querySelector('form').reset();
+    toggleWalkInPaymentFields();
+    loadRoomOptions();
 }

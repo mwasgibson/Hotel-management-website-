@@ -1,9 +1,10 @@
 const db = require('../config/db');
 const { calculateDynamicPrice } = require('../utils/dynamicPricing');
+const { attachServicesToBooking } = require('../utils/bookingServices');
+const { validateAndApplyPromoCode } = require('../utils/promoCodes');
 
 exports.createWalkInBooking = async (req, res) => {
-    const { fullname, phone, email, room_number, check_in, check_out, payment_method, payment_received } = req.body;
-    const { services } = req.body;
+    const { fullname, phone, email, room_number, check_in, check_out, payment_method, payment_received, services, promo_code } = req.body;
 
     if (!fullname || !phone || !room_number || !check_in || !check_out || !payment_method) {
         return res.status(400).json({ error: 'fullname, phone, room_number, check_in, check_out, and payment_method are required' });
@@ -52,7 +53,8 @@ exports.createWalkInBooking = async (req, res) => {
                 }
 
                 const walkInGuestId = guestResult.insertId;
-                const bookingStatus = payment_received ? 'confirmed' : 'pending';
+                // M-Pesa always starts pending, regardless of the checkbox — real confirmation only comes from the STK callback
+                const bookingStatus = (payment_method !== 'mpesa' && payment_received) ? 'confirmed' : 'pending';
 
                 const bookingSql = 'INSERT INTO bookings (walk_in_guest_id, room_number, check_in, check_out, total_amount, booking_status) VALUES (?, ?, ?, ?, ?, ?)';
                 db.query(bookingSql, [walkInGuestId, room_number, start, end, total_amount, bookingStatus], async (err, bookingResult) => {
@@ -66,11 +68,6 @@ exports.createWalkInBooking = async (req, res) => {
                     db.query("UPDATE rooms SET status = 'reserved' WHERE room_number = ?", [room_number], (err) => {
                         if (err) console.error('Error updating room status:', err);
                     });
-
-                    db.query('INSERT INTO payments (booking_id, amount, payment_method, payment_status) VALUES (?, ?, ?, ?)',
-                        [bookingId, total_amount, payment_method, payment_received ? 'paid' : 'pending'], (err) => {
-                            if (err) console.error('Error recording walk-in payment:', err);
-                        });
 
                     let servicesTotal = 0;
                     try {
@@ -87,17 +84,35 @@ exports.createWalkInBooking = async (req, res) => {
                         discount = promoResult.discount;
                     } catch (promoErr) {
                         if (promoErr.isPromoError) {
-                            return res.status(400).json({ error: promoErr.message });   // bad code — reject the whole booking rather than silently ignoring it
+                            return res.status(400).json({ error: promoErr.message });
                         }
                         console.error('Error applying promo code:', promoErr);
                     }
 
                     const finalTotal = subtotalBeforeDiscount - discount;
-                    db.query('UPDATE bookings SET total_amount = ?, promo_code_used = ? WHERE id = ?', [finalTotal, promo_code || null, bookingResults.insertId], (err) => {
-                        if (err) console.error('Error updating total with promo code:', err);
-                    });    
 
-                    res.status(201).json({ message: 'Walk-in reservation created', bookingId, total_amount: finalTotal, booking_status: bookingStatus, guest: { fullname, phone } });
+                    db.query('UPDATE bookings SET total_amount = ?, promo_code_used = ? WHERE id = ?', [finalTotal, promo_code || null, bookingId], (err) => {
+                        if (err) console.error('Error updating total with promo code:', err);
+                    });
+
+                    // cash/card: record the payment now (pending or paid, per the checkbox). M-Pesa's payment row is created by stkPush itself.
+                    if (payment_method !== 'mpesa') {
+                        db.query('INSERT INTO payments (booking_id, amount, payment_method, payment_status) VALUES (?, ?, ?, ?)',
+                            [bookingId, finalTotal, payment_method, payment_received ? 'paid' : 'pending'], (err) => {
+                                if (err) console.error('Error recording walk-in payment:', err);
+                            });
+                    }
+
+                    res.status(201).json({
+                        message: payment_method === 'mpesa'
+                            ? 'Walk-in reservation created — send the M-Pesa prompt to complete payment.'
+                            : 'Walk-in reservation created',
+                        bookingId,
+                        total_amount: finalTotal,
+                        booking_status: bookingStatus,
+                        payment_method,
+                        guest: { fullname, phone }
+                    });
                 });
             });
         });

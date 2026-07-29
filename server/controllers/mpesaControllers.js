@@ -43,19 +43,17 @@ exports.stkPush = async (req, res) => {
     if (!booking_id || !phoneNumber) {
         return res.status(400).json({ error: 'booking_id and phoneNumber are required' });
     }
-
     // Look the price up server-side — never trust a client-supplied amount for a real charge
-    db.query('SELECT * FROM bookings WHERE id = ?', [booking_id, req.id], (err, bookings) => {
-        if(
-            req.user.role !== "admin" &&
-            req.user.role !== "receptionist"
-        ){
-            return res.status(403).json({ error:"Unauthorized" });
-        }
+    db.query('SELECT * FROM bookings WHERE id = ?', [booking_id], (err, bookings) => {
         if (err) return res.status(500).json({ error: 'Database error' });
         if (bookings.length === 0) return res.status(404).json({ error: 'Booking not found' });
 
         const booking = bookings[0];
+        const isOwner = booking.user_id === req.user.id;
+        const isStaff = req.user.role === 'admin' || req.user.role === 'receptionist';
+        if (!isOwner && !isStaff) {
+            return res.status(403).json({ error: 'Not authorized' });
+        }
 
         db.query('SELECT * FROM payments WHERE booking_id = ? AND payment_status = "paid"', [booking_id], async (err, existing) => {
             if (err) return res.status(500).json({ error: 'Database error' });

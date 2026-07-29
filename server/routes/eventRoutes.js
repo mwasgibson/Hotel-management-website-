@@ -15,19 +15,19 @@ const {
 
 // Spaces
 router.get('/spaces', getEventSpaces);
-router.get('/spaces/:id', getEventSpace);
-router.get('/spaces/:id/availability', getEventSpaceAvailability);
 router.post('/spaces', authMiddleware, allowedRoles(['admin']), addEventSpace);
+router.get('/spaces/:id', getEventSpace);
 router.put('/spaces/:id', authMiddleware, allowedRoles(['admin']), updateEventSpace);
 router.delete('/spaces/:id', authMiddleware, allowedRoles(['admin']), deleteEventSpace);
+router.get('/spaces/:id/availability', getEventSpaceAvailability);
 
 // Bookings
-router.post('/bookings', authMiddleware, requestEventBooking);
-router.get('/bookings/mine', authMiddleware, getMyEventBookings);
+router.post('/bookings', authMiddleware, requestEventBooking);;
 router.get('/bookings', authMiddleware, allowedRoles(['admin', 'receptionist']), getAllEventBookings);
+router.get('/bookings/mine', authMiddleware, getMyEventBookings)
 router.patch('/bookings/:id/quote', authMiddleware, allowedRoles(['admin', 'receptionist']), sendQuote);
-router.patch('/bookings/:id/confirm', authMiddleware, allowedRoles(['receptionist']), confirmEventBooking);
-router.patch('/bookings/:id/cancel', authMiddleware, allowedRoles(['receptionist']), cancelEventBooking);
+router.patch('/bookings/:id/confirm', authMiddleware, confirmEventBooking);
+router.patch('/bookings/:id/cancel', authMiddleware, cancelEventBooking);
 router.patch('/bookings/:id/confirm-payment', authMiddleware, allowedRoles(['admin', 'receptionist']), confirmEventPayment);
 
 module.exports = router;

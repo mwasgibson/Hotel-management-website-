@@ -518,7 +518,7 @@ function loadUsers() {
 }
 
 function loadPendingManualPayments() {
-    fetch(`${API_URL}/payments/pending-manual`, { credentials: 'include' })
+    fetch(`${API_URL}/payments/${paymentId}/confirm-manual`, { credentials: 'include' })
         .then(res => res.json())
         .then(payments => {
             const container = document.getElementById('pendingManualPayments');
@@ -529,7 +529,7 @@ function loadPendingManualPayments() {
                     <div>
                         <p>${escapeHtml(payment.fullname)} (${escapeHtml(payment.email || 'walk-in')}) — ${escapeHtml(payment.payment_method)} — KES ${escapeHtml(Number(payment.amount).toFixed(2))}</p>
                         <p>${escapeHtml(payment.check_in)} → ${escapeHtml(payment.check_out)}</p>
-                        <button onclick="confirmManualPayment(${payment.id})">Confirm Payment Received</button>
+                        ${booking.booking_status === 'pending' ? `<button onclick="confirmManualPayment(${payment.id})">Confirm Payment Received</button>` : ""}
                         <hr>
                     </div>
                 `;
