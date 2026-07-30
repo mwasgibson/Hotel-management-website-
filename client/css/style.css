@@ -569,11 +569,29 @@ body > button:not(nav button) {
 #roomGrid,
 #allBookings,
 #allUsers,
+#pendingManualPayments,
+#bookingSelect,
+#eventSpacesHeading,
+#manageEventSpaces,
+#servicesHeading,
+#manageServices,
+#dealsHeading,
+#manageDeals,
 #stats{
   display: flex;
   flex-direction: column;
-  overflow-y:auto;
-  overflow-x:hidden;
+  justify-items: center;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+#allBookings {
+  display: flex;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  max-width: 1200px;
+  margin: 0 auto 2rem;
+  padding: 0 1.5rem;
 }
 
 .card button{

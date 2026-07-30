@@ -30,6 +30,8 @@ function loadProfileAndInit() {
             loadStats();
             loadRooms();
             loadAllBookings();
+            loadPendingManualPayments();
+            loadEventRequests();
             if (currentUserRole === 'admin' || currentUserRole === 'receptionist') {
                 document.getElementById('walkInLink').style.display = 'inline-block';
             }
@@ -53,6 +55,39 @@ function loadProfileAndInit() {
             }                       
         })
         .catch(error => console.error('Error loading profile:', error));
+}
+
+function loadPendingManualPayments() {
+    fetch(`${API_URL}/payments/pending-manual`, { credentials: 'include' })
+        .then(res => res.json())
+        .then(payments => {
+            const container = document.getElementById('pendingManualPayments');
+            container.innerHTML = payments.length ? '' : '<p>No pending payments.</p>';
+
+            payments.forEach(payment => {
+                container.innerHTML += `
+                    <div>
+                        <p>${escapeHtml(payment.fullname)} (${escapeHtml(payment.email || 'walk-in')}) — ${escapeHtml(payment.payment_method)} — KES ${escapeHtml(Number(payment.amount).toFixed(2))}</p>
+                        <p>${escapeHtml(payment.check_in)} → ${escapeHtml(payment.check_out)}</p>
+                        <button onclick="confirmManualPayment(${payment.id})">Confirm Payment Received</button>
+                        <hr>
+                    </div>
+                `;
+            });
+        })
+        .catch(error => console.error('Error loading pending payments:', error));
+}
+
+function confirmManualPayment(paymentId) {
+    fetch(`${API_URL}/payments/${paymentId}/confirm-manual`, { credentials: 'include', method: 'PATCH' })
+        .then(response => response.json().then(data => ({ ok: response.ok, data })))
+        .then(({ ok, data }) => {
+            if (!ok) { showToast(data.error || 'Failed to confirm payment', 'error'); return; }
+            showToast('Payment confirmed', 'success');
+            loadPendingManualPayments();
+            loadStats();
+        })
+        .catch(error => console.error('Error confirming payment:', error));
 }
 
 function loadEventRequests() {
@@ -121,8 +156,8 @@ function loadEventSpacesManager() {
                     <p>${escapeHtml(space.name)} — ${escapeHtml(space.type)} — up to ${escapeHtml(space.capacity)} guests — KES ${escapeHtml(space.hourly_rate)}/hr</p>
                     <button onclick="deleteEventSpace(${space.id})">Remove</button>
                 </div>
+                <br>
             `).join('');
-
             container.innerHTML += `
                 <h3>New Event Space</h3>
                 <input type="text" id="newSpaceName" placeholder="Name">
@@ -207,44 +242,6 @@ function loadStats() {
         .catch(error => console.error('Error loading stats:', error));
 }
 
-let revenueChartInstance = null;
-let occupancyChartInstance = null;
-
-function renderRevenueChart(data) {
-    const labels = data.map(d => new Date(d.day).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric' }));
-    const values = data.map(d => Number(d.revenue));
-
-    if (revenueChartInstance) revenueChartInstance.destroy();
-
-    revenueChartInstance = new Chart(document.getElementById('revenueChart'), {
-        type: 'bar',
-        data: { labels, datasets: [{ label: 'Revenue (KES)', data: values, backgroundColor: '#c9a84c' }] },
-        options: { responsive: true, plugins: { title: { display: true, text: 'Revenue — last 7 days' } } }
-    });
-}
-
-function renderOccupancyChart(data) {
-    const labels = data.map(d => new Date(d.day).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric' }));
-    const values = data.map(d => Number(d.occupied_rooms));
-
-    if (occupancyChartInstance) occupancyChartInstance.destroy();
-
-    occupancyChartInstance = new Chart(document.getElementById('occupancyChart'), {
-        type: 'line',
-        data: { labels, datasets: [{ label: 'Rooms Occupied', data: values, borderColor: '#2e4057', tension: 0.3 }] },
-        options: { responsive: true, plugins: { title: { display: true, text: 'Occupancy — last 7 days' } } }
-    });
-}
-
-function renderUpcomingCheckIns(checkIns) {
-    const container = document.getElementById('upcomingCheckIns');
-    container.innerHTML = checkIns.length ? '' : '<p>No upcoming check-ins.</p>';
-
-    checkIns.forEach(c => {
-        container.innerHTML += `<p>${escapeHtml(c.guest_name)} — Room ${escapeHtml(c.room_number)} — ${escapeHtml(c.check_in)}</p>`;
-    });
-}
-
 function loadRooms() {
     fetch(`${API_URL}/rooms`, 
         {
@@ -323,6 +320,7 @@ function loadServicesManager() {
                     <button onclick="deleteService(${s.id})">Remove</button>
                 </div>
             `).join('') + `
+                <br>
                 <input type="text" id="newServiceName" placeholder="Service name">
                 <input type="number" id="newServicePrice" placeholder="Price">
                 <button onclick="addService()">Add Service</button>
@@ -376,6 +374,7 @@ function loadDealsManager() {
                     <p>${escapeHtml(deal.start_date)} → ${escapeHtml(deal.end_date)}</p>
                     <button onclick="deleteDeal(${deal.id})">Remove</button>
                 </div>
+                <br>
             `).join('');
             container.innerHTML += `
                 <h3>New Deal</h3>
@@ -517,35 +516,40 @@ function loadUsers() {
         .catch(error => console.error('Error loading users:', error));
 }
 
-function loadPendingManualPayments() {
-    fetch(`${API_URL}/payments/${paymentId}/confirm-manual`, { credentials: 'include' })
-        .then(res => res.json())
-        .then(payments => {
-            const container = document.getElementById('pendingManualPayments');
-            container.innerHTML = payments.length ? '' : '<p>No pending payments.</p>';
+let revenueChartInstance = null;
+let occupancyChartInstance = null;
 
-            payments.forEach(payment => {
-                container.innerHTML += `
-                    <div>
-                        <p>${escapeHtml(payment.fullname)} (${escapeHtml(payment.email || 'walk-in')}) — ${escapeHtml(payment.payment_method)} — KES ${escapeHtml(Number(payment.amount).toFixed(2))}</p>
-                        <p>${escapeHtml(payment.check_in)} → ${escapeHtml(payment.check_out)}</p>
-                        ${booking.booking_status === 'pending' ? `<button onclick="confirmManualPayment(${payment.id})">Confirm Payment Received</button>` : ""}
-                        <hr>
-                    </div>
-                `;
-            });
-        })
-        .catch(error => console.error('Error loading pending payments:', error));
+function renderRevenueChart(data) {
+    const labels = data.map(d => new Date(d.day).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric' }));
+    const values = data.map(d => Number(d.revenue));
+
+    if (revenueChartInstance) revenueChartInstance.destroy();
+
+    revenueChartInstance = new Chart(document.getElementById('revenueChart'), {
+        type: 'bar',
+        data: { labels, datasets: [{ label: 'Revenue (KES)', data: values, backgroundColor: '#c9a84c' }] },
+        options: { responsive: true, plugins: { title: { display: true, text: 'Revenue — last 7 days' } } }
+    });
 }
 
-function confirmManualPayment(paymentId) {
-    fetch(`${API_URL}/payments/${paymentId}/confirm-manual`, { credentials: 'include', method: 'PATCH' })
-        .then(response => response.json().then(data => ({ ok: response.ok, data })))
-        .then(({ ok, data }) => {
-            if (!ok) { showToast(data.error || 'Failed to confirm payment', 'error'); return; }
-            showToast('Payment confirmed', 'success');
-            loadPendingManualPayments();
-            loadStats();
-        })
-        .catch(error => console.error('Error confirming payment:', error));
+function renderOccupancyChart(data) {
+    const labels = data.map(d => new Date(d.day).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric' }));
+    const values = data.map(d => Number(d.occupied_rooms));
+
+    if (occupancyChartInstance) occupancyChartInstance.destroy();
+
+    occupancyChartInstance = new Chart(document.getElementById('occupancyChart'), {
+        type: 'line',
+        data: { labels, datasets: [{ label: 'Rooms Occupied', data: values, borderColor: '#2e4057', tension: 0.3 }] },
+        options: { responsive: true, plugins: { title: { display: true, text: 'Occupancy — last 7 days' } } }
+    });
+}
+
+function renderUpcomingCheckIns(checkIns) {
+    const container = document.getElementById('upcomingCheckIns');
+    container.innerHTML = checkIns.length ? '' : '<p>No upcoming check-ins.</p>';
+
+    checkIns.forEach(c => {
+        container.innerHTML += `<p>${escapeHtml(c.guest_name)} — Room ${escapeHtml(c.room_number)} — ${escapeHtml(c.check_in)}</p>`;
+    });
 }
