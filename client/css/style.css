@@ -342,6 +342,42 @@ select {
   min-height: 80px;
 }
 
+.footer{
+    width:100%;
+}
+
+.footer-content{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+}
+
+.footer-brand{
+    flex:1;
+}
+
+.footer-links{
+    flex:2;
+    display:flex;
+    justify-content:space-between;
+}
+
+.footer-column{
+    display:flex;
+    flex-direction:column;
+}
+
+.footer-bottom{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    
+}
+
+.footer-bottom-links a{
+  margin-right: 35px;
+}
+
 /* ── Status pills: fill in the statuses the app actually uses now ─────── */
 .status-reserved, .reserved {
   display: inline-block; background: rgba(46, 64, 87, 0.1); color: var(--storm);
