@@ -10,12 +10,10 @@
 </head>
 <body>
     <nav>
-        <ul>
+        <a href="index.html" class="logo">Your Hotel</a>
+
+        <ul class="navbar">
             <li><a href="index.html"><i class="ph ph-house"></i> Home</a></li>
-            <li><a href="rooms.html"><i class="ph ph-bed"></i> Rooms</a></li>
-            <li><a href="#" onclick="goToDashboard(); return false;"><i class="ph ph-squares-four"></i> Dashboard</a></li>
-            <li><a href="booking.html"><i class="ph ph-calendar-blank"></i> Booking</a></li>
-            <li><a href="deals.html"><i class="ph ph-handshake"></i>Deals</a></li>
             <li><a href="contact.html"><i class="ph ph-envelope"></i> Contact</a></li>
         </ul>
         <button onclick="Logout()"><i class="ph ph-sign-out"></i> Logout</button>
@@ -51,7 +49,7 @@
             <input type="text" id="mpesa_phone" placeholder="Phone number for M-Pesa prompt (e.g. 0712345678)">
         </div>
 
-        <label id="paymentReceivedLabel"><input type="checkbox" id="payment_received"> Payment received now</label>
+        <label id="paymentReceivedLabel"><button id="payment_received">Confirmed</button></label><br>
 
         <div class="service-card" data-id="${service.id}" data-price="${service.price}">
             <div id="servicesPicker"></div>

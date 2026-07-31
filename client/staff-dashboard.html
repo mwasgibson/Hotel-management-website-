@@ -10,17 +10,33 @@
 </head>
 <body>
     <nav>
-        <ul>
+        <a href="index.html" class="logo">Your Hotel</a>
+
+        <ul class="navbar">
             <li><a href="index.html"><i class="ph ph-house"></i> Home</a></li>
+            <li class="dropdown">
+                <a href="#"><i class="ph ph-calendar-blank"></i> Bookings <i class="ph ph-caret-down"></i></a>
+                <ul class="dropdown-menu">
+                    <li><a href="booking.html">Booking</a></li>
+                    <li><a href="reserve.html">Reservations</a></li>
+                </ul>
+            </li>
             <li><a href="rooms.html"><i class="ph ph-bed"></i> Rooms</a></li>
-            <li><a href="register.html"><i class="ph ph-user-plus"></i> Register</a></li>
-            <li><a href="login.html"><i class="ph ph-sign-in"></i> Login</a></li>
+            <li class="dropdown">
+                <a href="#"><i class="ph ph-handshake"></i> Promotions <i class="ph ph-caret-down"></i></a>
+                <ul class="dropdown-menu">
+                    <li><a href="deals.html">Deals</a></li>
+                    <li><a href="events.html">Events</a></li>
+                </ul>
+            </li>
+            <li><a href="contact.html"><i class="ph ph-envelope"></i> Contact</a></li>
         </ul>
         <button onclick="Logout()"><i class="ph ph-sign-out"></i> Logout</button>
         <button class="nav-toggle" aria-label="Menu">
             <span></span><span></span><span></span>
         </button>
     </nav>
+    <div class="nav-overlay"></div>
 
     <h1>Staff Dashboard</h1>
 
@@ -45,9 +61,9 @@
             <div id="eventRequestsList"></div>
         </div>
 
-        <div class="card">
-            <h2 id="eventSpacesHeading" style="display:none;">Manage Event Spaces</h2>
-            <div id="manageEventSpaces" style="display:none;"></div>
+        <div class="card" id="eventSpacesCard" style="display:none;">
+            <h2>Manage Event Spaces</h2>
+            <div id="manageEventSpaces"></div>
         </div>
 
         <div class="card">
@@ -60,14 +76,14 @@
             <div id="roomGrid"></div>
         </div>
 
-        <div class="card">
-            <h2 id="servicesHeading" style="display:none;">Manage Services</h2>
-            <div id="manageServices" style="display:none;"></div>
+        <div class="card" id="servicesCard" style="display:none;">
+            <h2>Manage Services</h2>
+            <div id="manageServices"></div>
         </div>
 
-        <div class="card">
-            <h2 id="dealsHeading" style="display:none;">Manage Deals</h2>
-            <div id="manageDeals" style="display:none;"></div>
+        <div class="card" id="dealsCard" style="display:none;">
+            <h2>Manage Deals</h2>
+            <div id="manageDeals"></div>
         </div>
 
         <div class="card">

@@ -10,14 +10,26 @@
 </head>
 <body>
     <nav>
-        <ul>
+        <a href="index.html" class="logo">Your Hotel</a>
+
+        <ul class="navbar">
             <li><a href="index.html"><i class="ph ph-house"></i> Home</a></li>
-            <li><a href="rooms.html"><i class="ph ph-bed"></i> Rooms</a></li>
             <li><a href="#" onclick="goToDashboard(); return false;"><i class="ph ph-squares-four"></i> Dashboard</a></li>
-            <li><a href="register.html"><i class="ph ph-user-plus"></i> Register</a></li>
-            <li><a href="login.html"><i class="ph ph-sign-in"></i> Login</a></li>
-            <li><a href="booking.html"><i class="ph ph-calendar-blank"></i> Booking</a></li>
-            <li><a href="deals.html"><i class="ph ph-handshake"></i>Deals</a></li>
+            <li class="dropdown">
+                <a href="#"><i class="ph ph-calendar-blank"></i> Bookings <i class="ph ph-caret-down"></i></a>
+                <ul class="dropdown-menu">
+                    <li><a href="booking.html">Booking</a></li>
+                    <li><a href="reserve.html">Reservations</a></li>
+                </ul>
+            </li>
+            <li><a href="rooms.html"><i class="ph ph-bed"></i> Rooms</a></li>
+            <li class="dropdown">
+                <a href="#"><i class="ph ph-handshake"></i> Promotions <i class="ph ph-caret-down"></i></a>
+                <ul class="dropdown-menu">
+                    <li><a href="deals.html">Deals</a></li>
+                    <li><a href="events.html">Events</a></li>
+                </ul>
+            </li>
             <li><a href="contact.html"><i class="ph ph-envelope"></i> Contact</a></li>
         </ul>
         <button onclick="Logout()"><i class="ph ph-sign-out"></i> Logout</button>
@@ -25,6 +37,7 @@
             <span></span><span></span><span></span>
         </button>
     </nav>
+    <div class="nav-overlay"></div>
 
     <div class="container">
         

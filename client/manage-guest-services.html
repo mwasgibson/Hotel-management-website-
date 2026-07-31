@@ -9,9 +9,11 @@
 </head>
 <body>
     <nav>
-        <ul>
+        <a href="index.html" class="logo">Your Hotel</a>
+
+        <ul class="navbar">
             <li><a href="index.html"><i class="ph ph-house"></i> Home</a></li>
-            <li><a href="#" onclick="goToDashboard(); return false;"><i class="ph ph-squares-four"></i> Dashboard</a></li>
+            <li><a href="contact.html"><i class="ph ph-envelope"></i> Contact</a></li>
         </ul>
         <button onclick="Logout()"><i class="ph ph-sign-out"></i> Logout</button>
         <button class="nav-toggle" aria-label="Menu">
@@ -29,7 +31,7 @@
         </select><br><br>
         </div>
 
-        <div class="card">
+        <div class="service-card" data-id="${service.id}" data-price="${service.price}">
             <div id="servicesPicker"></div>
         </div>
 

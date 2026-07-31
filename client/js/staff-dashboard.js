@@ -35,24 +35,17 @@ function loadProfileAndInit() {
             if (currentUserRole === 'admin' || currentUserRole === 'receptionist') {
                 document.getElementById('walkInLink').style.display = 'inline-block';
             }
-            if (currentUserRole === 'admin') {
-                document.getElementById('servicesHeading').style.display = 'block';
-                document.getElementById('manageServices').style.display = 'block';
-                loadServicesManager();
-            }
             if (currentUserRole === 'receptionist') {
                 document.getElementById('serviceLink').style.display = 'inline-block';
             }
             if (currentUserRole === 'admin') {
-                document.getElementById('dealsHeading').style.display = 'block';
-                document.getElementById('manageDeals').style.display = 'block';
+                document.getElementById('servicesCard').style.display = 'block';
+                document.getElementById('dealsCard').style.display = 'block';
+                document.getElementById('eventSpacesCard').style.display = 'block';
+                loadServicesManager();
                 loadDealsManager();
-            }
-            if (currentUserRole === 'admin') {
-                document.getElementById('eventSpacesHeading').style.display = 'block';
-                document.getElementById('manageEventSpaces').style.display = 'block';
                 loadEventSpacesManager();
-            }                       
+            }                      
         })
         .catch(error => console.error('Error loading profile:', error));
 }
