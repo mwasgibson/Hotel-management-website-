@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg"
      viewBox="0 0 520 90" width="220" height="38"
-     role="img" aria-labelledby="logoTitle">
-  <title id="logoTitle">HOTEL NAME</title>
+     role="img" aria-labelledby="logoTitleLight">
+  <title id="logoTitleLight">HOTEL NAME</title>
 
   <line x1="25" y1="18" x2="242" y2="18" stroke="#D4B46A" stroke-width="1.5" stroke-linecap="round"/>
   <line x1="278" y1="18" x2="495" y2="18" stroke="#D4B46A" stroke-width="1.5" stroke-linecap="round"/>
@@ -9,7 +9,7 @@
 
   <text x="260" y="53" text-anchor="middle"
         font-family="'Cormorant Garamond', Georgia, serif"
-        font-size="34" font-weight="600" letter-spacing="6" fill="#24324A">
+        font-size="34" font-weight="600" letter-spacing="6" fill="#F5F0E6">
     HOTEL NAME
   </text>
 

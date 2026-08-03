@@ -342,40 +342,127 @@ select {
   min-height: 80px;
 }
 
-.footer{
-    width:100%;
+.footer {
+  width: 100%;
+  background: var(--midnight);
+  color: rgba(255, 255, 255, 0.75);
+  padding: 4rem 3rem 2rem;
+  margin-top: 4rem;
+  position: relative;
 }
 
-.footer-content{
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-start;
+.footer::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
 }
 
-.footer-brand{
-    flex:1;
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 3rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  flex-wrap: wrap;
 }
 
-.footer-links{
-    flex:2;
-    display:flex;
-    justify-content:space-between;
+.footer-brand {
+  flex: 1;
+  min-width: 220px;
 }
 
-.footer-column{
-    display:flex;
-    flex-direction:column;
+.footer-brand img {
+  height: 42px;
+  width: auto;
 }
 
-.footer-bottom{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    
+.footer-links {
+  flex: 3;
+  display: flex;
+  justify-content: space-between;
+  gap: 2rem;
+  flex-wrap: wrap;
 }
 
-.footer-bottom-links a{
-  margin-right: 35px;
+.footer-column {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  min-width: 140px;
+}
+
+.footer-column h4 {
+  font-family: var(--ff-display);
+  color: var(--gold);
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+}
+
+.footer-column a,
+.footer-column span {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: rgba(255, 255, 255, 0.68);
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: color 0.25s ease, transform 0.25s ease;
+}
+
+.footer-column a:hover {
+  color: var(--gold);
+  transform: translateX(3px);
+}
+
+.footer-column i {
+  color: var(--gold);
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+
+.footer hr {
+  max-width: 1200px;
+  margin: 3rem auto 1.5rem;
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.footer-bottom p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.footer-bottom-links a {
+  margin-right: 2rem;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.45);
+  text-decoration: none;
+  transition: color 0.25s ease;
+}
+
+.footer-bottom-links a:last-child {
+  margin-right: 0;
+}
+
+.footer-bottom-links a:hover {
+  color: var(--gold);
 }
 
 /* ── Status pills: fill in the statuses the app actually uses now ─────── */
@@ -1244,4 +1331,25 @@ body > a:not(nav a):hover {
 @media print {
     body > *:not(#receipt) { display: none !important; }
     #receipt { display: block !important; }
+}
+
+@media (max-width: 768px) {
+  .footer {
+    padding: 3rem 1.5rem 1.5rem;
+  }
+  .footer-content {
+    flex-direction: column;
+    gap: 2.5rem;
+  }
+  .footer-links {
+    flex-direction: column;
+    gap: 1.75rem;
+  }
+  .footer-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .footer-bottom-links a {
+    margin-right: 1.5rem;
+  }
 }
