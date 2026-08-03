@@ -10,7 +10,7 @@ const {
 
 const {
     requestEventBooking, getMyEventBookings, getAllEventBookings,
-    sendQuote, confirmEventBooking, cancelEventBooking, confirmEventPayment
+    sendQuote, confirmEventBooking, cancelEventBooking, confirmEventPayment, createWalkInEventBooking
 } = require('../controllers/eventBookingControllers');
 
 // Spaces
@@ -24,6 +24,7 @@ router.get('/spaces/:id/availability', getEventSpaceAvailability);
 // Bookings
 router.post('/bookings', authMiddleware, requestEventBooking);;
 router.get('/bookings', authMiddleware, allowedRoles(['admin', 'receptionist']), getAllEventBookings);
+router.post('/bookings/walk-in', authMiddleware, allowedRoles(['admin', 'receptionist']), createWalkInEventBooking);
 router.get('/bookings/mine', authMiddleware, getMyEventBookings)
 router.patch('/bookings/:id/quote', authMiddleware, allowedRoles(['admin', 'receptionist']), sendQuote);
 router.patch('/bookings/:id/confirm', authMiddleware, confirmEventBooking);

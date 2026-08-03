@@ -5,6 +5,65 @@ function hasTimeOverlap(existing, requestedStart, requestedEnd) {
     return existing.some(row => requestedStart < row.end_time && requestedEnd > row.start_time);
 }
 
+exports.createWalkInEventBooking = (req, res) => {
+    const { walk_in_guest_id, fullname, phone, email, event_space_id, event_date, start_time, end_time, purpose, expected_attendees, quoted_amount } = req.body;
+
+    if (!event_space_id || !event_date || !start_time || !end_time || !quoted_amount) {
+        return res.status(400).json({ error: 'event_space_id, event_date, start_time, end_time, and quoted_amount are required' });
+    }
+    if (end_time <= start_time) return res.status(400).json({ error: 'end_time must be after start_time' });
+    if (isNaN(quoted_amount) || Number(quoted_amount) <= 0) {
+        return res.status(400).json({ error: 'quoted_amount must be a positive number' });
+    }
+
+    const today = new Date().toISOString().slice(0, 10);
+    if (event_date < today) return res.status(400).json({ error: 'event_date cannot be in the past' });
+
+    function proceedWithGuest(guestId) {
+        db.query('SELECT * FROM event_spaces WHERE id = ? AND active = 1', [event_space_id], (err, spaces) => {
+            if (err) return res.status(500).json({ error: 'Database error' });
+            if (spaces.length === 0) return res.status(404).json({ error: 'Event space not found' });
+
+            if (expected_attendees && expected_attendees > spaces[0].capacity) {
+                return res.status(400).json({ error: `This space holds up to ${spaces[0].capacity} guests` });
+            }
+
+            const conflictSql = `SELECT start_time, end_time FROM event_bookings WHERE event_space_id = ? AND event_date = ? AND status IN ('requested', 'quoted', 'confirmed')`;
+            db.query(conflictSql, [event_space_id, event_date], (err, existing) => {
+                if (err) return res.status(500).json({ error: 'Database error' });
+                if (hasTimeOverlap(existing, start_time, end_time)) {
+                    return res.status(400).json({ error: 'This space is already booked or pending for an overlapping time' });
+                }
+
+                // staff-created walk-in events skip 'requested' — staff already knows and sets the price on the spot
+                const sql = 'INSERT INTO event_bookings (event_space_id, walk_in_guest_id, event_date, start_time, end_time, purpose, expected_attendees, status, quoted_amount) VALUES (?, ?, ?, ?, ?, ?, ?, "quoted", ?)';
+                db.query(sql, [event_space_id, guestId, event_date, start_time, end_time, purpose || null, expected_attendees || null, quoted_amount], (err, result) => {
+                    if (err) {
+                        console.error('Error creating walk-in event booking:', err);
+                        return res.status(500).json({ error: 'Database error' });
+                    }
+                    res.status(201).json({ message: 'Walk-in event reservation created', id: result.insertId });
+                });
+            });
+        });
+    }
+
+    if (walk_in_guest_id) {
+        proceedWithGuest(walk_in_guest_id);
+    } else {
+        if (!fullname || !phone) {
+            return res.status(400).json({ error: 'Provide walk_in_guest_id, or fullname and phone for a new walk-in guest' });
+        }
+        db.query('INSERT INTO walk_in_guests (fullname, phone, email) VALUES (?, ?, ?)', [fullname, phone, email || null], (err, guestResult) => {
+            if (err) {
+                console.error('Error creating walk-in guest:', err);
+                return res.status(500).json({ error: 'Database error' });
+            }
+            proceedWithGuest(guestResult.insertId);
+        });
+    }
+};
+
 exports.requestEventBooking = (req, res) => {
     const user_id = req.user.id;
     const { event_space_id, event_date, start_time, end_time, purpose, expected_attendees } = req.body;
@@ -65,7 +124,7 @@ exports.getMyEventBookings = (req, res) => {
 exports.getAllEventBookings = (req, res) => {
     const { status } = req.query;
     let sql = `
-        SELECT event_bookings.*, event_spaces.name AS space_name, event_spaces.type,
+        SELECT event_bookings.*, event_spaces.name AS space_name, event_spaces.type, event_spaces.hourly_rate,
             COALESCE(users.fullname, walk_in_guests.fullname) AS guest_name,
             COALESCE(users.email, walk_in_guests.email) AS guest_email,
             walk_in_guests.phone AS guest_phone
