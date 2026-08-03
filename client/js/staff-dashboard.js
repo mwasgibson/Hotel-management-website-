@@ -97,9 +97,9 @@ function loadEventRequests() {
                         <p>${escapeHtml(b.event_date)}, ${escapeHtml(b.start_time)}–${escapeHtml(b.end_time)} — ${escapeHtml(b.expected_attendees || '?')} guests</p>
                         <p>Status: ${escapeHtml(b.status)}${b.quoted_amount ? ` — KES ${escapeHtml(b.quoted_amount)}` : ''} — Payment: ${escapeHtml(b.payment_status)}</p>
                         ${b.status === 'requested' ? `
-                            <input type="number" id="quote_${b.id}" placeholder="Quote amount (KES)">
+                            <input type="number" id="quote_${b.id}" value="${computeSuggestedQuote(b.hourly_rate, b.start_time, b.end_time)}" placeholder="Quote amount (KES)">
                             <button onclick="sendEventQuote(${b.id})">Send Quote</button>
-                        ` : ''}
+                            ` : ''}
                         ${b.status === 'confirmed' && b.payment_status === 'pending' ? `<button onclick="confirmEventPayment(${b.id})">Confirm Payment</button>` : ''}
                         <hr>
                     </div>
@@ -107,6 +107,14 @@ function loadEventRequests() {
             });
         })
         .catch(error => console.error('Error loading event requests:', error));
+}
+
+function computeSuggestedQuote(hourlyRate, startTime, endTime) {
+    const [startH, startM] = startTime.split(':').map(Number);
+    const [endH, endM] = endTime.split(':').map(Number);
+    const hours = (endH + endM / 60) - (startH + startM / 60);
+    if (hours <= 0) return 0;
+    return Math.round(hours * hourlyRate);
 }
 
 function sendEventQuote(id) {

@@ -34,8 +34,8 @@ function toggleWalkInPaymentFields() {
     document.getElementById('mpesaPhoneField').style.display = method === 'mpesa' ? 'block' : 'none';
     document.getElementById('paymentReceivedLabel').style.display = method === 'mpesa' ? 'none' : 'block';
 }
-toggleWalkInPaymentFields();   // set the correct initial state on page load
 
+toggleWalkInPaymentFields();   // set the correct initial state on page load
 
 function createWalkInBooking() {
     const payment_method = document.getElementById('payment_method').value;
@@ -133,6 +133,87 @@ function pollPayment(bookingId){
             showToast('Still waiting on confirmation — check the staff dashboard shortly.', 'info');
         }
     }, 3000);
+}
+
+function showWalkInTab(tab, btn) {
+    document.getElementById('roomBookingTab').style.display = tab === 'room' ? 'block' : 'none';
+    document.getElementById('eventBookingTab').style.display = tab === 'event' ? 'block' : 'none';
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+}
+
+let eventSpacesCache = [];
+
+function loadEventSpaceOptions() {
+    fetch(`${API_URL}/events/spaces`, { credentials: 'include' })
+        .then(res => res.json())
+        .then(spaces => {
+            eventSpacesCache = spaces;
+            const select = document.getElementById('event_space_id');
+            select.innerHTML = '<option value="">Select a space</option>';
+            spaces.forEach(space => {
+                select.innerHTML += `<option value="${space.id}">${escapeHtml(space.name)} — KES ${escapeHtml(space.hourly_rate)}/hr</option>`;
+            });
+        })
+        .catch(error => console.error('Error loading event spaces:', error));
+}
+
+loadEventSpaceOptions();
+
+['event_space_id', 'event_start_time', 'event_end_time'].forEach(id => {
+    document.getElementById(id)?.addEventListener('change', updateSuggestedQuote);
+});
+
+function computeSuggestedQuote(hourlyRate, startTime, endTime) {
+    const [startH, startM] = startTime.split(':').map(Number);
+    const [endH, endM] = endTime.split(':').map(Number);
+    const hours = (endH + endM / 60) - (startH + startM / 60);
+    if (hours <= 0) return 0;
+    return Math.round(hours * hourlyRate);
+}
+
+function updateSuggestedQuote() {
+    const spaceId = document.getElementById('event_space_id').value;
+    const start = document.getElementById('event_start_time').value;
+    const end = document.getElementById('event_end_time').value;
+    if (!spaceId || !start || !end) return;
+
+    const space = eventSpacesCache.find(s => s.id == spaceId);
+    if (!space) return;
+
+    const suggested = computeSuggestedQuote(space.hourly_rate, start, end);
+    document.getElementById('suggestedQuoteDisplay').textContent = suggested > 0 ? `Suggested: KES ${suggested}` : 'End time must be after start time';
+    if (suggested > 0) document.getElementById('event_quoted_amount').value = suggested;
+}
+
+function createWalkInEventBooking() {
+    const body = {
+        fullname: document.getElementById('event_fullname').value,
+        phone: document.getElementById('event_phone').value,
+        email: document.getElementById('event_email').value || null,
+        event_space_id: document.getElementById('event_space_id').value,
+        event_date: document.getElementById('event_date').value,
+        start_time: document.getElementById('event_start_time').value,
+        end_time: document.getElementById('event_end_time').value,
+        expected_attendees: document.getElementById('event_attendees').value || null,
+        purpose: document.getElementById('event_purpose').value || null,
+        quoted_amount: document.getElementById('event_quoted_amount').value
+    };
+
+    fetch(`${API_URL}/events/bookings/walk-in`, {
+        credentials: 'include',
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+    })
+    .then(response => response.json().then(data => ({ ok: response.ok, data })))
+    .then(({ ok, data }) => {
+        if (!ok) { showToast(data.error || 'Failed to create event reservation', 'error'); return; }
+        showToast('Event reservation created', 'success');
+        document.getElementById('eventResult').innerHTML = `<p>Event booking #${escapeHtml(data.id)} created and quoted.</p>`;
+        document.querySelector('#eventBookingTab form').reset();
+    })
+    .catch(error => console.error('Error creating walk-in event booking:', error));
 }
 
 function printReceipt(data) {

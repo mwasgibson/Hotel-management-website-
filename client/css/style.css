@@ -1225,6 +1225,21 @@ body > a:not(nav a):hover {
 #bookings > div:last-child { border-bottom: none; }
 #bookings > div h3 { font-size: 1rem; margin-bottom: 0.5rem; }
 
+.tab-btn {
+  padding: 0.6rem 1.2rem;
+  background: var(--ivory);
+  border: none;
+  border-radius: var(--radius) var(--radius) 0 0;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--pewter);
+}
+.tab-btn.active {
+  background: var(--white);
+  color: var(--midnight);
+  box-shadow: 0 -2px 0 var(--gold) inset;
+}
+
 ::-webkit-scrollbar       { width: 6px; }
 ::-webkit-scrollbar-track { background: var(--ivory); }
 ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 99px; }

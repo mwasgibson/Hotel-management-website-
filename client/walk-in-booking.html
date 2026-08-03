@@ -27,42 +27,75 @@
 
     <h1>New Walk-in Reservation</h1>
 
-    <form>
-        <input type="text" id="fullname" placeholder="Guest full name" required>
-        <input type="text" id="phone" placeholder="Phone number" required>
-        <input type="email" id="email" placeholder="Email (optional)">
+    <div class="tabs">
+        <button type="button" class="tab-btn active" onclick="showWalkInTab('room', this)">Room Booking</button>
+        <button type="button" class="tab-btn" onclick="showWalkInTab('event', this)">Event Space</button>
+    </div>
 
-        <select id="room_number">
-            <option value="">Loading rooms...</option>
-        </select>
+    <div id="roomBookingTab">
+        <h2>Reserve a Room</h2>
+        <form>
+            <input type="text" id="fullname" placeholder="Guest full name" required>
+            <input type="text" id="phone" placeholder="Phone number" required>
+            <input type="email" id="email" placeholder="Email (optional)">
 
-        <label>Check-in</label>
-        <input type="date" id="check_in">
-        <label>Check-out</label>
-        <input type="date" id="check_out">
+            <select id="room_number">
+                <option value="">Loading rooms...</option>
+            </select>
 
-        <select id="payment_method" onchange="toggleWalkInPaymentFields()">
-            <option value="cash">Cash</option>
-            <option value="card">Card</option>
-            <option value="mpesa">M-Pesa</option>
-        </select>
+            <label>Check-in</label>
+            <input type="date" id="check_in">
+            <label>Check-out</label>
+            <input type="date" id="check_out">
 
-        <div id="mpesaPhoneField" style="display:none;">
-            <input type="text" id="mpesa_phone" placeholder="Phone number for M-Pesa prompt (e.g. 0712345678)">
-        </div>
+            <select id="payment_method" onchange="toggleWalkInPaymentFields()">
+                <option value="cash">Cash</option>
+                <option value="card">Card</option>
+                <option value="mpesa">M-Pesa</option>
+            </select>
 
-        <label id="paymentReceivedLabel"><button id="payment_received">Confirmed</button></label><br>
+            <div id="mpesaPhoneField" style="display:none;">
+                <input type="text" id="mpesa_phone" placeholder="Phone number for M-Pesa prompt (e.g. 0712345678)">
+            </div>
 
-        <div class="service-card" data-id="${service.id}" data-price="${service.price}">
-            <div id="servicesPicker"></div>
-        </div>
+            <label id="paymentReceivedLabel"><button id="payment_received">Confirmed</button></label><br>
 
-        <input type="text" id="promo_code" placeholder="Promo code (optional)">
-        <button type="button" onclick="applyPromoPreview()">Apply</button>
-        <p id="promoPreviewResult"></p>
+            <div class="service-card" data-id="${service.id}" data-price="${service.price}">
+                <div id="servicesPicker"></div>
+            </div>
 
-        <button type="button" onclick="createWalkInBooking()">Create Reservation</button>
-    </form>
+            <input type="text" id="promo_code" placeholder="Promo code (optional)">
+            <button type="button" onclick="applyPromoPreview()">Apply</button>
+            <p id="promoPreviewResult"></p>
+
+            <button type="button" onclick="createWalkInBooking()">Create Reservation</button>
+        </form>
+    </div>
+        <div id="eventBookingTab" style="display:none;">
+        <h2>Reserve an Event Space</h2>
+        <form>
+            <input type="text" id="event_fullname" placeholder="Guest full name">
+            <input type="text" id="event_phone" placeholder="Phone number">
+            <input type="email" id="event_email" placeholder="Email (optional)">
+
+            <select id="event_space_id"><option value="">Loading spaces...</option></select>
+
+            <label>Date</label>
+            <input type="date" id="event_date">
+            <label>Start time</label>
+            <input type="time" id="event_start_time">
+            <label>End time</label>
+            <input type="time" id="event_end_time">
+            <input type="number" id="event_attendees" placeholder="Expected attendees">
+            <textarea id="event_purpose" placeholder="Purpose"></textarea>
+
+            <p id="suggestedQuoteDisplay"></p>
+            <input type="number" id="event_quoted_amount" placeholder="Quoted amount (KES)">
+
+            <button type="button" onclick="createWalkInEventBooking()">Create Event Reservation</button>
+        </form>
+        <div id="eventResult"></div>
+    </div>
 
     <footer class="footer">
         <div class="footer-content">
