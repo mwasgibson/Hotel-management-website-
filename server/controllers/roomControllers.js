@@ -192,7 +192,7 @@ exports.updateRoom = (req, res) => {
 
 exports.deleteRoom = (req, res) => {
     const { room_number } = req.params;
-    const sql = 'DELETE FROM rooms WHERE room_number = ?';
+    const sql = 'UPDATE rooms SET active = 0 WHERE room_number = ?';
 
     db.query(sql, [room_number], (err, results) => {
         if (err) {
@@ -205,6 +205,20 @@ exports.deleteRoom = (req, res) => {
                 res.json({ message: 'Room deleted successfully' });
             }
         }
+    });
+};
+
+exports.restoreRoom = (req, res) => {
+    const { room_number } = req.params;
+    const sql = 'UPDATE rooms SET active = 1 WHERE room_number = ?';
+
+    db.query(sql, [room_number], (err, results) => {
+        if (err) {
+            console.error('Error restoring room:', err);
+            return res.status(500).json({ error: 'Database error' });
+        }
+        if (results.affectedRows === 0) return res.status(404).json({ error: 'Room not found' });
+        res.json({ message: 'Room restored successfully' });
     });
 };
 

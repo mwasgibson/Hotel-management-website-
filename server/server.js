@@ -17,6 +17,7 @@ const adminRoutes = require('./routes/adminRoutes');
 const servicesRoutes = require('./routes/servicesRoutes');
 const dealsRoutes = require('./routes/dealsRoutes');
 const eventRoutes = require('./routes/eventRoutes');
+const documentRoutes = require('./routes/documentRoutes');
 
 const expireStaleReservations = require('./utils/expireReservations');
 const sendCheckInReminders = require('./utils/sendCheckInReminders');
@@ -54,6 +55,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/services', servicesRoutes);
 app.use('/api/deals', dealsRoutes);
 app.use('/api/events', eventRoutes);
+app.use('/api/documents', documentRoutes);
 
 app.get ("/", (req, res) => {
     res.send ("Hotel Management System API");
