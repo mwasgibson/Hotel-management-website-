@@ -12,6 +12,28 @@ exports.getDeals = (req, res) => {
     });
 };
 
+// Admin-only: returns every deal (active, inactive, expired) so the CMS can manage the full set.
+exports.getAllDeals = (req, res) => {
+    db.query('SELECT * FROM deals ORDER BY end_date DESC', (err, results) => {
+        if (err) {
+            console.error('Error fetching all deals:', err);
+            return res.status(500).json({ error: 'Database error' });
+        }
+        res.json(results);
+    });
+};
+
+exports.getDeal = (req, res) => {
+    db.query('SELECT * FROM deals WHERE id = ?', [req.params.id], (err, results) => {
+        if (err) {
+            console.error('Error fetching deal:', err);
+            return res.status(500).json({ error: 'Database error' });
+        }
+        if (results.length === 0) return res.status(404).json({ error: 'Deal not found' });
+        res.json(results[0]);
+    });
+};
+
 exports.addDeal = (req, res) => {
     const { title, description, discount_type, discount_value, promo_code, start_date, end_date, image_url } = req.body;
 
@@ -35,7 +57,13 @@ exports.addDeal = (req, res) => {
             console.error('Error adding deal:', err);
             return res.status(500).json({ error: 'Database error' });
         }
-        res.status(201).json({ message: 'Deal created', id: result.insertId });
+        db.query('SELECT * FROM deals WHERE id = ?', [result.insertId], (err2, rows) => {
+            if (err2) {
+                console.error('Error fetching created deal:', err2);
+                return res.status(201).json({ message: 'Deal created', id: result.insertId });
+            }
+            res.status(201).json(rows[0]);
+        });
     });
 };
 
@@ -55,7 +83,13 @@ exports.updateDeal = (req, res) => {
             return res.status(500).json({ error: 'Database error' });
         }
         if (result.affectedRows === 0) return res.status(404).json({ error: 'Deal not found' });
-        res.json({ message: 'Deal updated' });
+        db.query('SELECT * FROM deals WHERE id = ?', [id], (err2, rows) => {
+            if (err2) {
+                console.error('Error fetching updated deal:', err2);
+                return res.json({ message: 'Deal updated' });
+            }
+            res.json(rows[0]);
+        });
     });
 };
 
@@ -67,6 +101,20 @@ exports.deleteDeal = (req, res) => {
         }
         if (result.affectedRows === 0) return res.status(404).json({ error: 'Deal not found' });
         res.json({ message: 'Deal removed' });
+    });
+};
+
+exports.restoreDeal = (req, res) => {
+    db.query('UPDATE deals SET active = 1 WHERE id = ?', [req.params.id], (err, result) => {
+        if (err) {
+            console.error('Error restoring deal:', err);
+            return res.status(500).json({ error: 'Database error' });
+        }
+        if (result.affectedRows === 0) return res.status(404).json({ error: 'Deal not found' });
+        db.query('SELECT * FROM deals WHERE id = ?', [req.params.id], (err2, rows) => {
+            if (err2) return res.json({ message: 'Deal restored' });
+            res.json(rows[0]);
+        });
     });
 };
 
