@@ -3,12 +3,12 @@ const { r2, BUCKET } = require('../config/s3');
 const { PutObjectCommand, DeleteObjectCommand, GetObjectCommand } = require('@aws-sdk/client-s3');
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const crypto = require('crypto');
+const logAudit = require('../utils/auditLogger');
+const moveToTrash = require('../utils/trashLogger');
 
 const CATEGORIES = ['menu', 'policy', 'floor_plan', 'brochure', 'other'];
-const DOWNLOAD_URL_TTL_SECONDS = 60 * 60; // 1 hour
+const DOWNLOAD_URL_TTL_SECONDS = 60 * 60;
 
-// Bucket is private — every response signs a fresh, time-limited download URL
-// rather than storing/reusing a public link.
 async function withDownloadUrl(doc) {
     const download_url = await getSignedUrl(
         r2,
@@ -18,6 +18,11 @@ async function withDownloadUrl(doc) {
     return { ...doc, download_url };
 }
 
+function audit(req, action, entityId, description) {
+    logAudit({ req, action, entityType: 'document', entityId, description })
+        .catch(err => console.error('Audit log error:', err));
+}
+
 exports.getDocuments = (req, res) => {
     db.query('SELECT * FROM documents ORDER BY created_at DESC', async (err, results) => {
         if (err) {
@@ -25,8 +30,7 @@ exports.getDocuments = (req, res) => {
             return res.status(500).json({ error: 'Database error' });
         }
         try {
-            const withUrls = await Promise.all(results.map(withDownloadUrl));
-            res.json(withUrls);
+            res.json(await Promise.all(results.map(withDownloadUrl)));
         } catch (e) {
             console.error('Error signing document URLs:', e);
             res.status(500).json({ error: 'Storage error' });
@@ -36,10 +40,7 @@ exports.getDocuments = (req, res) => {
 
 exports.getDocument = (req, res) => {
     db.query('SELECT * FROM documents WHERE id = ?', [req.params.id], async (err, results) => {
-        if (err) {
-            console.error('Error fetching document:', err);
-            return res.status(500).json({ error: 'Database error' });
-        }
+        if (err) return res.status(500).json({ error: 'Database error' });
         if (results.length === 0) return res.status(404).json({ error: 'Document not found' });
         try {
             res.json(await withDownloadUrl(results[0]));
@@ -77,22 +78,19 @@ exports.uploadDocument = async (req, res) => {
     db.query(sql, [title, category || 'other', fileKey, req.file.originalname, req.file.mimetype, req.file.size, req.user?.id || null], async (err, result) => {
         if (err) {
             console.error('Error saving document record:', err);
-            // The file is already in R2 at this point but the DB write failed —
-            // clean it up so we don't leak orphaned objects in the bucket.
             try { await r2.send(new DeleteObjectCommand({ Bucket: BUCKET, Key: fileKey })); } catch { /* best effort */ }
             return res.status(500).json({ error: 'Database error' });
         }
         db.query('SELECT * FROM documents WHERE id = ?', [result.insertId], async (err2, rows) => {
-            if (err2 || rows.length === 0) {
-                return res.status(201).json({ message: 'Document uploaded', id: result.insertId });
-            }
+            if (err2 || rows.length === 0) return res.status(201).json({ message: 'Document uploaded', id: result.insertId });
+            audit(req, 'CREATE', result.insertId, `Uploaded document "${title}"`);
             res.status(201).json(await withDownloadUrl(rows[0]));
         });
     });
 };
 
 exports.deleteDocument = (req, res) => {
-    db.query('SELECT * FROM documents WHERE id = ?', [req.params.id], async (err, results) => {
+    db.query('SELECT * FROM documents WHERE id = ?', [req.params.id], (err, results) => {
         if (err) {
             console.error('Error fetching document to delete:', err);
             return res.status(500).json({ error: 'Database error' });
@@ -100,38 +98,49 @@ exports.deleteDocument = (req, res) => {
         if (results.length === 0) return res.status(404).json({ error: 'Document not found' });
 
         const doc = results[0];
-        try {
-            await r2.send(new DeleteObjectCommand({ Bucket: BUCKET, Key: doc.file_key }));
-        } catch (e) {
-            console.error('Error deleting from R2:', e);
-            return res.status(500).json({ error: 'Storage delete failed' });
-        }
 
-        db.query('UPDATE documents SET active = 0 WHERE id = ?', [req.params.id], (err2) => {
-            if (err2) {
-                console.error('Error deleting document record:', err2);
-                return res.status(500).json({ error: 'Database error' });
-            }
-            res.json({ message: 'Document deleted' });
-        });
+        // Keep the R2 object. The trash snapshot contains file_key, so the
+        // document can actually be restored later.
+        moveToTrash({
+            entityType: 'document',
+            entityId: doc.id,
+            entityData: doc,
+            deletedBy: req.user?.id || null
+        })
+            .then(() => {
+                db.query('UPDATE documents SET active = 0 WHERE id = ?', [req.params.id], (err2, result) => {
+                    if (err2) {
+                        console.error('Error soft-deleting document:', err2);
+                        return res.status(500).json({ error: 'Database error' });
+                    }
+                    if (result.affectedRows === 0) return res.status(404).json({ error: 'Document not found' });
+
+                    audit(req, 'DELETE', doc.id, `Moved document "${doc.title}" to trash`);
+                    res.json({ message: 'Document moved to trash' });
+                });
+            })
+            .catch(trashErr => {
+                console.error('Error moving document to trash:', trashErr);
+                res.status(500).json({ error: 'Could not move document to trash' });
+            });
     });
 };
 
 exports.restoreDocument = (req, res) => {
-    db.query('SELECT * FROM documents WHERE id = ?', [req.params.id], async (err, results) => {
-        if (err) {
-            console.error('Error fetching document:', err);
-            return res.status(500).json({error: 'Database error'});
-        }
-        if (results.length === 0) {
-            return res.status(404).json({error: 'Document not found'});
-        }
+    db.query('SELECT * FROM documents WHERE id = ?', [req.params.id], (err, results) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        if (results.length === 0) return res.status(404).json({ error: 'Document not found' });
+
         const doc = results[0];
-        db.query('UPDATE documents SET active = 1 WHERE id = ?', [req.params.id], (err2) => {
+
+        db.query('UPDATE documents SET active = 1 WHERE id = ?', [req.params.id], (err2, result) => {
             if (err2) {
                 console.error('Error restoring document record:', err2);
                 return res.status(500).json({ error: 'Database error' });
             }
+            if (result.affectedRows === 0) return res.status(404).json({ error: 'Document not found' });
+
+            audit(req, 'RESTORE', doc.id, `Restored document "${doc.title}"`);
             res.json({ message: 'Document restored' });
         });
     });
