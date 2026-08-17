@@ -1,5 +1,6 @@
 const db = require('../config/db');
 const sendEmail = require('../utils/sendEmail');
+const logAudit = require('../utils/auditLogger');
 
 // Cash: recorded as pending — only staff confirming it at reception flips it to Paid
 exports.payBookings = (req, res) => {
@@ -20,13 +21,22 @@ exports.payBookings = (req, res) => {
             db.query('INSERT INTO payments (booking_id, amount, payment_method, payment_status) VALUES (?,?,?,?)',
                 [booking_id, booking.total_amount, 'cash', 'pending'], (err, result) => {
                     if (err) return res.status(500).json({ error: 'Failed to create payment' });
+
+                    logAudit({
+                        req,
+                        action: 'CREATE',
+                        entityType: 'payment',
+                        entityId: result.insertId,
+                        description: `Created cash payment record for booking ${booking_id}`
+                    }).catch(auditErr => console.error('Audit log error:', auditErr));
+
                     res.status(201).json({ message: 'Recorded — please pay at reception to confirm your booking.', paymentId: result.insertId });
                 });
         });
     });
 };
 
-// Staff-only: mark a pending cash payment as actually received
+// Staff-only: mark a pending cash/card payment as actually received
 exports.confirmManualPayment = (req, res) => {
     const { id } = req.params;
 
@@ -48,7 +58,6 @@ exports.confirmManualPayment = (req, res) => {
             db.query('UPDATE bookings SET booking_status = "confirmed" WHERE id = ?', [payment.booking_id], (err) => {
                 if (err) return res.status(500).json({ error: 'Database error' });
 
-                // email only if this belongs to a registered guest — walk-ins may not have one
                 db.query('SELECT users.email FROM bookings JOIN users ON bookings.user_id = users.id WHERE bookings.id = ?', [payment.booking_id], (err, rows) => {
                     if (!err && rows.length > 0) {
                         sendEmail({
@@ -58,6 +67,14 @@ exports.confirmManualPayment = (req, res) => {
                         });
                     }
                 });
+
+                logAudit({
+                    req,
+                    action: 'PAYMENT_CONFIRMED',
+                    entityType: 'payment',
+                    entityId: id,
+                    description: `Confirmed ${payment.payment_method} payment of KES ${payment.amount} for booking ${payment.booking_id}`
+                }).catch(auditErr => console.error('Audit log error:', auditErr));
 
                 res.json({ message: 'Payment confirmed' });
             });
