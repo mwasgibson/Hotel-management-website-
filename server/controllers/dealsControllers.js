@@ -1,5 +1,6 @@
 const db = require('../config/db');
 const { validateAndApplyPromoCode } = require('../utils/promoCodes');
+const logAudit = require('../utils/auditLogger');
 
 exports.getDeals = (req, res) => {
     const today = new Date().toISOString().slice(0, 10);
@@ -62,6 +63,7 @@ exports.addDeal = (req, res) => {
                 console.error('Error fetching created deal:', err2);
                 return res.status(201).json({ message: 'Deal created', id: result.insertId });
             }
+            logAudit({ req, action: 'CREATE', entityType: 'deal', entityId: result.insertId, description: `Created deal "${title}"` }).catch(err => console.error('Audit log error:', err));
             res.status(201).json(rows[0]);
         });
     });
@@ -88,32 +90,51 @@ exports.updateDeal = (req, res) => {
                 console.error('Error fetching updated deal:', err2);
                 return res.json({ message: 'Deal updated' });
             }
+            logAudit({ req, action: 'UPDATE', entityType: 'deal', entityId: id, description: `Updated deal "${title}"` }).catch(err => console.error('Audit log error:', err));
             res.json(rows[0]);
         });
     });
 };
 
 exports.deleteDeal = (req, res) => {
-    db.query('UPDATE deals SET active = 0 WHERE id = ?', [req.params.id], (err, result) => {
-        if (err) {
-            console.error('Error deleting deal:', err);
+    db.query('SELECT * FROM deals WHERE id = ?', [req.params.id], (selectErr, rows) => {
+        if (selectErr) {
+            console.error('Error fetching deal before deletion:', selectErr);
             return res.status(500).json({ error: 'Database error' });
         }
-        if (result.affectedRows === 0) return res.status(404).json({ error: 'Deal not found' });
-        res.json({ message: 'Deal removed' });
+        if (rows.length === 0) return res.status(404).json({ error: 'Deal not found' });
+
+        db.query('UPDATE deals SET active = 0 WHERE id = ?', [req.params.id], (err, result) => {
+            if (err) {
+                console.error('Error deleting deal:', err);
+                return res.status(500).json({ error: 'Database error' });
+            }
+            if (result.affectedRows === 0) return res.status(404).json({ error: 'Deal not found' });
+            logAudit({ req, action: 'DELETE', entityType: 'deal', entityId: req.params.id, description: `Removed deal "${rows[0].title}"` }).catch(err => console.error('Audit log error:', err));
+            res.json({ message: 'Deal removed' });
+        });
     });
 };
 
 exports.restoreDeal = (req, res) => {
-    db.query('UPDATE deals SET active = 1 WHERE id = ?', [req.params.id], (err, result) => {
-        if (err) {
-            console.error('Error restoring deal:', err);
+    db.query('SELECT * FROM deals WHERE id = ?', [req.params.id], (selectErr, rows) => {
+        if (selectErr) {
+            console.error('Error fetching deal before restore:', selectErr);
             return res.status(500).json({ error: 'Database error' });
         }
-        if (result.affectedRows === 0) return res.status(404).json({ error: 'Deal not found' });
-        db.query('SELECT * FROM deals WHERE id = ?', [req.params.id], (err2, rows) => {
-            if (err2) return res.json({ message: 'Deal restored' });
-            res.json(rows[0]);
+        if (rows.length === 0) return res.status(404).json({ error: 'Deal not found' });
+
+        db.query('UPDATE deals SET active = 1 WHERE id = ?', [req.params.id], (err, result) => {
+            if (err) {
+                console.error('Error restoring deal:', err);
+                return res.status(500).json({ error: 'Database error' });
+            }
+            if (result.affectedRows === 0) return res.status(404).json({ error: 'Deal not found' });
+            db.query('SELECT * FROM deals WHERE id = ?', [req.params.id], (err2, updatedRows) => {
+                if (err2) return res.json({ message: 'Deal restored' });
+                logAudit({ req, action: 'RESTORE', entityType: 'deal', entityId: req.params.id, description: `Restored deal "${updatedRows[0].title}"` }).catch(err => console.error('Audit log error:', err));
+                res.json(updatedRows[0]);
+            });
         });
     });
 };
