@@ -107,12 +107,32 @@ exports.deleteDocument = (req, res) => {
             return res.status(500).json({ error: 'Storage delete failed' });
         }
 
-        db.query('DELETE FROM documents WHERE id = ?', [req.params.id], (err2) => {
+        db.query('UPDATE documents SET active = 0 WHERE id = ?', [req.params.id], (err2) => {
             if (err2) {
                 console.error('Error deleting document record:', err2);
                 return res.status(500).json({ error: 'Database error' });
             }
             res.json({ message: 'Document deleted' });
+        });
+    });
+};
+
+exports.restoreDocument = (req, res) => {
+    db.query('SELECT * FROM documents WHERE id = ?', [req.params.id], async (err, results) => {
+        if (err) {
+            console.error('Error fetching document:', err);
+            return res.status(500).json({error: 'Database error'});
+        }
+        if (results.length === 0) {
+            return res.status(404).json({error: 'Document not found'});
+        }
+        const doc = results[0];
+        db.query('UPDATE documents SET active = 1 WHERE id = ?', [req.params.id], (err2) => {
+            if (err2) {
+                console.error('Error restoring document record:', err2);
+                return res.status(500).json({ error: 'Database error' });
+            }
+            res.json({ message: 'Document restored' });
         });
     });
 };

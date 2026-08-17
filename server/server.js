@@ -38,10 +38,10 @@ app.use(cors({
     },
     credentials: true
 }));
+app.use(cookieParser());
 app.use(helmet());
 app.use(hpp());
 app.use (express.json ());
-app.use(cookieParser());
 
 app.use('/api', apiLimiter);
 app.use ('/api/auth', routes);
