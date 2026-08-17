@@ -15,29 +15,29 @@ const {
 const { createWalkInBooking } = require("../controllers/walkInControllers");
 const allowedRoles = require("../middleware/allowedRoles");
 
-router.post("/", authMiddleware, createBooking);
-router.post(
-  "/walk-in",
+router.post("/", authMiddleware, bookingAudit("create"), createBooking);
+
+router.post("/reserve", authMiddleware, bookingAudit("reserve"), reserveRoom);
+
+router.put(
+  "/:booking_id/reschedule",
   authMiddleware,
-  allowedRoles(["receptionist"]),
-  createWalkInBooking,
+  bookingAudit("reschedule"),
+  rescheduleBooking,
 );
-router.get("/", authMiddleware, getBookings);
-router.get(
-  "/current",
+
+router.put(
+  "/:booking_id/cancel",
   authMiddleware,
-  allowedRoles(["receptionist"]),
-  getCurrentBookings,
+  bookingAudit("cancel"),
+  cancelBooking,
 );
-router.post("/reserve", authMiddleware, reserveRoom);
-router.get("/my-current", authMiddleware, getMyCurrentBooking);
-router.get("/:booking_id", authMiddleware, getBooking);
-router.put("/:booking_id/reschedule", authMiddleware, rescheduleBooking);
-router.put("/:booking_id/cancel", authMiddleware, cancelBooking);
+
 router.put(
   "/:booking_id/complete",
   authMiddleware,
   allowedRoles(["receptionist"]),
+  bookingAudit("complete"),
   completeBooking,
 );
 
