@@ -2,6 +2,7 @@ const db = require('../config/db');
 const { calculateDynamicPrice } = require('../utils/dynamicPricing');
 const { attachServicesToBooking } = require('../utils/bookingServices');
 const { validateAndApplyPromoCode } = require('../utils/promoCodes');
+const logAudit = require('../utils/auditLogger');
 
 exports.createWalkInBooking = async (req, res) => {
     const { fullname, phone, email, room_number, check_in, check_out, payment_method, payment_received, services, promo_code } = req.body;
@@ -53,7 +54,6 @@ exports.createWalkInBooking = async (req, res) => {
                 }
 
                 const walkInGuestId = guestResult.insertId;
-                // M-Pesa always starts pending, regardless of the checkbox — real confirmation only comes from the STK callback
                 const bookingStatus = (payment_method !== 'mpesa' && payment_received) ? 'confirmed' : 'pending';
 
                 const bookingSql = 'INSERT INTO bookings (walk_in_guest_id, room_number, check_in, check_out, total_amount, booking_status) VALUES (?, ?, ?, ?, ?, ?)';
@@ -95,13 +95,20 @@ exports.createWalkInBooking = async (req, res) => {
                         if (err) console.error('Error updating total with promo code:', err);
                     });
 
-                    // cash/card: record the payment now (pending or paid, per the checkbox). M-Pesa's payment row is created by stkPush itself.
                     if (payment_method !== 'mpesa') {
                         db.query('INSERT INTO payments (booking_id, amount, payment_method, payment_status) VALUES (?, ?, ?, ?)',
                             [bookingId, finalTotal, payment_method, payment_received ? 'paid' : 'pending'], (err) => {
                                 if (err) console.error('Error recording walk-in payment:', err);
                             });
                     }
+
+                    logAudit({
+                        req,
+                        action: 'CREATE',
+                        entityType: 'walk_in_booking',
+                        entityId: bookingId,
+                        description: `Created walk-in booking for ${fullname} in room ${room_number}`
+                    }).catch(auditErr => console.error('Audit log error:', auditErr));
 
                     res.status(201).json({
                         message: payment_method === 'mpesa'
