@@ -1,4 +1,6 @@
 const db = require('../config/db');
+const logAudit = require('../utils/auditLogger');
+const moveToTrash = require('../utils/trashLogger');
 
 exports.getEventSpaces = (req, res) => {
     const { type, min_capacity } = req.query;
@@ -25,11 +27,9 @@ exports.getEventSpace = (req, res) => {
     });
 };
 
-// Returns booked time ranges for a given space + date range, so the frontend can render an availability calendar
 exports.getEventSpaceAvailability = (req, res) => {
     const { id } = req.params;
     const { from, to } = req.query;
-
     if (!from || !to) return res.status(400).json({ error: 'from and to dates are required' });
 
     const sql = `
@@ -63,6 +63,7 @@ exports.addEventSpace = (req, res) => {
             console.error('Error adding event space:', err);
             return res.status(500).json({ error: 'Database error' });
         }
+        logAudit({ req, action: 'CREATE', entityType: 'event_space', entityId: result.insertId, description: `Created event space "${name}"` }).catch(err => console.error('Audit log error:', err));
         res.status(201).json({ message: 'Event space added', id: result.insertId });
     });
 };
@@ -82,17 +83,39 @@ exports.updateEventSpace = (req, res) => {
             return res.status(500).json({ error: 'Database error' });
         }
         if (result.affectedRows === 0) return res.status(404).json({ error: 'Event space not found' });
+        logAudit({ req, action: 'UPDATE', entityType: 'event_space', entityId: id, description: `Updated event space "${name}"` }).catch(err => console.error('Audit log error:', err));
         res.json({ message: 'Event space updated' });
     });
 };
 
 exports.deleteEventSpace = (req, res) => {
-    db.query('UPDATE event_spaces SET active = 0 WHERE id = ?', [req.params.id], (err, result) => {
-        if (err) {
-            console.error('Error deleting event space:', err);
+    const id = req.params.id;
+
+    db.query('SELECT * FROM event_spaces WHERE id = ?', [id], (selectErr, rows) => {
+        if (selectErr) {
+            console.error('Error fetching event space before deletion:', selectErr);
             return res.status(500).json({ error: 'Database error' });
         }
-        if (result.affectedRows === 0) return res.status(404).json({ error: 'Event space not found' });
-        res.json({ message: 'Event space removed' });
+        if (rows.length === 0) return res.status(404).json({ error: 'Event space not found' });
+
+        moveToTrash({
+            entityType: 'event_space',
+            entityId: id,
+            entityData: rows[0],
+            deletedBy: req.user?.id || null
+        }).then(() => {
+            db.query('UPDATE event_spaces SET active = 0 WHERE id = ?', [id], (err, result) => {
+                if (err) {
+                    console.error('Error deleting event space:', err);
+                    return res.status(500).json({ error: 'Database error' });
+                }
+                if (result.affectedRows === 0) return res.status(404).json({ error: 'Event space not found' });
+                logAudit({ req, action: 'DELETE', entityType: 'event_space', entityId: id, description: `Removed event space "${rows[0].name}"` }).catch(err => console.error('Audit log error:', err));
+                res.json({ message: 'Event space removed' });
+            });
+        }).catch(err => {
+            console.error('Error moving event space to trash:', err);
+            res.status(500).json({ error: 'Could not move event space to trash' });
+        });
     });
 };
