@@ -22,6 +22,7 @@ const blogRoutes = require("./routes/blogRoutes");
 const settingsRoutes = require("./routes/settingsRoutes");
 const trashRoutes = require("./routes/trashRoutes");
 const auditRoutes = require("./routes/auditRoutes");
+const contentRoutes = require("./routes/contentRoutes");
 
 const expireStaleReservations = require("./utils/expireReservations");
 const sendCheckInReminders = require("./utils/sendCheckInReminders");
@@ -37,7 +38,6 @@ const allowedOrigins = (process.env.CLIENT_URL || "")
 app.use(
   cors({
     origin: function (origin, callback) {
-      // allow requests with no origin (e.g. curl, Postman) and any origin in the allowed list
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
@@ -69,6 +69,7 @@ app.use("/api/blog", blogRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/trash", trashRoutes);
 app.use("/api/audits", auditRoutes);
+app.use("/api/content", contentRoutes);
 
 app.get("/", (req, res) => {
   res.send("Hotel Management System API");
@@ -78,8 +79,8 @@ app.use((req, res) => {
   res.status(404).json({ error: "Route not found" });
 });
 app.use((err, req, res, next) => {
-  console.error("Unhandled error:", err); // full detail stays in your server logs
-  res.status(500).json({ error: "Something went wrong" }); // client only ever sees this
+  console.error("Unhandled error:", err);
+  res.status(500).json({ error: "Something went wrong" });
 });
 
 const REQUIRED_ENV_VARS = [
