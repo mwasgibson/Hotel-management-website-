@@ -27,7 +27,7 @@ const expireStaleReservations = require("./utils/expireReservations");
 const sendCheckInReminders = require("./utils/sendCheckInReminders");
 
 const { apiLimiter, authLimiter } = require("./middleware/rateLimiters");
-const bookingAudit = require("../middleware/bookingAudit");
+const { bookingAudit } = require("./middleware/bookingAudit");
 
 const app = express();
 const allowedOrigins = (process.env.CLIENT_URL || "")
